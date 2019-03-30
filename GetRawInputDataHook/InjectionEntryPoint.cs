@@ -9,6 +9,8 @@ namespace GetRawInputDataHook
 {
 	public class InjectionEntryPoint : EasyHook.IEntryPoint
 	{
+		private static IntPtr hWnd = IntPtr.Zero;
+
 		[DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
 		public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
 
@@ -36,7 +38,8 @@ namespace GetRawInputDataHook
 			}
 
 			pData = default(RAWINPUT);
-			return 0xFFFFFFFF;
+			//return 0xFFFFFFFF; (TODO)
+			return 0;
 		}
 		#endregion
 
@@ -108,14 +111,18 @@ namespace GetRawInputDataHook
 
 		public IntPtr GetForegroundWindowHook()
 		{
-			_server.ReportMessage("GetForegroundWindowHook called");
+			//_server.ReportMessage("GetForegroundWindowHook called");
 
-			return _server.GetGame_hWnd();
+			//IntPtr actual = GetForegroundWindow();
+
+			//IntPtr actual = GetForegroundWindow();
+			//_server.ReportMessage($"game={hWnd}, actual={actual}");
+
+			return hWnd;
 		}
 
 		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
 		delegate IntPtr GetForegroundWindowDelegate();
-
 		#endregion
 
 		ServerInterface _server = null;
@@ -129,50 +136,79 @@ namespace GetRawInputDataHook
 		public void Run(EasyHook.RemoteHooking.IContext context, string channelName)
 		{
 			int pid = EasyHook.RemoteHooking.GetCurrentProcessId();
-			_server.IsInstalled(pid);
+			_server.Ping();
+			//_server.IsInstalled(pid);
 
-			//TODO: make unmanaged for better performance
-			getRawInputDataHook = EasyHook.LocalHook.Create(
-					EasyHook.LocalHook.GetProcAddress("user32.dll", "GetRawInputData"),
-					new GetRawInputDataDelegate(GetRawInputDataHook),
-					this);
+			hWnd = _server.GetGame_hWnd();
+			//_server.ReportMessage($"hWnd for hook = {hWnd}");
 
-			getRawInputDataHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+			try
+			{
+				#region off
+				/*getCursorPosHook = EasyHook.LocalHook.Create(
+						EasyHook.LocalHook.GetProcAddress("user32.dll", "GetCursorPos"),
+						new GetCursorPosDelegate(GetCursorPosHook),
+						this);
 
-			/*getCursorPosHook = EasyHook.LocalHook.Create(
-					EasyHook.LocalHook.GetProcAddress("user32.dll", "GetCursorPos"),
-					new GetCursorPosDelegate(GetCursorPosHook),
-					this);
+				getCursorPosHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });*/
 
-			getCursorPosHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });*/
+				/*
+				//string sdlPath = @"D:\Steam\steamapps\common\GarrysMod\bin\SDL2.dll";
+				//string sdlPath = @"G:\SteamGames2\steamapps\common\Starbound\win64\SDL2.dll";
 
-			/*
-			//string sdlPath = @"D:\Steam\steamapps\common\GarrysMod\bin\SDL2.dll";
-			//string sdlPath = @"G:\SteamGames2\steamapps\common\Starbound\win64\SDL2.dll";
+				//IntPtr SDLPtr = LoadLibraryW(sdlPath);
+				//_server.ReportMessage($"SDL ptr = {SDLPtr}");
 
-			//IntPtr SDLPtr = LoadLibraryW(sdlPath);
-			//_server.ReportMessage($"SDL ptr = {SDLPtr}");
+				IntPtr procAddr = EasyHook.LocalHook.GetProcAddress("SDL2.dll", "SDL_GetGlobalMouseState");
+				_server.ReportMessage($"SDL proc addr = {procAddr}");
 
-			IntPtr procAddr = EasyHook.LocalHook.GetProcAddress("SDL2.dll", "SDL_GetGlobalMouseState");
-			_server.ReportMessage($"SDL proc addr = {procAddr}");
-			
-			sdlMouseGetGlobalStateHook = EasyHook.LocalHook.Create(
-					procAddr,
-					new d_sdl_getglobalmousestate(SdlGetGlobalMouseStateHook),
-					this);
-					
-			sdlMouseGetGlobalStateHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });*/
+				sdlMouseGetGlobalStateHook = EasyHook.LocalHook.Create(
+						procAddr,
+						new d_sdl_getglobalmousestate(SdlGetGlobalMouseStateHook),
+						this);
 
-			getForegroundWindowHook = EasyHook.LocalHook.Create(
-				EasyHook.LocalHook.GetProcAddress("user32.dll", "GetForegroundWindow"),
-				new GetForegroundWindowDelegate(GetForegroundWindowHook),
-				this);
+				sdlMouseGetGlobalStateHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });*/
+				#endregion
 
-			getForegroundWindowHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
 
-			_server.ReportMessage($"Installed GetRawInputData hook on {pid}");
+				//TODO: make unmanaged for better performance
+				/*getRawInputDataHook = EasyHook.LocalHook.Create(
+						EasyHook.LocalHook.GetProcAddress("user32.dll", "GetRawInputData"),
+						new GetRawInputDataDelegate(GetRawInputDataHook),
+						this);*/
 
-			EasyHook.RemoteHooking.WakeUpProcess();//TODO: is this required?
+				getRawInputDataHook = EasyHook.LocalHook.CreateUnmanaged(
+						EasyHook.LocalHook.GetProcAddress("user32.dll", "GetRawInputData"),
+						Marshal.GetFunctionPointerForDelegate(new GetRawInputDataDelegate(GetRawInputDataHook)),
+						IntPtr.Zero);
+
+
+				/*getForegroundWindowHook = EasyHook.LocalHook.Create(
+					EasyHook.LocalHook.GetProcAddress("user32.dll", "GetForegroundWindow"),
+					new GetForegroundWindowDelegate(GetForegroundWindowHook),
+					this);*/
+
+
+
+				getForegroundWindowHook = EasyHook.LocalHook.CreateUnmanaged(
+					EasyHook.LocalHook.GetProcAddress("user32.dll", "GetForegroundWindow"),
+					Marshal.GetFunctionPointerForDelegate(new GetForegroundWindowDelegate(GetForegroundWindowHook)),
+					IntPtr.Zero);
+
+
+				getRawInputDataHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+				getForegroundWindowHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+
+
+
+				//_server.ReportMessage($"Installed GetRawInputData hook on {pid}");
+
+				//EasyHook.RemoteHooking.WakeUpProcess();//TODO: is this required?
+			}
+			catch(Exception e)
+			{
+				_server.ReportMessage($"ERROR INSTALLING HOOK: {e.ToString()}");
+			}
 
 			try
 			{
@@ -200,6 +236,7 @@ namespace GetRawInputDataHook
 			getRawInputDataHook?.Dispose();
 			getCursorPosHook?.Dispose();
 			sdlMouseGetGlobalStateHook?.Dispose();
+			getForegroundWindowHook?.Dispose();
 
 			EasyHook.LocalHook.Release();
 		}

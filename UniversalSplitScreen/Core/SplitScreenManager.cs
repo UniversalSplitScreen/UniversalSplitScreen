@@ -79,6 +79,10 @@ namespace UniversalSplitScreen.Core
 
 					Console.WriteLine($"Channel name = {channelName}, Channel uri = {serverChannel.GetChannelUri()}");
 
+					var server = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
+					server.Ping();
+					server.SetGame_hWnd(hWnd);
+
 					string injectionLibrary = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "GetRawInputDataHook.dll");
 
 					try
@@ -96,9 +100,7 @@ namespace UniversalSplitScreen.Core
 
 						EasyHook.RemoteHooking.Inject(window.pid, EasyHook.InjectionOptions.NoService, injectionLibrary, injectionLibrary, channelName);
 
-						var server = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
-						server.Ping();
-						server.SetGame_hWnd(hWnd);
+						
 
 						window.GetRawInputDataHookIPCServerChannel = serverChannel;
 						window.GetRawInputDataHookServer = server;
