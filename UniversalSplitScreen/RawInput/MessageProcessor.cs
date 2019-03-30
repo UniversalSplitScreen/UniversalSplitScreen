@@ -180,22 +180,18 @@ namespace UniversalSplitScreen.RawInput
 							#endregion
 							
 							//Allow input
-							Program.SplitScreenManager.GetRawInputDataHookServer.SetAllowed_hRawInput(hRawInput);
+							window.GetRawInputDataHookServer?.SetAllowed_hRawInput(hRawInput);
 
 							//Resend raw input to application. Works for some games only
 							if (Options.SendRawMouseInput)
 							{
-
 								SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)hRawInput);//TODO: 0 or 1?
-								//SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)IntPtr.Zero);
 							}
 
 							IntVector2 mouseVec = window.MousePosition;
-
-							mouseVec.x += mouse.lLastX;
-							mouseVec.x = Math.Min(window.Width, Math.Max(mouseVec.x, 0));
-							mouseVec.y += mouse.lLastY;
-							mouseVec.y = Math.Min(window.Height, Math.Max(mouseVec.y, 0));
+							
+							mouseVec.x = Math.Min(window.Width, Math.Max(mouseVec.x + mouse.lLastX, 0));
+							mouseVec.y = Math.Min(window.Height, Math.Max(mouseVec.y + mouse.lLastY, 0));
 
 							//Console.WriteLine($"MOUSE. flags={mouse.usFlags}, X={mouseVec.x}, y={mouseVec.y}, buttonFlags={mouse.usButtonFlags} device pointer = {rawBuffer.header.hDevice}");
 

@@ -15,7 +15,7 @@ namespace UniversalSplitScreen.Core
 {
 	class SplitScreenManager
 	{
-		public GetRawInputDataHook.ServerInterface GetRawInputDataHookServer;
+		//public GetRawInputDataHook.ServerInterface GetRawInputDataHookServer;
 
 		public bool IsRunningInSplitScreen { get; private set; } = false;
 
@@ -69,37 +69,47 @@ namespace UniversalSplitScreen.Core
 					drawMouseTasks.Add(task, c);
 				}
 
-				WinApi.GetWindowThreadProcessId(hWnd, out uint _pid);
-				int pid = (int)_pid;
-
-				string channelName = null;
-				//string channelName = "asdf";
-				var serverChannel = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
-
-				string injectionLibrary = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "GetRawInputDataHook.dll");
-
-				try
+				if (true)
 				{
-					// Injecting into existing process by Id
-					Console.WriteLine("Attempting to inject into process {0}", pid);
+					string channelName = null;
+					var serverChannel = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
 
-					// inject into existing process
-					EasyHook.RemoteHooking.Inject(
-						pid,				// ID of process to inject into
-						injectionLibrary,   // 32-bit library to inject (if target is 32-bit)
-						injectionLibrary,   // 64-bit library to inject (if target is 64-bit)
-						channelName         // the parameters to pass into injected library
-					);
+					//string channelName = "sstest";
+					//var serverChannel = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton, System.Security.Principal.WellKnownSidType.WorldSid);
 
-					GetRawInputDataHookServer = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
-					GetRawInputDataHookServer.Ping();
-				}
-				catch (Exception e)
-				{
-					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine("There was an error while injecting into target:");
-					Console.ResetColor();
-					Console.WriteLine(e.ToString());
+					Console.WriteLine($"Channel name = {channelName}, Channel uri = {serverChannel.GetChannelUri()}");
+
+					string injectionLibrary = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "GetRawInputDataHook.dll");
+
+					try
+					{
+						// Injecting into existing process by Id
+						Console.WriteLine("Attempting to inject into process {0}", window.pid);
+
+						// inject into existing process
+						/*EasyHook.RemoteHooking.Inject(
+							window.pid,             // ID of process to inject into
+							injectionLibrary,   // 32-bit library to inject (if target is 32-bit)
+							injectionLibrary,   // 64-bit library to inject (if target is 64-bit)
+							channelName         // the parameters to pass into injected library
+						);*/
+
+						EasyHook.RemoteHooking.Inject(window.pid, EasyHook.InjectionOptions.NoService, injectionLibrary, injectionLibrary, channelName);
+
+						var server = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
+						server.Ping();
+						server.SetGame_hWnd(hWnd);
+
+						window.GetRawInputDataHookIPCServerChannel = serverChannel;
+						window.GetRawInputDataHookServer = server;
+					}
+					catch (Exception e)
+					{
+						Console.ForegroundColor = ConsoleColor.Red;
+						Console.WriteLine("There was an error while injecting into target:");
+						Console.ResetColor();
+						Console.WriteLine(e.ToString());
+					}
 				}
 			}
 
@@ -119,6 +129,9 @@ namespace UniversalSplitScreen.Core
 
 			foreach (var thread in drawMouseTasks)
 				thread.Value.Cancel();
+
+			foreach (var window in windows.Values)
+				window.GetRawInputDataHookServer?.SetToReleaseHook();
 
 			setFocusTasks.Clear();
 			drawMouseTasks.Clear();
@@ -191,7 +204,16 @@ namespace UniversalSplitScreen.Core
 					var y = mouseVec.y;
 
 					if (x != 0 && y != 0 && x != window.Width && y != window.Height)
-						Cursors.Default.Draw(g, new System.Drawing.Rectangle(new System.Drawing.Point(x, y), Cursors.Default.Size));
+					{
+						try
+						{
+							Cursors.Default.Draw(g, new System.Drawing.Rectangle(new System.Drawing.Point(x, y), Cursors.Default.Size));
+						}
+						catch (Exception)
+						{
+
+						}
+					}
 				}
 
 				if (token.IsCancellationRequested)

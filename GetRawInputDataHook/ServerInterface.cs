@@ -9,6 +9,28 @@ namespace GetRawInputDataHook
     public class ServerInterface : MarshalByRefObject
     {
 		private IntPtr allowed_hRawInput = IntPtr.Zero;
+		private bool shouldExit = false;
+		private IntPtr hWnd;
+
+		public void SetToReleaseHook()
+		{
+			shouldExit = true;
+		}
+		
+		public bool ShouldReleaseHook()
+		{
+			return shouldExit;
+		}
+
+		public void SetGame_hWnd(IntPtr hWnd)
+		{
+			this.hWnd = hWnd;
+		}
+
+		public IntPtr GetGame_hWnd()
+		{
+			return hWnd;
+		}
 
 		public void IsInstalled(int clientPID)
 		{

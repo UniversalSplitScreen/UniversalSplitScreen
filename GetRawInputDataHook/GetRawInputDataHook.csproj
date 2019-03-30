@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="DataCommand.cs" />
     <Compile Include="InjectionEntryPoint.cs" />
+    <Compile Include="POINT.cs" />
     <Compile Include="RAWHID.cs" />
     <Compile Include="RAWINPUT.cs" />
     <Compile Include="RAWINPUTDEVICE.cs" />
