@@ -72,43 +72,82 @@ namespace UniversalSplitScreen.Core
 				if (true)
 				{
 					string channelName = null;
-					var serverChannel = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
+					var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
 
 					//string channelName = "sstest";
 					//var serverChannel = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton, System.Security.Principal.WellKnownSidType.WorldSid);
 
-					Console.WriteLine($"Channel name = {channelName}, Channel uri = {serverChannel.GetChannelUri()}");
+					//Console.WriteLine($"Channel name = {channelName}, Channel uri = {serverChannel_getRawInputData.GetChannelUri()}");
 
-					var server = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
-					server.Ping();
-					server.SetGame_hWnd(hWnd);
+					var server_getRawInputData = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
+					server_getRawInputData.Ping();
+					server_getRawInputData.SetGame_hWnd(hWnd);
+					server_getRawInputData.SetAllowed_hRawInput_device(window.MouseAttached);
 
-					string injectionLibrary = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "GetRawInputDataHook.dll");
+					string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "GetRawInputDataHook.dll");
 
 					try
 					{
 						// Injecting into existing process by Id
-						Console.WriteLine("Attempting to inject into process {0}", window.pid);
+						Console.WriteLine("Attempting to inject (GetRawInputData) into process {0}", window.pid);
 
 						// inject into existing process
-						/*EasyHook.RemoteHooking.Inject(
+						EasyHook.RemoteHooking.Inject(
 							window.pid,             // ID of process to inject into
-							injectionLibrary,   // 32-bit library to inject (if target is 32-bit)
-							injectionLibrary,   // 64-bit library to inject (if target is 64-bit)
+							injectionLibrary_getRawInputData,   // 32-bit library to inject (if target is 32-bit)
+							injectionLibrary_getRawInputData,   // 64-bit library to inject (if target is 64-bit)
 							channelName         // the parameters to pass into injected library
-						);*/
+						);
 
-						EasyHook.RemoteHooking.Inject(window.pid, EasyHook.InjectionOptions.NoService, injectionLibrary, injectionLibrary, channelName);
+						//EasyHook.RemoteHooking.Inject(window.pid, EasyHook.InjectionOptions.NoService, injectionLibrary_getRawInputData, injectionLibrary_getRawInputData, channelName);
 
 						
 
-						window.GetRawInputDataHookIPCServerChannel = serverChannel;
-						window.GetRawInputDataHookServer = server;
+						window.GetRawInputData_HookIPCServerChannel = serverChannel_getRawInputData;
+						window.GetRawInputData_HookServer = server_getRawInputData;
 					}
 					catch (Exception e)
 					{
 						Console.ForegroundColor = ConsoleColor.Red;
-						Console.WriteLine("There was an error while injecting into target:");
+						Console.WriteLine("There was an error while injecting GetRawInputData into target:");
+						Console.ResetColor();
+						Console.WriteLine(e.ToString());
+					}
+				}
+
+				if (false)
+				{
+					string channelName = null;
+					var serverChannel_getForegroundWindow = EasyHook.RemoteHooking.IpcCreateServer<GetForegroundWindowHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
+
+					var server_getForegroundWindow = EasyHook.RemoteHooking.IpcConnectClient<GetForegroundWindowHook.ServerInterface>(channelName);
+					server_getForegroundWindow.Ping();
+					server_getForegroundWindow.SetGame_hWnd(hWnd);
+
+					string injectionLibrary_getForegroundWindow = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "GetForegroundWindowHook.dll");
+
+					try
+					{
+						// Injecting into existing process by Id
+						Console.WriteLine("Attempting to inject (GetForegroundWindow) into process {0}", window.pid);
+
+						// inject into existing process
+						EasyHook.RemoteHooking.Inject(
+							window.pid,             // ID of process to inject into
+							injectionLibrary_getForegroundWindow,   // 32-bit library to inject (if target is 32-bit)
+							injectionLibrary_getForegroundWindow,   // 64-bit library to inject (if target is 64-bit)
+							channelName         // the parameters to pass into injected library
+						);
+
+						//EasyHook.RemoteHooking.Inject(window.pid, EasyHook.InjectionOptions.NoService, injectionLibrary_getForegroundWindow, injectionLibrary_getForegroundWindow, channelName);
+						
+						window.GetForegroundWindow_HookIPCServerChannel = serverChannel_getForegroundWindow;
+						window.GetForegroundWindow_HookServer = server_getForegroundWindow;
+					}
+					catch (Exception e)
+					{
+						Console.ForegroundColor = ConsoleColor.Red;
+						Console.WriteLine("There was an error while injecting GetForegroundWindow into target:");
 						Console.ResetColor();
 						Console.WriteLine(e.ToString());
 					}
@@ -133,7 +172,10 @@ namespace UniversalSplitScreen.Core
 				thread.Value.Cancel();
 
 			foreach (var window in windows.Values)
-				window.GetRawInputDataHookServer?.SetToReleaseHook();
+			{
+				window.GetRawInputData_HookServer?.SetToReleaseHook();
+				window.GetForegroundWindow_HookServer?.SetToReleaseHook(); 
+			}
 
 			setFocusTasks.Clear();
 			drawMouseTasks.Clear();

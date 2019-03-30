@@ -31,15 +31,31 @@ namespace GetRawInputDataHook
 
 		public uint GetRawInputDataHook(IntPtr hRawInput, DataCommand uiCommand, out RAWINPUT pData, ref uint pcbSize, int cbSizeHeader)
 		{
-			IntPtr allowed = _server.GetAllowed_hRawInput();
-			if (allowed == hRawInput)
+			try
 			{
+				#region Works in BL2, not GMod
+				//run the function, check if it is the allowed device, then pass through or not
+				RAWINPUT ri;
+				GetRawInputData(hRawInput, uiCommand, out ri, ref pcbSize, cbSizeHeader);
+				
+				if (ri.header.hDevice == allowedRawInputDevice)
+				{
+					return GetRawInputData(hRawInput, uiCommand, out pData, ref pcbSize, cbSizeHeader);
+				}
+				else
+				{
+					GetRawInputData(hRawInput, uiCommand, out pData, ref pcbSize, cbSizeHeader);
+					return 0xFFFFFFFF;//Gmod/source ignores this error message
+				}
+				#endregion
+
+				//TODO: for gmod, do pData = default(RAWINPUT) when ignoring a message. (Crashes BL2)
+			}
+			catch(Exception e)
+			{
+				_server.ReportMessage($"error in GetRawInputDataHook: {e.ToString()}");
 				return GetRawInputData(hRawInput, uiCommand, out pData, ref pcbSize, cbSizeHeader);
 			}
-
-			pData = default(RAWINPUT);
-			//return 0xFFFFFFFF; (TODO)
-			return 0;
 		}
 		#endregion
 
@@ -111,14 +127,21 @@ namespace GetRawInputDataHook
 
 		public IntPtr GetForegroundWindowHook()
 		{
-			//_server.ReportMessage("GetForegroundWindowHook called");
+			try
+			{
+				//_server.ReportMessage("GetForegroundWindowHook called");
 
-			//IntPtr actual = GetForegroundWindow();
+				//IntPtr actual = GetForegroundWindow();
 
-			//IntPtr actual = GetForegroundWindow();
-			//_server.ReportMessage($"game={hWnd}, actual={actual}");
+				//IntPtr actual = GetForegroundWindow();
+				//_server.ReportMessage($"game={hWnd}, actual={actual}");
 
-			return hWnd;
+				return hWnd;
+			}catch(Exception)
+			{
+				_server.ReportMessage("err1");
+				return GetForegroundWindow();
+			}
 		}
 
 		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
@@ -126,7 +149,9 @@ namespace GetRawInputDataHook
 		#endregion
 
 		ServerInterface _server = null;
-		
+
+		IntPtr allowedRawInputDevice = IntPtr.Zero;
+
 		public InjectionEntryPoint(EasyHook.RemoteHooking.IContext context, string channelName)
 		{
 			_server = EasyHook.RemoteHooking.IpcConnectClient<ServerInterface>(channelName);
@@ -140,6 +165,8 @@ namespace GetRawInputDataHook
 			//_server.IsInstalled(pid);
 
 			hWnd = _server.GetGame_hWnd();
+			allowedRawInputDevice = _server.GetAllowed_hRawInput_device();
+			_server.ReportMessage($"allowed raw input device = {allowedRawInputDevice}");
 			//_server.ReportMessage($"hWnd for hook = {hWnd}");
 
 			try
@@ -201,13 +228,13 @@ namespace GetRawInputDataHook
 
 
 
-				//_server.ReportMessage($"Installed GetRawInputData hook on {pid}");
+				_server.ReportMessage($"Installed GetRawInputData hook on {pid}");
 
 				//EasyHook.RemoteHooking.WakeUpProcess();//TODO: is this required?
 			}
 			catch(Exception e)
 			{
-				_server.ReportMessage($"ERROR INSTALLING HOOK: {e.ToString()}");
+				_server.ReportMessage($"Error installing GetRawInputData hook: {e.ToString()}");
 			}
 
 			try

@@ -176,6 +176,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GetForegroundWindowHook\GetForegroundWindowHook.csproj">
+      <Project>{42c9df0e-aa7e-4816-8309-a1f9c4b8fa91}</Project>
+      <Name>GetForegroundWindowHook</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GetRawInputDataHook\GetRawInputDataHook.csproj">
       <Project>{fec5583b-9f5b-4ad5-b4dc-30ab3f19ed13}</Project>
       <Name>GetRawInputDataHook</Name>

@@ -42,12 +42,12 @@ namespace GetRawInputDataHook
 			Console.WriteLine(message);
 		}
 
-		public void SetAllowed_hRawInput(IntPtr hRawInput)
+		public void SetAllowed_hRawInput_device(IntPtr hRawInput)
 		{
 			allowed_hRawInput = hRawInput;
 		}
 
-		public IntPtr GetAllowed_hRawInput()
+		public IntPtr GetAllowed_hRawInput_device()
 		{
 			return allowed_hRawInput;
 		}

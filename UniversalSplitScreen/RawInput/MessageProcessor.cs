@@ -178,9 +178,9 @@ namespace UniversalSplitScreen.RawInput
 
 							if ((int)hWnd == 0) return;
 							#endregion
-							
+
 							//Allow input
-							window.GetRawInputDataHookServer?.SetAllowed_hRawInput(hRawInput);
+							//window.GetRawInputData_HookServer?.SetAllowed_hRawInput_device(hRawInput);
 
 							//Resend raw input to application. Works for some games only
 							if (Options.SendRawMouseInput)

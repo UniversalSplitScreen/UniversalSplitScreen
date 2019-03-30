@@ -8,8 +8,11 @@ namespace UniversalSplitScreen.Core
 		public readonly IntPtr hWnd;
 		public readonly int pid;
 
-		public GetRawInputDataHook.ServerInterface GetRawInputDataHookServer { get; set; } = null;
-		public IpcServerChannel GetRawInputDataHookIPCServerChannel { get; set; } = null;
+		public GetRawInputDataHook.ServerInterface GetRawInputData_HookServer { get; set; } = null;
+		public IpcServerChannel GetRawInputData_HookIPCServerChannel { get; set; } = null;
+
+		public GetForegroundWindowHook.ServerInterface GetForegroundWindow_HookServer { get; set; } = null;
+		public IpcServerChannel GetForegroundWindow_HookIPCServerChannel { get; set; } = null;
 
 		public IntPtr MouseAttached { get; set; } = new IntPtr(0);
 		public IntVector2 MousePosition { get; } = new IntVector2();
