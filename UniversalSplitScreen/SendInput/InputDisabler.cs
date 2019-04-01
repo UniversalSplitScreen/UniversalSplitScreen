@@ -63,7 +63,7 @@ namespace UniversalSplitScreen.SendInput
 				}
 				catch
 				{
-					Console.WriteLine("Could not load Mouse Disabler");
+					Console.WriteLine("Could not load InputDisabler");
 				}
 			});
 		}

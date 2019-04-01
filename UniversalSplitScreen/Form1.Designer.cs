@@ -53,6 +53,9 @@
 			this.hWndLabel = new System.Windows.Forms.Label();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
 			this.panel1 = new System.Windows.Forms.Panel();
+			this.hooksBox = new System.Windows.Forms.GroupBox();
+			this.hooksWarningLabel = new System.Windows.Forms.Label();
+			this.drawMouseCheckbox = new System.Windows.Forms.CheckBox();
 			this.drawMouseEveryXmsLabel = new System.Windows.Forms.Label();
 			this.drawMouseEveryXmsField = new System.Windows.Forms.NumericUpDown();
 			this.refreshWindowBoundsOnLMBCheckbox = new System.Windows.Forms.CheckBox();
@@ -62,7 +65,9 @@
 			this.sendNormalMouseCheckbox = new System.Windows.Forms.CheckBox();
 			this.sendRawKeyboardCheckbox = new System.Windows.Forms.CheckBox();
 			this.sendRawMouseCheckbox = new System.Windows.Forms.CheckBox();
-			this.drawMouseCheckbox = new System.Windows.Forms.CheckBox();
+			this.checkBoxHook_filterWindowsRawInput = new System.Windows.Forms.CheckBox();
+			this.checkBoxHook_filterCallWndProc = new System.Windows.Forms.CheckBox();
+			this.checkBoxHook_getForegroundWindow = new System.Windows.Forms.CheckBox();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -74,6 +79,7 @@
 			this.hwndBox.SuspendLayout();
 			this.tabPage2.SuspendLayout();
 			this.panel1.SuspendLayout();
+			this.hooksBox.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.drawMouseEveryXmsField)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -326,6 +332,7 @@
 			// panel1
 			// 
 			this.panel1.AutoScroll = true;
+			this.panel1.Controls.Add(this.hooksBox);
 			this.panel1.Controls.Add(this.drawMouseCheckbox);
 			this.panel1.Controls.Add(this.drawMouseEveryXmsLabel);
 			this.panel1.Controls.Add(this.drawMouseEveryXmsField);
@@ -340,6 +347,42 @@
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(755, 390);
 			this.panel1.TabIndex = 0;
+			// 
+			// hooksBox
+			// 
+			this.hooksBox.Controls.Add(this.checkBoxHook_getForegroundWindow);
+			this.hooksBox.Controls.Add(this.checkBoxHook_filterCallWndProc);
+			this.hooksBox.Controls.Add(this.checkBoxHook_filterWindowsRawInput);
+			this.hooksBox.Controls.Add(this.hooksWarningLabel);
+			this.hooksBox.Location = new System.Drawing.Point(472, 3);
+			this.hooksBox.Name = "hooksBox";
+			this.hooksBox.Size = new System.Drawing.Size(280, 384);
+			this.hooksBox.TabIndex = 10;
+			this.hooksBox.TabStop = false;
+			this.hooksBox.Text = "Hooks";
+			// 
+			// hooksWarningLabel
+			// 
+			this.hooksWarningLabel.AutoSize = true;
+			this.hooksWarningLabel.ForeColor = System.Drawing.Color.Red;
+			this.hooksWarningLabel.Location = new System.Drawing.Point(6, 16);
+			this.hooksWarningLabel.MaximumSize = new System.Drawing.Size(280, 0);
+			this.hooksWarningLabel.Name = "hooksWarningLabel";
+			this.hooksWarningLabel.Size = new System.Drawing.Size(265, 39);
+			this.hooksWarningLabel.TabIndex = 0;
+			this.hooksWarningLabel.Text = "Warning: Hooks inject code into the target game. This may be detected by an anti-" +
+    "cheat system or anti-virus software. See the documentation for more info.";
+			// 
+			// drawMouseCheckbox
+			// 
+			this.drawMouseCheckbox.AutoSize = true;
+			this.drawMouseCheckbox.Location = new System.Drawing.Point(4, 171);
+			this.drawMouseCheckbox.Name = "drawMouseCheckbox";
+			this.drawMouseCheckbox.Size = new System.Drawing.Size(85, 17);
+			this.drawMouseCheckbox.TabIndex = 7;
+			this.drawMouseCheckbox.Text = "Draw mouse";
+			this.drawMouseCheckbox.UseVisualStyleBackColor = true;
+			this.drawMouseCheckbox.CheckedChanged += new System.EventHandler(this.drawMouseCheckbox_CheckedChanged);
 			// 
 			// drawMouseEveryXmsLabel
 			// 
@@ -360,7 +403,7 @@
             0});
 			this.drawMouseEveryXmsField.Name = "drawMouseEveryXmsField";
 			this.drawMouseEveryXmsField.Size = new System.Drawing.Size(120, 20);
-			this.drawMouseEveryXmsField.TabIndex = 7;
+			this.drawMouseEveryXmsField.TabIndex = 8;
 			this.drawMouseEveryXmsField.Tag = "";
 			this.drawMouseEveryXmsField.ValueChanged += new System.EventHandler(this.drawMouseEveryXmsField_ValueChanged);
 			// 
@@ -441,16 +484,38 @@
 			this.sendRawMouseCheckbox.UseVisualStyleBackColor = true;
 			this.sendRawMouseCheckbox.CheckedChanged += new System.EventHandler(this.sendRawMouseCheckbox_CheckedChanged);
 			// 
-			// drawMouseCheckbox
+			// checkBoxHook_filterWindowsRawInput
 			// 
-			this.drawMouseCheckbox.AutoSize = true;
-			this.drawMouseCheckbox.Location = new System.Drawing.Point(4, 171);
-			this.drawMouseCheckbox.Name = "drawMouseCheckbox";
-			this.drawMouseCheckbox.Size = new System.Drawing.Size(85, 17);
-			this.drawMouseCheckbox.TabIndex = 9;
-			this.drawMouseCheckbox.Text = "Draw mouse";
-			this.drawMouseCheckbox.UseVisualStyleBackColor = true;
-			this.drawMouseCheckbox.CheckedChanged += new System.EventHandler(this.drawMouseCheckbox_CheckedChanged);
+			this.checkBoxHook_filterWindowsRawInput.AutoSize = true;
+			this.checkBoxHook_filterWindowsRawInput.Location = new System.Drawing.Point(9, 73);
+			this.checkBoxHook_filterWindowsRawInput.Name = "checkBoxHook_filterWindowsRawInput";
+			this.checkBoxHook_filterWindowsRawInput.Size = new System.Drawing.Size(214, 17);
+			this.checkBoxHook_filterWindowsRawInput.TabIndex = 9;
+			this.checkBoxHook_filterWindowsRawInput.Text = "Filter raw input messages from Windows";
+			this.checkBoxHook_filterWindowsRawInput.UseVisualStyleBackColor = true;
+			this.checkBoxHook_filterWindowsRawInput.CheckedChanged += new System.EventHandler(this.checkBoxHook_filterWindowsRawInput_CheckedChanged);
+			// 
+			// checkBoxHook_filterCallWndProc
+			// 
+			this.checkBoxHook_filterCallWndProc.AutoSize = true;
+			this.checkBoxHook_filterCallWndProc.Location = new System.Drawing.Point(9, 97);
+			this.checkBoxHook_filterCallWndProc.Name = "checkBoxHook_filterCallWndProc";
+			this.checkBoxHook_filterCallWndProc.Size = new System.Drawing.Size(228, 17);
+			this.checkBoxHook_filterCallWndProc.TabIndex = 10;
+			this.checkBoxHook_filterCallWndProc.Text = "Filter mouse input messages from Windows";
+			this.checkBoxHook_filterCallWndProc.UseVisualStyleBackColor = true;
+			this.checkBoxHook_filterCallWndProc.CheckedChanged += new System.EventHandler(this.checkBoxHook_filterCallWndProc_CheckedChanged);
+			// 
+			// checkBoxHook_getForegroundWindow
+			// 
+			this.checkBoxHook_getForegroundWindow.AutoSize = true;
+			this.checkBoxHook_getForegroundWindow.Location = new System.Drawing.Point(9, 121);
+			this.checkBoxHook_getForegroundWindow.Name = "checkBoxHook_getForegroundWindow";
+			this.checkBoxHook_getForegroundWindow.Size = new System.Drawing.Size(165, 17);
+			this.checkBoxHook_getForegroundWindow.TabIndex = 11;
+			this.checkBoxHook_getForegroundWindow.Text = "Hook GetForegroundWindow";
+			this.checkBoxHook_getForegroundWindow.UseVisualStyleBackColor = true;
+			this.checkBoxHook_getForegroundWindow.CheckedChanged += new System.EventHandler(this.checkBoxHook_getForegroundWindow_CheckedChanged);
 			// 
 			// Form1
 			// 
@@ -481,6 +546,8 @@
 			this.tabPage2.ResumeLayout(false);
 			this.panel1.ResumeLayout(false);
 			this.panel1.PerformLayout();
+			this.hooksBox.ResumeLayout(false);
+			this.hooksBox.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.drawMouseEveryXmsField)).EndInit();
 			this.ResumeLayout(false);
 
@@ -522,5 +589,10 @@
 		private System.Windows.Forms.CheckBox sendRawMouseCheckbox;
 		private System.Windows.Forms.Label drawMouseEveryXmsLabel;
 		private System.Windows.Forms.CheckBox drawMouseCheckbox;
+		private System.Windows.Forms.GroupBox hooksBox;
+		private System.Windows.Forms.Label hooksWarningLabel;
+		private System.Windows.Forms.CheckBox checkBoxHook_filterWindowsRawInput;
+		private System.Windows.Forms.CheckBox checkBoxHook_filterCallWndProc;
+		private System.Windows.Forms.CheckBox checkBoxHook_getForegroundWindow;
 	}
 }

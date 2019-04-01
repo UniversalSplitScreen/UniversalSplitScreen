@@ -14,5 +14,9 @@
 
 		public static bool DrawMouse { get; set; } = true;
 		public static int DrawMouseEveryXMilliseconds { get; set; } = 15;
+
+		public static bool Hook_FilterRawInput { get; set; } = false;
+		public static bool Hook_FilterWindowsMouseInput { get; set; } = false;
+		public static bool Hook_GetForegroundWindow { get; set; } = false;
 	}
 }

@@ -131,6 +131,7 @@ namespace GetRawInputDataHook
 		#endregion
 
 		#region GetForegroundWindow hook
+		//Used by BL2 and starbound
 		private static EasyHook.LocalHook getForegroundWindowHook;
 
 		[DllImport("user32.dll")]
@@ -141,7 +142,8 @@ namespace GetRawInputDataHook
 			try
 			{
 				return hWnd;
-			}catch(Exception)
+			}
+			catch (Exception)
 			{
 				_server.ReportMessage("Error in GetForegroundWindowHook");
 				return GetForegroundWindow();
@@ -174,7 +176,7 @@ namespace GetRawInputDataHook
 					return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
 				//else if ((Msg >= 0x0200 && Msg <= 0x020D) || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x00FF || Msg == 0x02A3 || Msg == 0x0006)
 				//	return IntPtr.Zero;
-				else if ((Msg >= 0x020B && Msg <= 0x020D) || Msg == 0x0200 || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x00FF || Msg == 0x02A3 || Msg == 0x0006)
+				else if ((Msg >= 0x020B && Msg <= 0x020D) || Msg == 0x0200 || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x00FF || Msg == 0x02A3)// || Msg == 0x0006)
 					return IntPtr.Zero;
 				else
 				{
@@ -196,13 +198,13 @@ namespace GetRawInputDataHook
 
 		IntPtr allowedRawInputDevice = IntPtr.Zero;
 
-		public InjectionEntryPoint(EasyHook.RemoteHooking.IContext context, string channelName)
+		public InjectionEntryPoint(EasyHook.RemoteHooking.IContext context, string channelName, bool hookRawInput, bool hookCallWndProc, bool hookGetForegroundWindow)
 		{
 			_server = EasyHook.RemoteHooking.IpcConnectClient<ServerInterface>(channelName);
 			_server.Ping();
 		}
 
-		public void Run(EasyHook.RemoteHooking.IContext context, string channelName)
+		public void Run(EasyHook.RemoteHooking.IContext context, string channelName, bool hookRawInput, bool hookCallWndProc, bool hookGetForegroundWindow)
 		{
 			int pid = EasyHook.RemoteHooking.GetCurrentProcessId();
 			_server.Ping();
@@ -239,41 +241,48 @@ namespace GetRawInputDataHook
 						this);
 
 				sdlMouseGetGlobalStateHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });*/
-				#endregion
-				
-
-				getRawInputDataHook = EasyHook.LocalHook.CreateUnmanaged(
-						EasyHook.LocalHook.GetProcAddress("user32.dll", "GetRawInputData"),
-						Marshal.GetFunctionPointerForDelegate(new GetRawInputDataDelegate(GetRawInputDataHook)),
-						IntPtr.Zero);
-				
-
-				getForegroundWindowHook = EasyHook.LocalHook.CreateUnmanaged(
-					EasyHook.LocalHook.GetProcAddress("user32.dll", "GetForegroundWindow"),
-					Marshal.GetFunctionPointerForDelegate(new GetForegroundWindowDelegate(GetForegroundWindowHook)),
-					IntPtr.Zero);
-
 
 				/*getCursorPosHook = EasyHook.LocalHook.CreateUnmanaged(
 						EasyHook.LocalHook.GetProcAddress("user32.dll", "GetCursorPos"),
 						Marshal.GetFunctionPointerForDelegate(new GetCursorPosDelegate(GetCursorPosHook)),
 						IntPtr.Zero);*/
 
-				callWindowProcHook = EasyHook.LocalHook.Create(
-					EasyHook.LocalHook.GetProcAddress("user32.dll", "CallWindowProcW"),
-					new CallWindowProcDelegate(CallWindowProcHook),
-					this);
-
-				getRawInputDataHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
-				getForegroundWindowHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
 				//getCursorPosHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
-				callWindowProcHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+				#endregion
 
+				//EasyHook.LocalHook CreateHook(string InModule, string InSymbolName)
 
+				if (hookRawInput)
+				{
+					getRawInputDataHook = EasyHook.LocalHook.CreateUnmanaged(
+							EasyHook.LocalHook.GetProcAddress("user32.dll", "GetRawInputData"),
+							Marshal.GetFunctionPointerForDelegate(new GetRawInputDataDelegate(GetRawInputDataHook)),
+							IntPtr.Zero);
+
+					getRawInputDataHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+				}
+
+				if (hookGetForegroundWindow)
+				{
+					getForegroundWindowHook = EasyHook.LocalHook.CreateUnmanaged(
+										EasyHook.LocalHook.GetProcAddress("user32.dll", "GetForegroundWindow"),
+										Marshal.GetFunctionPointerForDelegate(new GetForegroundWindowDelegate(GetForegroundWindowHook)),
+										IntPtr.Zero);
+
+					getForegroundWindowHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+				}
+
+				if (hookCallWndProc)
+				{
+					callWindowProcHook = EasyHook.LocalHook.CreateUnmanaged(
+										EasyHook.LocalHook.GetProcAddress("user32.dll", "CallWindowProcW"),
+										Marshal.GetFunctionPointerForDelegate(new CallWindowProcDelegate(CallWindowProcHook)),
+										IntPtr.Zero);
+
+					callWindowProcHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+				}
 
 				_server.ReportMessage($"Installed GetRawInputData hook on {pid}");
-
-				//EasyHook.RemoteHooking.WakeUpProcess();//TODO: is this required?
 			}
 			catch(Exception e)
 			{

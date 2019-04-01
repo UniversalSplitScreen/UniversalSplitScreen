@@ -136,6 +136,21 @@ namespace UniversalSplitScreen
 		{
 			Core.Options.DrawMouse = drawMouseCheckbox.Checked;
 		}
+
+		private void checkBoxHook_filterWindowsRawInput_CheckedChanged(object sender, EventArgs e)
+		{
+			Core.Options.Hook_FilterRawInput = checkBoxHook_filterWindowsRawInput.Checked;
+		}
+
+		private void checkBoxHook_filterCallWndProc_CheckedChanged(object sender, EventArgs e)
+		{
+			Core.Options.Hook_FilterWindowsMouseInput = checkBoxHook_filterCallWndProc.Checked;
+		}
+
+		private void checkBoxHook_getForegroundWindow_CheckedChanged(object sender, EventArgs e)
+		{
+			Core.Options.Hook_GetForegroundWindow = checkBoxHook_getForegroundWindow.Checked;
+		}
 		#endregion
 
 		//TODO: when ss starts, disable the start button (and vice cersa

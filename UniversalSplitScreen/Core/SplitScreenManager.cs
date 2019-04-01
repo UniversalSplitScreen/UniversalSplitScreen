@@ -69,7 +69,7 @@ namespace UniversalSplitScreen.Core
 					drawMouseTasks.Add(task, c);
 				}
 
-				if (true)
+				if (Options.Hook_FilterRawInput || Options.Hook_FilterWindowsMouseInput || Options.Hook_GetForegroundWindow)
 				{
 					string channelName = null;
 					var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
@@ -93,15 +93,14 @@ namespace UniversalSplitScreen.Core
 
 						// inject into existing process
 						EasyHook.RemoteHooking.Inject(
-							window.pid,             // ID of process to inject into
+							window.pid,							// ID of process to inject into
 							injectionLibrary_getRawInputData,   // 32-bit library to inject (if target is 32-bit)
 							injectionLibrary_getRawInputData,   // 64-bit library to inject (if target is 64-bit)
-							channelName         // the parameters to pass into injected library
-						);
-
-						//EasyHook.RemoteHooking.Inject(window.pid, EasyHook.InjectionOptions.NoService, injectionLibrary_getRawInputData, injectionLibrary_getRawInputData, channelName);
-
-						
+							channelName,                            // the parameters to pass into injected library
+							Options.Hook_FilterRawInput,
+							Options.Hook_FilterWindowsMouseInput,
+							Options.Hook_GetForegroundWindow
+						);						
 
 						window.GetRawInputData_HookIPCServerChannel = serverChannel_getRawInputData;
 						window.GetRawInputData_HookServer = server_getRawInputData;
@@ -109,7 +108,7 @@ namespace UniversalSplitScreen.Core
 					catch (Exception e)
 					{
 						Console.ForegroundColor = ConsoleColor.Red;
-						Console.WriteLine("There was an error while injecting GetRawInputData into target:");
+						Console.WriteLine("There was an error while injecting hook into target:");
 						Console.ResetColor();
 						Console.WriteLine(e.ToString());
 					}
