@@ -114,44 +114,6 @@ namespace UniversalSplitScreen.Core
 						Console.WriteLine(e.ToString());
 					}
 				}
-
-				if (false)
-				{
-					string channelName = null;
-					var serverChannel_getForegroundWindow = EasyHook.RemoteHooking.IpcCreateServer<GetForegroundWindowHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
-
-					var server_getForegroundWindow = EasyHook.RemoteHooking.IpcConnectClient<GetForegroundWindowHook.ServerInterface>(channelName);
-					server_getForegroundWindow.Ping();
-					server_getForegroundWindow.SetGame_hWnd(hWnd);
-
-					string injectionLibrary_getForegroundWindow = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "GetForegroundWindowHook.dll");
-
-					try
-					{
-						// Injecting into existing process by Id
-						Console.WriteLine("Attempting to inject (GetForegroundWindow) into process {0}", window.pid);
-
-						// inject into existing process
-						EasyHook.RemoteHooking.Inject(
-							window.pid,             // ID of process to inject into
-							injectionLibrary_getForegroundWindow,   // 32-bit library to inject (if target is 32-bit)
-							injectionLibrary_getForegroundWindow,   // 64-bit library to inject (if target is 64-bit)
-							channelName         // the parameters to pass into injected library
-						);
-
-						//EasyHook.RemoteHooking.Inject(window.pid, EasyHook.InjectionOptions.NoService, injectionLibrary_getForegroundWindow, injectionLibrary_getForegroundWindow, channelName);
-						
-						window.GetForegroundWindow_HookIPCServerChannel = serverChannel_getForegroundWindow;
-						window.GetForegroundWindow_HookServer = server_getForegroundWindow;
-					}
-					catch (Exception e)
-					{
-						Console.ForegroundColor = ConsoleColor.Red;
-						Console.WriteLine("There was an error while injecting GetForegroundWindow into target:");
-						Console.ResetColor();
-						Console.WriteLine(e.ToString());
-					}
-				}
 			}
 
 
@@ -174,7 +136,6 @@ namespace UniversalSplitScreen.Core
 			foreach (var window in windows.Values)
 			{
 				window.GetRawInputData_HookServer?.SetToReleaseHook();
-				window.GetForegroundWindow_HookServer?.SetToReleaseHook(); 
 			}
 
 			setFocusTasks.Clear();

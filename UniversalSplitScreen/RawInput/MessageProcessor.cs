@@ -32,7 +32,7 @@ namespace UniversalSplitScreen.RawInput
 			{ ButtonFlags.RI_MOUSE_MIDDLE_BUTTON_UP , (MouseInputNotifications.WM_MBUTTONUP, 0, 3, false) }
 		};
 
-		readonly static Dictionary<IntPtr, (bool l, bool m, bool r)> mouseStates = new Dictionary<IntPtr, (bool, bool, bool)> ();
+		//readonly static Dictionary<IntPtr, (bool l, bool m, bool r)> mouseStates = new Dictionary<IntPtr, (bool, bool, bool)> ();
 
 		public static void WndProc(ref Message msg)
 		{
@@ -149,6 +149,7 @@ namespace UniversalSplitScreen.RawInput
 						}
 					case HeaderDwType.RIM_TYPEMOUSE:
 						{
+							
 							RAWMOUSE mouse = rawBuffer.data.mouse;
 							IntPtr mousePtr = rawBuffer.header.hDevice;
 
@@ -159,16 +160,16 @@ namespace UniversalSplitScreen.RawInput
 									Console.WriteLine($"Set mouse, pointer = {rawBuffer.header.hDevice}");
 									Program.SplitScreenManager.SetMousePointer(rawBuffer.header.hDevice);
 								}
-								break;
+								break; 
 							}
-
+							
 							#region Get game hWnd and Window
 							IntPtr hWnd = new IntPtr(0);
 							Window window = null;
 
 							foreach (var w in Program.SplitScreenManager.windows.Values)
 							{
-								if (w.MouseAttached == rawBuffer.header.hDevice)
+								if (w.MouseAttached == mousePtr)
 								{
 									hWnd = w.hWnd;
 									window = w;
@@ -176,12 +177,9 @@ namespace UniversalSplitScreen.RawInput
 								}
 							}
 
-							if ((int)hWnd == 0) return;
+							if (hWnd == IntPtr.Zero) return;
 							#endregion
-
-							//Allow input
-							//window.GetRawInputData_HookServer?.SetAllowed_hRawInput_device(hRawInput);
-
+							
 							//Resend raw input to application. Works for some games only
 							if (Options.SendRawMouseInput)
 							{
@@ -198,58 +196,58 @@ namespace UniversalSplitScreen.RawInput
 							long packedXY = (mouseVec.y * 0x10000) + mouseVec.x;
 
 							//TODO: move away to reduce lag?
+							//TODO: BL2 menus work when cursor isn't clipped (it uses the os mouse pointer though)
 							Cursor.Position = new System.Drawing.Point(0, 0);
 							Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
 
 							if (Options.SendNormalMouseInput)
 							{
 								ushort mouseMoveState = 0x0000;
-								if (mouseStates.TryGetValue(mousePtr, out var o))
-								{
-									if (o.l) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_LBUTTON;
-									if (o.m) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_MBUTTON;
-									if (o.r) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_RBUTTON;
-								}
+								var (l, m, r) = window.MouseState;
+								if (l) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_LBUTTON;
+								if (m) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_MBUTTON;
+								if (r) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_RBUTTON;
+								mouseMoveState |= 1 << 7;//Signature for USS 
 								SendInput.WinApi.PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEMOVE, (IntPtr)mouseMoveState, (IntPtr)packedXY);
 								//SendInput.WinApi.PostMessageA(hWnd, (uint)MouseInputNotifications.WM_NCMOUSEMOVE, (IntPtr)0x0000, (IntPtr)packedXY);
 							}
 
-							if (!mouseStates.ContainsKey(mousePtr))
-								mouseStates[mousePtr] = (false, false, false);
-
 							//Mouse buttons.
 							ushort f = mouse.usButtonFlags;
-							foreach (var pair in ButtonFlagToMouseInputNotifications)
+							if (f != 0)
 							{
-								if ((f & (ushort)pair.Key) > 0)
+								foreach (var pair in ButtonFlagToMouseInputNotifications)
 								{
-									var v = pair.Value;
-									//Console.WriteLine(pair.Key);
-									SendInput.WinApi.PostMessageA(hWnd, (uint)v.msg, (IntPtr)v.wParam, (IntPtr)packedXY);
-
-									var state = mouseStates[mousePtr];
-									switch (v.leftMiddleRight)
+									if ((f & (ushort)pair.Key) > 0)
 									{
-										case 1:
-											state.l = v.isButtonDown;
+										var (msg, wParam, leftMiddleRight, isButtonDown) = pair.Value;
+										//Console.WriteLine(pair.Key);
+										SendInput.WinApi.PostMessageA(hWnd, (uint)msg, (IntPtr)wParam, (IntPtr)packedXY);
 
-											if (Options.RefreshWindowBoundsOnMouseClick)
-												window.UpdateBounds();
+										var state = window.MouseState;
+										switch (leftMiddleRight)
+										{
+											case 1:
+												state.l = isButtonDown;
 
-											break;
-										case 2:
-											state.m = v.isButtonDown; break;
-										case 3:
-											state.r = v.isButtonDown; break;
+												if (Options.RefreshWindowBoundsOnMouseClick)
+													window.UpdateBounds();
+
+												break;
+											case 2:
+												state.m = isButtonDown; break;
+											case 3:
+												state.r = isButtonDown; break;
+										}
+										window.MouseState = state;
 									}
-									mouseStates[mousePtr] = state;
 								}
-							}
 
-							if ((f & (ushort)ButtonFlags.RI_MOUSE_WHEEL) > 0)
-							{
-								ushort delta = mouse.usButtonData;
-								SendInput.WinApi.PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEWHEEL, (IntPtr)((delta * 0x10000) + 0), (IntPtr)packedXY);
+								if ((f & (ushort)ButtonFlags.RI_MOUSE_WHEEL) > 0)
+								{
+									ushort delta = mouse.usButtonData;
+									SendInput.WinApi.PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEWHEEL, (IntPtr)((delta * 0x10000) + 0), (IntPtr)packedXY);
+								}
 							}
 
 							break;

@@ -11,12 +11,10 @@ namespace UniversalSplitScreen.Core
 		public GetRawInputDataHook.ServerInterface GetRawInputData_HookServer { get; set; } = null;
 		public IpcServerChannel GetRawInputData_HookIPCServerChannel { get; set; } = null;
 
-		public GetForegroundWindowHook.ServerInterface GetForegroundWindow_HookServer { get; set; } = null;
-		public IpcServerChannel GetForegroundWindow_HookIPCServerChannel { get; set; } = null;
-
 		public IntPtr MouseAttached { get; set; } = new IntPtr(0);
 		public IntVector2 MousePosition { get; } = new IntVector2();
-		
+		public (bool l, bool m, bool r) MouseState { get; set; } = (false, false, false);
+
 		public IntPtr KeyboardAttached { get; set; } = new IntPtr(0);
 
 		public WindowManagement.RECT Bounds { get; private set; }

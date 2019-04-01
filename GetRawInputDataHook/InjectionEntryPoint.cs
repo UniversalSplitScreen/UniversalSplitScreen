@@ -31,13 +31,14 @@ namespace GetRawInputDataHook
 
 		public uint GetRawInputDataHook(IntPtr hRawInput, DataCommand uiCommand, out RAWINPUT pData, ref uint pcbSize, int cbSizeHeader)
 		{
+			//TODO: remove try catch to improve performance?
 			try
 			{
+
 				#region Works in BL2, not GMod
 				//run the function, check if it is the allowed device, then pass through or not
-				RAWINPUT ri;
-				GetRawInputData(hRawInput, uiCommand, out ri, ref pcbSize, cbSizeHeader);
-				
+				GetRawInputData(hRawInput, uiCommand, out RAWINPUT ri, ref pcbSize, cbSizeHeader);
+
 				if (ri.header.hDevice == allowedRawInputDevice)
 				{
 					return GetRawInputData(hRawInput, uiCommand, out pData, ref pcbSize, cbSizeHeader);
@@ -66,27 +67,37 @@ namespace GetRawInputDataHook
 		[return: MarshalAs(UnmanagedType.Bool)]
 		static extern bool GetCursorPos(out POINT lpPoint);
 
-		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
-		delegate bool GetCursorPosDelegate(out POINT lpPoint);
+		[DllImport("user32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		static extern bool GetCursorPos([Out] IntPtr lpPoint);
 
-		public bool GetCursorPosHook(out POINT lpPoint)
+		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+		delegate bool GetCursorPosDelegate(out IntPtr lpPoint);
+
+		public bool GetCursorPosHook(out IntPtr lpPoint)
 		{
 			_server.ReportMessage("GetCursorPos called");
-			lpPoint = new POINT();
+			//GetCursorPos(out lpPoint);
+			POINT p = new POINT();
+			IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(POINT)));
+			Marshal.StructureToPtr(p, ptr, false);
+
+			lpPoint = ptr;
+
 			return false;
 			//return GetCursorPos(out lpPoint);
-			/*POINT p = new POINT();
-			p.x = 200;
-			p.y = 200;
+			//POINT p = new POINT();
+			//p.x = 200;
+			//p.y = 200;
 
-			lpPoint = p;
+			//lpPoint = p;
 			
-			return true;*/
+			//return true;
 		}
 		#endregion
 
 		#region SDL MouseGetGlobalState hook
-		private static EasyHook.LocalHook sdlMouseGetGlobalStateHook;
+		/*private static EasyHook.LocalHook sdlMouseGetGlobalStateHook;
 		
 		[Flags]
 		public enum Button
@@ -116,7 +127,7 @@ namespace GetRawInputDataHook
 		{
 			_server.ReportMessage("SDL get mouse called");
 			return IntPtr.Zero;
-		}
+		}*/
 		#endregion
 
 		#region GetForegroundWindow hook
@@ -129,23 +140,56 @@ namespace GetRawInputDataHook
 		{
 			try
 			{
-				//_server.ReportMessage("GetForegroundWindowHook called");
-
-				//IntPtr actual = GetForegroundWindow();
-
-				//IntPtr actual = GetForegroundWindow();
-				//_server.ReportMessage($"game={hWnd}, actual={actual}");
-
 				return hWnd;
 			}catch(Exception)
 			{
-				_server.ReportMessage("err1");
+				_server.ReportMessage("Error in GetForegroundWindowHook");
 				return GetForegroundWindow();
 			}
 		}
 
 		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
 		delegate IntPtr GetForegroundWindowDelegate();
+		#endregion
+
+		#region CallWindowProc hook
+
+		private static EasyHook.LocalHook callWindowProcHook;
+
+		public delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		static extern IntPtr CallWindowProc(WndProcDelegate lpPrevWndFunc, IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+		delegate IntPtr CallWindowProcDelegate(WndProcDelegate lpPrevWndFunc, IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+		public IntPtr CallWindowProcHook(WndProcDelegate lpPrevWndFunc, IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)
+		{
+			try
+			{
+				//USS signature is 1 << 7 or 10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
+
+				if (Msg == 0x0200 && ((int)wParam & (1 << 7)) > 0)// || 
+					return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
+				//else if ((Msg >= 0x0200 && Msg <= 0x020D) || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x00FF || Msg == 0x02A3 || Msg == 0x0006)
+				//	return IntPtr.Zero;
+				else if ((Msg >= 0x020B && Msg <= 0x020D) || Msg == 0x0200 || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x00FF || Msg == 0x02A3 || Msg == 0x0006)
+					return IntPtr.Zero;
+				else
+				{
+					if (Msg < 0x0100 && Msg > 0x0102)
+						_server.ReportMessage($"CallWindowProcW, msg = 0x{Msg:x}, wParam=0x{wParam:x}, lParam=0x{lParam:x}");
+					return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
+				}
+			}
+			catch(Exception e)
+			{
+				_server.ReportMessage($"Error in CallWindowProcHook: {e.ToString()}");
+				return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
+			}
+		}
+
 		#endregion
 
 		ServerInterface _server = null;
@@ -196,26 +240,13 @@ namespace GetRawInputDataHook
 
 				sdlMouseGetGlobalStateHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });*/
 				#endregion
-
-
-				//TODO: make unmanaged for better performance
-				/*getRawInputDataHook = EasyHook.LocalHook.Create(
-						EasyHook.LocalHook.GetProcAddress("user32.dll", "GetRawInputData"),
-						new GetRawInputDataDelegate(GetRawInputDataHook),
-						this);*/
+				
 
 				getRawInputDataHook = EasyHook.LocalHook.CreateUnmanaged(
 						EasyHook.LocalHook.GetProcAddress("user32.dll", "GetRawInputData"),
 						Marshal.GetFunctionPointerForDelegate(new GetRawInputDataDelegate(GetRawInputDataHook)),
 						IntPtr.Zero);
-
-
-				/*getForegroundWindowHook = EasyHook.LocalHook.Create(
-					EasyHook.LocalHook.GetProcAddress("user32.dll", "GetForegroundWindow"),
-					new GetForegroundWindowDelegate(GetForegroundWindowHook),
-					this);*/
-
-
+				
 
 				getForegroundWindowHook = EasyHook.LocalHook.CreateUnmanaged(
 					EasyHook.LocalHook.GetProcAddress("user32.dll", "GetForegroundWindow"),
@@ -223,8 +254,20 @@ namespace GetRawInputDataHook
 					IntPtr.Zero);
 
 
+				/*getCursorPosHook = EasyHook.LocalHook.CreateUnmanaged(
+						EasyHook.LocalHook.GetProcAddress("user32.dll", "GetCursorPos"),
+						Marshal.GetFunctionPointerForDelegate(new GetCursorPosDelegate(GetCursorPosHook)),
+						IntPtr.Zero);*/
+
+				callWindowProcHook = EasyHook.LocalHook.Create(
+					EasyHook.LocalHook.GetProcAddress("user32.dll", "CallWindowProcW"),
+					new CallWindowProcDelegate(CallWindowProcHook),
+					this);
+
 				getRawInputDataHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
 				getForegroundWindowHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+				//getCursorPosHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+				callWindowProcHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
 
 
 
@@ -234,7 +277,7 @@ namespace GetRawInputDataHook
 			}
 			catch(Exception e)
 			{
-				_server.ReportMessage($"Error installing GetRawInputData hook: {e.ToString()}");
+				_server.ReportMessage($"Error installing hook: {e.ToString()}");
 			}
 
 			try
@@ -261,9 +304,10 @@ namespace GetRawInputDataHook
 			_server.ReportMessage("Releasing GetRawInputData hook");
 
 			getRawInputDataHook?.Dispose();
-			getCursorPosHook?.Dispose();
-			sdlMouseGetGlobalStateHook?.Dispose();
+			//getCursorPosHook?.Dispose();
+			//sdlMouseGetGlobalStateHook?.Dispose();
 			getForegroundWindowHook?.Dispose();
+			callWindowProcHook?.Dispose();
 
 			EasyHook.LocalHook.Release();
 		}

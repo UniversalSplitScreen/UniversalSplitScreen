@@ -47,7 +47,7 @@ namespace UniversalSplitScreen.SendInput
 					ahk.ExecRaw("*Control:: return");
 					ahk.ExecRaw("*Alt:: return");
 					ahk.ExecRaw("*Shift:: return");//Important or shift will not function properly in game
-
+					
 					//ahk.ExecRaw("*Space:: return");//Prevents space being detected in minecraft?
 
 					/*foreach (char c in "wasd")//Prevents characters being detected in raw input
@@ -81,6 +81,8 @@ namespace UniversalSplitScreen.SendInput
 			ahk?.UnSuspend();
 			SetForegroundWindow(GetDesktopWindow());//Loses focus of all windows, without minimizing
 			if (ahk != null) System.Windows.Forms.Cursor.Hide();//Only works if the form window in the top left corner (0,0)
+
+			SendInput.WinApi.BlockInput(true);
 		}
 
 		public static void Unlock()
@@ -95,9 +97,9 @@ namespace UniversalSplitScreen.SendInput
 					An application cannot force a window to the foreground while the user is working with another window. Instead, Windows flashes the taskbar button of the window to notify the user.
 						^^^ (doesn't work) */
 				//SetForegroundWindow((int));
-
-
 			}
+
+			SendInput.WinApi.BlockInput(false);
 		}
 	}
 }

@@ -33,14 +33,18 @@ namespace UniversalSplitScreen.SendInput
 		/// <param name="wParam"></param>
 		/// <param name="lParam"></param>
 		/// <returns></returns>
-		public static bool PostMessageA(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)
+		/*public static bool PostMessageA(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)
 		{
 			var obj = new object();
 			var handleRef = new HandleRef(obj, hWnd);
 			bool result = PostMessageA(handleRef, Msg, wParam, lParam);
 			GC.KeepAlive(obj);
 			return result;
-		}
+		}*/
+
+		[return: MarshalAs(UnmanagedType.Bool)]
+		[DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		public static extern bool PostMessageA(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
 		/// <summary>
 		/// Places (posts) a message in the message queue associated with the thread that created the specified window and returns without waiting for the thread to process the message.
@@ -113,5 +117,8 @@ namespace UniversalSplitScreen.SendInput
 		
 		[DllImport("user32.dll", CharSet = CharSet.Auto)]
 		public static extern uint MapVirtualKey(uint uCode, uint uMapType);
+
+		[DllImport("user32.dll")]
+		public static extern bool BlockInput(bool fBlockIt);
 	}
 }
