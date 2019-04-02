@@ -33,15 +33,15 @@ namespace UniversalSplitScreen
 
 		private void SetupOptionsPage()
 		{
-			sendRawMouseCheckbox.Checked = Core.Options.SendRawMouseInput;
-			sendRawKeyboardCheckbox.Checked = Core.Options.SendRawKeyboardInput;
-			sendNormalMouseCheckbox.Checked = Core.Options.SendNormalMouseInput;
-			sendNormalKeyboardCheckbox.Checked = Core.Options.SendNormalKeyboardInput;
-			send_WM_ACTIVATE_checkbox.Checked = Core.Options.SendWM_ACTIVATE;
-			send_WM_FOCUS_checkbox.Checked = Core.Options.SendWM_SETFOCUS;
-			refreshWindowBoundsOnLMBCheckbox.Checked = Core.Options.RefreshWindowBoundsOnMouseClick;
-			drawMouseCheckbox.Checked = Core.Options.DrawMouse;
-			drawMouseEveryXmsField.Value = Core.Options.DrawMouseEveryXMilliseconds;
+			sendRawMouseCheckbox.Checked = Program.Options.SendRawMouseInput;
+			sendRawKeyboardCheckbox.Checked = Program.Options.SendRawKeyboardInput;
+			sendNormalMouseCheckbox.Checked = Program.Options.SendNormalMouseInput;
+			sendNormalKeyboardCheckbox.Checked = Program.Options.SendNormalKeyboardInput;
+			send_WM_ACTIVATE_checkbox.Checked = Program.Options.SendWM_ACTIVATE;
+			send_WM_FOCUS_checkbox.Checked = Program.Options.SendWM_SETFOCUS;
+			refreshWindowBoundsOnLMBCheckbox.Checked = Program.Options.RefreshWindowBoundsOnMouseClick;
+			drawMouseCheckbox.Checked = Program.Options.DrawMouse;
+			drawMouseEveryXmsField.Value = Program.Options.DrawMouseEveryXMilliseconds;
 		}
 
 		protected override void WndProc(ref Message msg)
@@ -94,62 +94,62 @@ namespace UniversalSplitScreen
 		#region Options page value change events
 		private void sendRawMouseCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Core.Options.SendRawMouseInput = sendRawMouseCheckbox.Checked;
+			Program.Options.SendRawMouseInput = sendRawMouseCheckbox.Checked;
 		}
 
 		private void sendRawKeyboardCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Core.Options.SendRawKeyboardInput = sendRawKeyboardCheckbox.Checked;
+			Program.Options.SendRawKeyboardInput = sendRawKeyboardCheckbox.Checked;
 		}
 
 		private void sendNormalMouseCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Core.Options.SendNormalMouseInput = sendNormalMouseCheckbox.Checked;
+			Program.Options.SendNormalMouseInput = sendNormalMouseCheckbox.Checked;
 		}
 
 		private void sendNormalKeyboardCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Core.Options.SendNormalKeyboardInput = sendNormalKeyboardCheckbox.Checked;
+			Program.Options.SendNormalKeyboardInput = sendNormalKeyboardCheckbox.Checked;
 		}
 
 		private void send_WM_ACTIVATE_checkbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Core.Options.SendWM_ACTIVATE = send_WM_ACTIVATE_checkbox.Checked;
+			Program.Options.SendWM_ACTIVATE = send_WM_ACTIVATE_checkbox.Checked;
 		}
 
 		private void send_WM_FOCUS_checkbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Core.Options.SendWM_SETFOCUS = send_WM_FOCUS_checkbox.Checked;
+			Program.Options.SendWM_SETFOCUS = send_WM_FOCUS_checkbox.Checked;
 		}
 
 		private void refreshWindowBoundsOnLMBCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Core.Options.RefreshWindowBoundsOnMouseClick = refreshWindowBoundsOnLMBCheckbox.Checked;
+			Program.Options.RefreshWindowBoundsOnMouseClick = refreshWindowBoundsOnLMBCheckbox.Checked;
 		}
 
 		private void drawMouseEveryXmsField_ValueChanged(object sender, EventArgs e)
 		{
-			Core.Options.DrawMouseEveryXMilliseconds = (int)drawMouseEveryXmsField.Value;
+			Program.Options.DrawMouseEveryXMilliseconds = (int)drawMouseEveryXmsField.Value;
 		}
 
 		private void drawMouseCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Core.Options.DrawMouse = drawMouseCheckbox.Checked;
+			Program.Options.DrawMouse = drawMouseCheckbox.Checked;
 		}
 
 		private void checkBoxHook_filterWindowsRawInput_CheckedChanged(object sender, EventArgs e)
 		{
-			Core.Options.Hook_FilterRawInput = checkBoxHook_filterWindowsRawInput.Checked;
+			Program.Options.Hook_FilterRawInput = checkBoxHook_filterWindowsRawInput.Checked;
 		}
 
 		private void checkBoxHook_filterCallWndProc_CheckedChanged(object sender, EventArgs e)
 		{
-			Core.Options.Hook_FilterWindowsMouseInput = checkBoxHook_filterCallWndProc.Checked;
+			Program.Options.Hook_FilterWindowsMouseInput = checkBoxHook_filterCallWndProc.Checked;
 		}
 
 		private void checkBoxHook_getForegroundWindow_CheckedChanged(object sender, EventArgs e)
 		{
-			Core.Options.Hook_GetForegroundWindow = checkBoxHook_getForegroundWindow.Checked;
+			Program.Options.Hook_GetForegroundWindow = checkBoxHook_getForegroundWindow.Checked;
 		}
 		#endregion
 

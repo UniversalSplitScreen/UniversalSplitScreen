@@ -3,7 +3,7 @@
 	public class Options
 	{
 		public bool SendRawMouseInput { get; set; } = true;
-		public bool SendRawKeyboardInput { get; set; } = false;//TODO: Implement
+		public bool SendRawKeyboardInput { get; set; } = false;
 		public bool SendNormalMouseInput { get; set; } = true;
 		public bool SendNormalKeyboardInput { get; set; } = true;
 

@@ -21,20 +21,20 @@ namespace UniversalSplitScreen.RawInput
 		//leftMiddleRight: left=1, middle=2, right=3, xbutton1=4, xbutton2=5
 		readonly Dictionary<ButtonFlags, (MouseInputNotifications msg, uint wParam, ushort leftMiddleRight, bool isButtonDown)> ButtonFlagToMouseInputNotifications = new Dictionary<ButtonFlags, (MouseInputNotifications, uint, ushort, bool)>()
 		{
-			{ ButtonFlags.RI_MOUSE_LEFT_BUTTON_DOWN ,	(MouseInputNotifications.WM_LBUTTONDOWN ,	0x0001,		1, true) },
-			{ ButtonFlags.RI_MOUSE_LEFT_BUTTON_UP ,		(MouseInputNotifications.WM_LBUTTONUP,		0,			1, false) },
+			{ ButtonFlags.RI_MOUSE_LEFT_BUTTON_DOWN,	(MouseInputNotifications.WM_LBUTTONDOWN ,	0x0001,		1, true) },
+			{ ButtonFlags.RI_MOUSE_LEFT_BUTTON_UP,		(MouseInputNotifications.WM_LBUTTONUP,		0,			1, false) },
 
-			{ ButtonFlags.RI_MOUSE_RIGHT_BUTTON_DOWN ,	(MouseInputNotifications.WM_RBUTTONDOWN,	0x0002,		2, true) },
-			{ ButtonFlags.RI_MOUSE_RIGHT_BUTTON_UP ,	(MouseInputNotifications.WM_RBUTTONUP,		0,			2, false) },
+			{ ButtonFlags.RI_MOUSE_RIGHT_BUTTON_DOWN,	(MouseInputNotifications.WM_RBUTTONDOWN,	0x0002,		2, true) },
+			{ ButtonFlags.RI_MOUSE_RIGHT_BUTTON_UP,		(MouseInputNotifications.WM_RBUTTONUP,		0,			2, false) },
 
-			{ ButtonFlags.RI_MOUSE_MIDDLE_BUTTON_DOWN ,	(MouseInputNotifications.WM_MBUTTONDOWN,	0x0010,		3, true) },
-			{ ButtonFlags.RI_MOUSE_MIDDLE_BUTTON_UP ,	(MouseInputNotifications.WM_MBUTTONUP,		0,			3, false) },
+			{ ButtonFlags.RI_MOUSE_MIDDLE_BUTTON_DOWN,	(MouseInputNotifications.WM_MBUTTONDOWN,	0x0010,		3, true) },
+			{ ButtonFlags.RI_MOUSE_MIDDLE_BUTTON_UP,	(MouseInputNotifications.WM_MBUTTONUP,		0,			3, false) },
 
-			{ ButtonFlags.RI_MOUSE_BUTTON_4_DOWN ,		(MouseInputNotifications.WM_XBUTTONDOWN,	0x0120,		4, true) },// (0x0001 << 8) | 0x0020 = 0x0120
-			{ ButtonFlags.RI_MOUSE_BUTTON_4_UP ,		(MouseInputNotifications.WM_XBUTTONUP,		0,			4, false) },
+			{ ButtonFlags.RI_MOUSE_BUTTON_4_DOWN,		(MouseInputNotifications.WM_XBUTTONDOWN,	0x0120,		4, true) },// (0x0001 << 8) | 0x0020 = 0x0120
+			{ ButtonFlags.RI_MOUSE_BUTTON_4_UP,			(MouseInputNotifications.WM_XBUTTONUP,		0,			4, false) },
 
-			{ ButtonFlags.RI_MOUSE_BUTTON_5_DOWN ,		(MouseInputNotifications.WM_XBUTTONDOWN,    0x0240,		5, true) },//(0x0002 << 8) | 0x0040 = 0x0240
-			{ ButtonFlags.RI_MOUSE_BUTTON_5_UP ,		(MouseInputNotifications.WM_XBUTTONUP,		0,			5, false) }
+			{ ButtonFlags.RI_MOUSE_BUTTON_5_DOWN,		(MouseInputNotifications.WM_XBUTTONDOWN,    0x0240,		5, true) },//(0x0002 << 8) | 0x0040 = 0x0240
+			{ ButtonFlags.RI_MOUSE_BUTTON_5_UP,			(MouseInputNotifications.WM_XBUTTONUP,		0,			5, false) }
 		};
 
 		#region End key
@@ -52,13 +52,13 @@ namespace UniversalSplitScreen.RawInput
 		{
 			WaitingToSetEndKey = false;
 			Program.Form.SetEndButtonText($"Stop button = {System.Windows.Input.KeyInterop.KeyFromVirtualKey(endVKey)}");
-			Options.EndVKey = endVKey;
+			Program.Options.EndVKey = endVKey;
 		}
 		#endregion
 
 		public MessageProcessor()
 		{
-			endVKey = Options.EndVKey;
+			endVKey = Program.Options.EndVKey;
 		}
 
 		public void WndProc(ref Message msg)
@@ -139,7 +139,7 @@ namespace UniversalSplitScreen.RawInput
 										IntPtr hWnd = window.hWnd;
 
 										//Works better than ahk (doesn't lock mouse when two keyboards are held, and works with Source games)
-										if (Options.SendNormalKeyboardInput)
+										if (Program.Options.SendNormalKeyboardInput)
 										{
 											uint scanCode = rawBuffer.data.keyboard.MakeCode;
 											ushort VKey = rawBuffer.data.keyboard.VKey;
@@ -154,7 +154,7 @@ namespace UniversalSplitScreen.RawInput
 										}
 
 										//Resend raw input to application. Works for some games only
-										if (Options.SendRawKeyboardInput)
+										if (Program.Options.SendRawKeyboardInput)
 											SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)hRawInput);
 									}
 								}
@@ -182,7 +182,7 @@ namespace UniversalSplitScreen.RawInput
 								IntPtr hWnd = window.hWnd;
 
 								//Resend raw input to application. Works for some games only
-								if (Options.SendRawMouseInput)
+								if (Program.Options.SendRawMouseInput)
 								{
 									SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)hRawInput);//TODO: 0 or 1?
 								}
@@ -201,7 +201,7 @@ namespace UniversalSplitScreen.RawInput
 								Cursor.Position = new System.Drawing.Point(0, 0);
 								Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
 
-								if (Options.SendNormalMouseInput)
+								if (Program.Options.SendNormalMouseInput)
 								{
 									ushort mouseMoveState = 0x0000;
 									var (l, m, r, x1, x2) = window.MouseState;
@@ -233,7 +233,7 @@ namespace UniversalSplitScreen.RawInput
 												case 1:
 													state.l = isButtonDown;
 
-													if (Options.RefreshWindowBoundsOnMouseClick)
+													if (Program.Options.RefreshWindowBoundsOnMouseClick)
 														window.UpdateBounds();
 
 													break;
