@@ -13,7 +13,7 @@ namespace UniversalSplitScreen.Core
 
 		public IntPtr MouseAttached { get; set; } = new IntPtr(0);
 		public IntVector2 MousePosition { get; } = new IntVector2();
-		public (bool l, bool m, bool r) MouseState { get; set; } = (false, false, false);
+		public (bool l, bool m, bool r, bool x1, bool x2) MouseState { get; set; } = (false, false, false, false, false);
 
 		public IntPtr KeyboardAttached { get; set; } = new IntPtr(0);
 

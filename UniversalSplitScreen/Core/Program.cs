@@ -20,6 +20,8 @@ namespace UniversalSplitScreen
 		public static Form1 Form { get; private set; }
 		public static IntPtr Form_hWnd { get; private set; }
 		public static SplitScreenManager SplitScreenManager { get; private set; }
+		public static MessageProcessor MessageProcessor { get; private set; }
+		public static Options Options { get; private set; }
 
 		static void Main(string[] args)
 		{
@@ -32,11 +34,7 @@ namespace UniversalSplitScreen
 				excArgs.SetObserved();
 			};
 
-			
-
-			//var ahk = AutoHotkeyEngine.Instance;
-			//ahk.ExecRaw("^m::MsgBox You pressed Ctrl+m.");
-			//Console.ReadLine();
+			Options = new Options();
 
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
@@ -44,8 +42,10 @@ namespace UniversalSplitScreen
 			Form = new Form1();
 			Form_hWnd = Form.Handle;
 
-			Program.SplitScreenManager = new SplitScreenManager();
+			SplitScreenManager = new SplitScreenManager();
 			SplitScreenManager.Init();
+
+			MessageProcessor = new MessageProcessor();
 
 			i = new Intercept(Form.Handle);
 			var x = new RawInputManager(Form_hWnd);

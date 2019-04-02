@@ -46,7 +46,7 @@ namespace UniversalSplitScreen
 
 		protected override void WndProc(ref Message msg)
 		{
-			MessageProcessor.WndProc(ref msg);
+			Program.MessageProcessor?.WndProc(ref msg);
 
 			base.WndProc(ref msg);
 		}
@@ -59,8 +59,8 @@ namespace UniversalSplitScreen
 		private void keyboardSetTextbox_KeyPress(object sender, KeyPressEventArgs e)
 		{
 			keyboardSetTextbox.Clear();
-			Console.WriteLine($"Set keyboard, pointer = {MessageProcessor.LastKeyboardPressed}");
-			Program.SplitScreenManager.SetKeyboardPointer(MessageProcessor.LastKeyboardPressed);
+			Console.WriteLine($"Set keyboard, pointer = {Program.MessageProcessor.LastKeyboardPressed}");
+			Program.SplitScreenManager.SetKeyboardPointer(Program.MessageProcessor.LastKeyboardPressed);
 		}
 
 		private void mouseResetButton_Click(object sender, EventArgs e)
@@ -178,13 +178,13 @@ namespace UniversalSplitScreen
 		{
 			if (!Program.SplitScreenManager.IsRunningInSplitScreen)
 			{
-				MessageProcessor.WaitToSetEndKey();
+				Program.MessageProcessor.WaitToSetEndKey();
 			}
 		}
 
 		private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			MessageProcessor.StopWaitingToSetEndKey();
+			Program.MessageProcessor.StopWaitingToSetEndKey();
 		}
 	}
 }
