@@ -8,7 +8,7 @@ namespace GetRawInputDataHook
 {
     public class ServerInterface : MarshalByRefObject
     {
-		private IntPtr allowed_hRawInput = IntPtr.Zero;
+		private IntPtr allowed_hDevice = IntPtr.Zero;//create two for kb/mouse
 		private bool shouldExit = false;
 		private IntPtr hWnd;
 
@@ -42,14 +42,14 @@ namespace GetRawInputDataHook
 			Console.WriteLine(message);
 		}
 
-		public void SetAllowed_hRawInput_device(IntPtr hRawInput)
+		public void SetAllowed_hDevice(IntPtr hRawInput)
 		{
-			allowed_hRawInput = hRawInput;
+			allowed_hDevice = hRawInput;
 		}
 
-		public IntPtr GetAllowed_hRawInput_device()
+		public IntPtr GetAllowed_hDevice()
 		{
-			return allowed_hRawInput;
+			return allowed_hDevice;
 		}
 
 		public void Ping()

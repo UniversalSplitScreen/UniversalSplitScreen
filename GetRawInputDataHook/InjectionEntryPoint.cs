@@ -209,7 +209,7 @@ namespace GetRawInputDataHook
 			_server.IsInstalled(pid);
 
 			hWnd = _server.GetGame_hWnd();
-			allowedRawInputDevice = _server.GetAllowed_hRawInput_device();
+			allowedRawInputDevice = _server.GetAllowed_hDevice();
 
 			try
 			{

@@ -30,6 +30,12 @@ namespace UniversalSplitScreen.Core
 		const ushort WINEVENT_OUTOFCONTEXT = 0x0000;
 
 		public readonly Dictionary<IntPtr, Window> windows = new Dictionary<IntPtr, Window>();
+		private readonly Dictionary<IntPtr, Window[]> deviceToWindows = new Dictionary<IntPtr, Window[]>();
+
+		public Window[] GetWindowsForDevice(IntPtr hDevice)
+		{
+			return deviceToWindows.TryGetValue(hDevice, out Window[] windows) ? windows : new Window[0];
+		}
 
 		#region Public methods
 
@@ -47,19 +53,28 @@ namespace UniversalSplitScreen.Core
 			IsRunningInSplitScreen = true;
 			InputDisabler.Lock();
 			Intercept.IsOn = true;
+			deviceToWindows.Clear();
 
 			foreach (var pair in windows)
 			{
-				Console.WriteLine($"hWnd={pair.Key}, mouse={pair.Value.MouseAttached}, kb={pair.Value.KeyboardAttached}");
-				CancellationTokenSource c = new CancellationTokenSource();
-				Task task = new Task(() => SetFocus(pair.Key, c.Token), c.Token);
-				task.Start();
-				setFocusTasks.Add(task, c);
-			}
+				IntPtr hWnd = pair.Key;
+				Window window = pair.Value;
 
-			foreach (var window in windows.Values)
-			{
-				IntPtr hWnd = window.hWnd;
+				Console.WriteLine($"hWnd={hWnd}, mouse={window.MouseAttached}, kb={window.KeyboardAttached}");
+				
+				if (!deviceToWindows.ContainsKey(window.MouseAttached))
+					deviceToWindows[window.MouseAttached] = windows.Values.Where(x => x.MouseAttached == window.MouseAttached).ToArray();
+
+				if (!deviceToWindows.ContainsKey(window.KeyboardAttached))
+					deviceToWindows[window.KeyboardAttached] = windows.Values.Where(x => x.KeyboardAttached == window.KeyboardAttached).ToArray();
+
+				if (Options.SendWM_ACTIVATE || Options.SendWM_SETFOCUS)
+				{
+					CancellationTokenSource c = new CancellationTokenSource();
+					Task task = new Task(() => SetFocus(pair.Key, c.Token), c.Token);
+					task.Start();
+					setFocusTasks.Add(task, c);
+				}
 
 				if (Options.DrawMouse)
 				{
@@ -69,6 +84,7 @@ namespace UniversalSplitScreen.Core
 					drawMouseTasks.Add(task, c);
 				}
 
+				//EasyHook
 				if (Options.Hook_FilterRawInput || Options.Hook_FilterWindowsMouseInput || Options.Hook_GetForegroundWindow)
 				{
 					string channelName = null;
@@ -82,7 +98,7 @@ namespace UniversalSplitScreen.Core
 					var server_getRawInputData = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
 					server_getRawInputData.Ping();
 					server_getRawInputData.SetGame_hWnd(hWnd);
-					server_getRawInputData.SetAllowed_hRawInput_device(window.MouseAttached);
+					server_getRawInputData.SetAllowed_hDevice(window.MouseAttached);
 
 					string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "GetRawInputDataHook.dll");
 
@@ -93,14 +109,14 @@ namespace UniversalSplitScreen.Core
 
 						// inject into existing process
 						EasyHook.RemoteHooking.Inject(
-							window.pid,							// ID of process to inject into
+							window.pid,                         // ID of process to inject into
 							injectionLibrary_getRawInputData,   // 32-bit library to inject (if target is 32-bit)
 							injectionLibrary_getRawInputData,   // 64-bit library to inject (if target is 64-bit)
 							channelName,                            // the parameters to pass into injected library
 							Options.Hook_FilterRawInput,
 							Options.Hook_FilterWindowsMouseInput,
 							Options.Hook_GetForegroundWindow
-						);						
+						);
 
 						window.GetRawInputData_HookIPCServerChannel = serverChannel_getRawInputData;
 						window.GetRawInputData_HookServer = server_getRawInputData;
@@ -114,8 +130,6 @@ namespace UniversalSplitScreen.Core
 					}
 				}
 			}
-
-
 
 			Program.Form.OnSplitScreenStart();
 		}
