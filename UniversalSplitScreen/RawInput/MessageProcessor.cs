@@ -11,13 +11,13 @@ using UniversalSplitScreen.SendInput;
 
 namespace UniversalSplitScreen.RawInput
 {
-	class MessageProcessor
+	class MessageProcessor//TODO make not static
 	{
 		/// <summary>
 		/// Only updated when split screen is deactivated
 		/// </summary>
 		public static IntPtr LastKeyboardPressed { get; private set; } = new IntPtr(0);
-
+		
 		//TODO: xButton1/2
 		//leftMiddleRight: left=1, middle=2, right=3
 		readonly static Dictionary<ButtonFlags, (MouseInputNotifications msg, ushort wParam, ushort leftMiddleRight, bool isButtonDown)> ButtonFlagToMouseInputNotifications = new Dictionary<ButtonFlags, (MouseInputNotifications, ushort, ushort, bool)>()
@@ -32,14 +32,28 @@ namespace UniversalSplitScreen.RawInput
 			{ ButtonFlags.RI_MOUSE_MIDDLE_BUTTON_UP , (MouseInputNotifications.WM_MBUTTONUP, 0, 3, false) }
 		};
 
-		//readonly static Dictionary<IntPtr, (bool l, bool m, bool r)> mouseStates = new Dictionary<IntPtr, (bool, bool, bool)> ();
+		#region End key
+		private static ushort endKey = 0x23;//End
+		private static bool WaitingToSetEndKey = false;
+
+
+		public static void WaitToSetEndKey()
+		{
+			WaitingToSetEndKey = true;
+			Program.Form.SetEndButtonText("Press a key...");
+		}
+
+		public static void StopWaitingToSetEndKey()
+		{
+			WaitingToSetEndKey = false;
+			Program.Form.SetEndButtonText($"Stop button = {System.Windows.Input.KeyInterop.KeyFromVirtualKey(endKey)}");
+		}
+		#endregion
 
 		public static void WndProc(ref Message msg)
 		{
 			if (msg.Msg == WinApi.WM_INPUT)
 			{
-				
-
 				IntPtr hRawInput = msg.LParam;
 
 				Process(hRawInput);
@@ -63,64 +77,75 @@ namespace UniversalSplitScreen.RawInput
 						{
 							uint keyboardMessage = rawBuffer.data.keyboard.Message;
 							bool keyUpOrDown = keyboardMessage == (uint)KeyboardMessages.WM_KEYDOWN || keyboardMessage == (uint)KeyboardMessages.WM_KEYUP;
-
-							if (keyUpOrDown && 0x23 == rawBuffer.data.keyboard.VKey)//End key
-							{
-								Console.WriteLine("End key pressed");
-								Program.SplitScreenManager.DeactivateSplitScreen();
-								InputDisabler.Unlock();//Just in case
-							}
-
-							if (keyUpOrDown && !Program.SplitScreenManager.IsRunningInSplitScreen)
-							{
-								LastKeyboardPressed = rawBuffer.header.hDevice;
-								break;
-							}
-
+							
 							//Console.WriteLine($"KEYBOARD. key={rawBuffer.data.keyboard.VKey:x}, message = {rawBuffer.data.keyboard.Message:x}, device pointer = {rawBuffer.header.hDevice}");
-														
-							if (keyUpOrDown)
+
+							if (!Program.SplitScreenManager.IsRunningInSplitScreen)
 							{
-								/**string cmd = string.Format("ControlSend, , {{vk{0:x} {1}}}, ahk_id {2:x}", VKey, keyboardMessage == (uint)KeyboardMessages.WM_KEYDOWN ? "down" : "up", hWnd);
-								//Console.WriteLine(cmd);
-
-								if (0x73 != rawBuffer.data.keyboard.VKey)//f4
+								if (keyUpOrDown)
 								{
-									/**
-									AutoHotkeyEngine ahk;
-									if (ahks.TryGetValue(rawBuffer.header.hDevice, out var ahk0))
-										ahk = ahk0;
-									else
+									if (WaitingToSetEndKey)
 									{
-										ahk = AutoHotkeyEngine.Instance;
-										ahks[rawBuffer.header.hDevice] = ahk;
-									}*
-									
-									//AHKThread.AddCommand(cmd);
-								}*/
-
-								foreach (Window window in Program.SplitScreenManager.GetWindowsForDevice(rawBuffer.header.hDevice))
-								{
-									IntPtr hWnd = window.hWnd;
-
-									//Works better than ahk (doesn't lock mouse when two keyboards are held, and works with Source games)
-									if (Options.SendNormalKeyboardInput)
-									{
-										uint scanCode = rawBuffer.data.keyboard.MakeCode;
-										ushort VKey = rawBuffer.data.keyboard.VKey;
-
-										bool keyDown = keyboardMessage == (uint)KeyboardMessages.WM_KEYDOWN;
-
-										uint code = 0x000000000000001 | (scanCode << 16);//32-bit
-										if (!keyDown) code |= 0xC0000000;//WM_KEYUP required the bit 31 and 30 to be 1
-
-										uint t = keyDown ? (uint)SendMessageTypes.WM_KEYDOWN : (uint)SendMessageTypes.WM_KEYUP;
-										SendInput.WinApi.PostMessageA(hWnd, t, (IntPtr)VKey, (UIntPtr)code);
+										endKey = rawBuffer.data.keyboard.VKey;
+										StopWaitingToSetEndKey();
 									}
 
-									//Resend raw input to application. Works for some games only
-									if (Options.SendRawKeyboardInput)
-										SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)hRawInput);
+									LastKeyboardPressed = rawBuffer.header.hDevice;
+									break;
+								}
+							}
+							else
+							{ 
+								if (keyUpOrDown && rawBuffer.data.keyboard.VKey == endKey)//End key
+								{
+									Console.WriteLine("End key pressed");
+									Program.SplitScreenManager.DeactivateSplitScreen();
+									InputDisabler.Unlock();//Just in case
+								}
+
+								if (keyUpOrDown)
+								{
+									/**string cmd = string.Format("ControlSend, , {{vk{0:x} {1}}}, ahk_id {2:x}", VKey, keyboardMessage == (uint)KeyboardMessages.WM_KEYDOWN ? "down" : "up", hWnd);
+									//Console.WriteLine(cmd);
+
+									if (0x73 != rawBuffer.data.keyboard.VKey)//f4
+									{
+										/**
+										AutoHotkeyEngine ahk;
+										if (ahks.TryGetValue(rawBuffer.header.hDevice, out var ahk0))
+											ahk = ahk0;
+										else
+										{
+											ahk = AutoHotkeyEngine.Instance;
+											ahks[rawBuffer.header.hDevice] = ahk;
+										}*
+										
+										//AHKThread.AddCommand(cmd);
+									}*/
+
+									foreach (Window window in Program.SplitScreenManager.GetWindowsForDevice(rawBuffer.header.hDevice))
+									{
+										IntPtr hWnd = window.hWnd;
+
+										//Works better than ahk (doesn't lock mouse when two keyboards are held, and works with Source games)
+										if (Options.SendNormalKeyboardInput)
+										{
+											uint scanCode = rawBuffer.data.keyboard.MakeCode;
+											ushort VKey = rawBuffer.data.keyboard.VKey;
+
+											bool keyDown = keyboardMessage == (uint)KeyboardMessages.WM_KEYDOWN;
+
+											uint code = 0x000000000000001 | (scanCode << 16);//32-bit
+											if (!keyDown) code |= 0xC0000000;//WM_KEYUP required the bit 31 and 30 to be 1
+
+											uint t = keyDown ? (uint)SendMessageTypes.WM_KEYDOWN : (uint)SendMessageTypes.WM_KEYUP;
+											SendInput.WinApi.PostMessageA(hWnd, t, (IntPtr)VKey, (UIntPtr)code);
+										}
+
+										//Resend raw input to application. Works for some games only
+										if (Options.SendRawKeyboardInput)
+											SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)hRawInput);
+									}
 								}
 							}
 

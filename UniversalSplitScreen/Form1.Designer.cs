@@ -54,6 +54,9 @@
 			this.tabPage2 = new System.Windows.Forms.TabPage();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.hooksBox = new System.Windows.Forms.GroupBox();
+			this.checkBoxHook_getForegroundWindow = new System.Windows.Forms.CheckBox();
+			this.checkBoxHook_filterCallWndProc = new System.Windows.Forms.CheckBox();
+			this.checkBoxHook_filterWindowsRawInput = new System.Windows.Forms.CheckBox();
 			this.hooksWarningLabel = new System.Windows.Forms.Label();
 			this.drawMouseCheckbox = new System.Windows.Forms.CheckBox();
 			this.drawMouseEveryXmsLabel = new System.Windows.Forms.Label();
@@ -65,9 +68,7 @@
 			this.sendNormalMouseCheckbox = new System.Windows.Forms.CheckBox();
 			this.sendRawKeyboardCheckbox = new System.Windows.Forms.CheckBox();
 			this.sendRawMouseCheckbox = new System.Windows.Forms.CheckBox();
-			this.checkBoxHook_filterWindowsRawInput = new System.Windows.Forms.CheckBox();
-			this.checkBoxHook_filterCallWndProc = new System.Windows.Forms.CheckBox();
-			this.checkBoxHook_getForegroundWindow = new System.Windows.Forms.CheckBox();
+			this.endButtonSetter = new System.Windows.Forms.Button();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -92,6 +93,7 @@
 			this.tabControl1.SelectedIndex = 0;
 			this.tabControl1.Size = new System.Drawing.Size(776, 426);
 			this.tabControl1.TabIndex = 1;
+			this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
 			// 
 			// tabPage1
 			// 
@@ -332,6 +334,7 @@
 			// panel1
 			// 
 			this.panel1.AutoScroll = true;
+			this.panel1.Controls.Add(this.endButtonSetter);
 			this.panel1.Controls.Add(this.hooksBox);
 			this.panel1.Controls.Add(this.drawMouseCheckbox);
 			this.panel1.Controls.Add(this.drawMouseEveryXmsLabel);
@@ -360,6 +363,39 @@
 			this.hooksBox.TabIndex = 10;
 			this.hooksBox.TabStop = false;
 			this.hooksBox.Text = "Hooks";
+			// 
+			// checkBoxHook_getForegroundWindow
+			// 
+			this.checkBoxHook_getForegroundWindow.AutoSize = true;
+			this.checkBoxHook_getForegroundWindow.Location = new System.Drawing.Point(9, 121);
+			this.checkBoxHook_getForegroundWindow.Name = "checkBoxHook_getForegroundWindow";
+			this.checkBoxHook_getForegroundWindow.Size = new System.Drawing.Size(165, 17);
+			this.checkBoxHook_getForegroundWindow.TabIndex = 11;
+			this.checkBoxHook_getForegroundWindow.Text = "Hook GetForegroundWindow";
+			this.checkBoxHook_getForegroundWindow.UseVisualStyleBackColor = true;
+			this.checkBoxHook_getForegroundWindow.CheckedChanged += new System.EventHandler(this.checkBoxHook_getForegroundWindow_CheckedChanged);
+			// 
+			// checkBoxHook_filterCallWndProc
+			// 
+			this.checkBoxHook_filterCallWndProc.AutoSize = true;
+			this.checkBoxHook_filterCallWndProc.Location = new System.Drawing.Point(9, 97);
+			this.checkBoxHook_filterCallWndProc.Name = "checkBoxHook_filterCallWndProc";
+			this.checkBoxHook_filterCallWndProc.Size = new System.Drawing.Size(228, 17);
+			this.checkBoxHook_filterCallWndProc.TabIndex = 10;
+			this.checkBoxHook_filterCallWndProc.Text = "Filter mouse input messages from Windows";
+			this.checkBoxHook_filterCallWndProc.UseVisualStyleBackColor = true;
+			this.checkBoxHook_filterCallWndProc.CheckedChanged += new System.EventHandler(this.checkBoxHook_filterCallWndProc_CheckedChanged);
+			// 
+			// checkBoxHook_filterWindowsRawInput
+			// 
+			this.checkBoxHook_filterWindowsRawInput.AutoSize = true;
+			this.checkBoxHook_filterWindowsRawInput.Location = new System.Drawing.Point(9, 73);
+			this.checkBoxHook_filterWindowsRawInput.Name = "checkBoxHook_filterWindowsRawInput";
+			this.checkBoxHook_filterWindowsRawInput.Size = new System.Drawing.Size(214, 17);
+			this.checkBoxHook_filterWindowsRawInput.TabIndex = 9;
+			this.checkBoxHook_filterWindowsRawInput.Text = "Filter raw input messages from Windows";
+			this.checkBoxHook_filterWindowsRawInput.UseVisualStyleBackColor = true;
+			this.checkBoxHook_filterWindowsRawInput.CheckedChanged += new System.EventHandler(this.checkBoxHook_filterWindowsRawInput_CheckedChanged);
 			// 
 			// hooksWarningLabel
 			// 
@@ -484,38 +520,15 @@
 			this.sendRawMouseCheckbox.UseVisualStyleBackColor = true;
 			this.sendRawMouseCheckbox.CheckedChanged += new System.EventHandler(this.sendRawMouseCheckbox_CheckedChanged);
 			// 
-			// checkBoxHook_filterWindowsRawInput
+			// endButtonSetter
 			// 
-			this.checkBoxHook_filterWindowsRawInput.AutoSize = true;
-			this.checkBoxHook_filterWindowsRawInput.Location = new System.Drawing.Point(9, 73);
-			this.checkBoxHook_filterWindowsRawInput.Name = "checkBoxHook_filterWindowsRawInput";
-			this.checkBoxHook_filterWindowsRawInput.Size = new System.Drawing.Size(214, 17);
-			this.checkBoxHook_filterWindowsRawInput.TabIndex = 9;
-			this.checkBoxHook_filterWindowsRawInput.Text = "Filter raw input messages from Windows";
-			this.checkBoxHook_filterWindowsRawInput.UseVisualStyleBackColor = true;
-			this.checkBoxHook_filterWindowsRawInput.CheckedChanged += new System.EventHandler(this.checkBoxHook_filterWindowsRawInput_CheckedChanged);
-			// 
-			// checkBoxHook_filterCallWndProc
-			// 
-			this.checkBoxHook_filterCallWndProc.AutoSize = true;
-			this.checkBoxHook_filterCallWndProc.Location = new System.Drawing.Point(9, 97);
-			this.checkBoxHook_filterCallWndProc.Name = "checkBoxHook_filterCallWndProc";
-			this.checkBoxHook_filterCallWndProc.Size = new System.Drawing.Size(228, 17);
-			this.checkBoxHook_filterCallWndProc.TabIndex = 10;
-			this.checkBoxHook_filterCallWndProc.Text = "Filter mouse input messages from Windows";
-			this.checkBoxHook_filterCallWndProc.UseVisualStyleBackColor = true;
-			this.checkBoxHook_filterCallWndProc.CheckedChanged += new System.EventHandler(this.checkBoxHook_filterCallWndProc_CheckedChanged);
-			// 
-			// checkBoxHook_getForegroundWindow
-			// 
-			this.checkBoxHook_getForegroundWindow.AutoSize = true;
-			this.checkBoxHook_getForegroundWindow.Location = new System.Drawing.Point(9, 121);
-			this.checkBoxHook_getForegroundWindow.Name = "checkBoxHook_getForegroundWindow";
-			this.checkBoxHook_getForegroundWindow.Size = new System.Drawing.Size(165, 17);
-			this.checkBoxHook_getForegroundWindow.TabIndex = 11;
-			this.checkBoxHook_getForegroundWindow.Text = "Hook GetForegroundWindow";
-			this.checkBoxHook_getForegroundWindow.UseVisualStyleBackColor = true;
-			this.checkBoxHook_getForegroundWindow.CheckedChanged += new System.EventHandler(this.checkBoxHook_getForegroundWindow_CheckedChanged);
+			this.endButtonSetter.Location = new System.Drawing.Point(4, 363);
+			this.endButtonSetter.Name = "endButtonSetter";
+			this.endButtonSetter.Size = new System.Drawing.Size(175, 23);
+			this.endButtonSetter.TabIndex = 11;
+			this.endButtonSetter.Text = "Stop button = End";
+			this.endButtonSetter.UseVisualStyleBackColor = true;
+			this.endButtonSetter.Click += new System.EventHandler(this.endButtonSetter_Click);
 			// 
 			// Form1
 			// 
@@ -594,5 +607,6 @@
 		private System.Windows.Forms.CheckBox checkBoxHook_filterWindowsRawInput;
 		private System.Windows.Forms.CheckBox checkBoxHook_filterCallWndProc;
 		private System.Windows.Forms.CheckBox checkBoxHook_getForegroundWindow;
+		private System.Windows.Forms.Button endButtonSetter;
 	}
 }

@@ -153,6 +153,13 @@ namespace UniversalSplitScreen
 		}
 		#endregion
 
+		#region Public methods
+		public void SetEndButtonText(string text)
+		{
+			endButtonSetter.Text = text;
+		}
+		#endregion
+
 		//TODO: when ss starts, disable the start button (and vice cersa
 
 		public void OnSplitScreenStart()
@@ -165,6 +172,19 @@ namespace UniversalSplitScreen
 		{
 			startButton.Enabled = true;
 			stopButton.Enabled = false;
+		}
+
+		private void endButtonSetter_Click(object sender, EventArgs e)
+		{
+			if (!Program.SplitScreenManager.IsRunningInSplitScreen)
+			{
+				MessageProcessor.WaitToSetEndKey();
+			}
+		}
+
+		private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			MessageProcessor.StopWaitingToSetEndKey();
 		}
 	}
 }
