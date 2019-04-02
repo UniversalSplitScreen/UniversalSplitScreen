@@ -34,7 +34,7 @@ namespace GetRawInputDataHook
 
 		public void IsInstalled(int clientPID)
 		{
-			Console.WriteLine("Injected GetRawInputDataHook into process {0}.\r\n", clientPID);
+			Console.WriteLine("Injected hook(s) into process {0}.\r\n", clientPID);
 		}
 
 		public void ReportMessage(string message)

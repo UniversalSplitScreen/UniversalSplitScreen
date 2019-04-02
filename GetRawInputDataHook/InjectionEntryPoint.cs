@@ -170,19 +170,18 @@ namespace GetRawInputDataHook
 		{
 			try
 			{
-				//USS signature is 1 << 7 or 10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
+				//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
 
-				if (Msg == 0x0200 && ((int)wParam & (1 << 7)) > 0)// || 
+				if (Msg == 0x0200 && ((int)wParam & 0b10000000) > 0)
 					return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
-				//else if ((Msg >= 0x0200 && Msg <= 0x020D) || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x00FF || Msg == 0x02A3 || Msg == 0x0006)
-				//	return IntPtr.Zero;
-				else if ((Msg >= 0x020B && Msg <= 0x020D) || Msg == 0x0200 || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x00FF || Msg == 0x02A3)// || Msg == 0x0006)
+				else if ((Msg >= 0x020B && Msg <= 0x020D) || Msg == 0x0200 || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x00FF || Msg == 0x02A3)//Other mouse events. 
 					return IntPtr.Zero;
 				else
 				{
-					if (Msg < 0x0100 && Msg > 0x0102)
-						_server.ReportMessage($"CallWindowProcW, msg = 0x{Msg:x}, wParam=0x{wParam:x}, lParam=0x{lParam:x}");
-					return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
+					if (false && Msg == 0x0006) //0x0006 is WM_ACTIVATE, which resets the mouse position for starbound [citation needed]
+ 						return CallWindowProc(lpPrevWndFunc, hWnd, Msg, (IntPtr)1, (IntPtr)0);
+					else
+						return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
 				}
 			}
 			catch(Exception e)
@@ -207,17 +206,14 @@ namespace GetRawInputDataHook
 		public void Run(EasyHook.RemoteHooking.IContext context, string channelName, bool hookRawInput, bool hookCallWndProc, bool hookGetForegroundWindow)
 		{
 			int pid = EasyHook.RemoteHooking.GetCurrentProcessId();
-			_server.Ping();
-			//_server.IsInstalled(pid);
+			_server.IsInstalled(pid);
 
 			hWnd = _server.GetGame_hWnd();
 			allowedRawInputDevice = _server.GetAllowed_hRawInput_device();
-			_server.ReportMessage($"allowed raw input device = {allowedRawInputDevice}");
-			//_server.ReportMessage($"hWnd for hook = {hWnd}");
 
 			try
 			{
-				#region off
+				#region disabled
 				/*getCursorPosHook = EasyHook.LocalHook.Create(
 						EasyHook.LocalHook.GetProcAddress("user32.dll", "GetCursorPos"),
 						new GetCursorPosDelegate(GetCursorPosHook),
@@ -250,36 +246,31 @@ namespace GetRawInputDataHook
 				//getCursorPosHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
 				#endregion
 
-				//EasyHook.LocalHook CreateHook(string InModule, string InSymbolName)
+				EasyHook.LocalHook CreateHook(string InModule, string InSymbolName, Delegate dele)
+				{
+					var x = EasyHook.LocalHook.CreateUnmanaged(
+							EasyHook.LocalHook.GetProcAddress(InModule, InSymbolName),
+							Marshal.GetFunctionPointerForDelegate(dele),
+							IntPtr.Zero);
+
+					x.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+
+					return x;
+				}
 
 				if (hookRawInput)
 				{
-					getRawInputDataHook = EasyHook.LocalHook.CreateUnmanaged(
-							EasyHook.LocalHook.GetProcAddress("user32.dll", "GetRawInputData"),
-							Marshal.GetFunctionPointerForDelegate(new GetRawInputDataDelegate(GetRawInputDataHook)),
-							IntPtr.Zero);
-
-					getRawInputDataHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+					getRawInputDataHook = CreateHook("user32.dll", "GetRawInputData", new GetRawInputDataDelegate(GetRawInputDataHook));
 				}
 
 				if (hookGetForegroundWindow)
 				{
-					getForegroundWindowHook = EasyHook.LocalHook.CreateUnmanaged(
-										EasyHook.LocalHook.GetProcAddress("user32.dll", "GetForegroundWindow"),
-										Marshal.GetFunctionPointerForDelegate(new GetForegroundWindowDelegate(GetForegroundWindowHook)),
-										IntPtr.Zero);
-
-					getForegroundWindowHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+					getForegroundWindowHook = CreateHook("user32.dll", "GetForegroundWindow", new GetForegroundWindowDelegate(GetForegroundWindowHook));
 				}
 
 				if (hookCallWndProc)
 				{
-					callWindowProcHook = EasyHook.LocalHook.CreateUnmanaged(
-										EasyHook.LocalHook.GetProcAddress("user32.dll", "CallWindowProcW"),
-										Marshal.GetFunctionPointerForDelegate(new CallWindowProcDelegate(CallWindowProcHook)),
-										IntPtr.Zero);
-
-					callWindowProcHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
+					callWindowProcHook = CreateHook("user32.dll", "CallWindowProcW", new CallWindowProcDelegate(CallWindowProcHook));
 				}
 
 				_server.ReportMessage($"Installed GetRawInputData hook on {pid}");

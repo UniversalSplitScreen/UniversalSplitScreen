@@ -22,8 +22,8 @@ namespace UniversalSplitScreen.Core
 		Dictionary<Task, CancellationTokenSource> setFocusTasks = new Dictionary<Task, CancellationTokenSource>();
 		Dictionary<Task, CancellationTokenSource> drawMouseTasks = new Dictionary<Task, CancellationTokenSource>();
 
-		IntPtr active_hWnd = new IntPtr(0);//Excludes self
-		IntPtr desktop_hWnd = new IntPtr(0);
+		IntPtr active_hWnd = IntPtr.Zero;//Excludes self
+		IntPtr desktop_hWnd = IntPtr.Zero;
 
 		WinApi.WinEventDelegate EVENT_SYSTEM_FOREGROUND_delegate = null;
 		const ushort EVENT_SYSTEM_FOREGROUND = 0x0003;//https://docs.microsoft.com/en-us/windows/desktop/WinAuto/event-constants
@@ -261,20 +261,5 @@ namespace UniversalSplitScreen.Core
 					InputDisabler.Lock();
 			}
 		}
-
-		/*private static bool IsFormActive()
-		{
-			var activatedHandle = WinApi.GetForegroundWindow();
-			if (activatedHandle == IntPtr.Zero)
-			{
-				return false;
-			}
-
-			var procId = Process.GetCurrentProcess().Id;
-			int activeProcId;
-			WinApi.GetWindowThreadProcessId(activatedHandle, out activeProcId);
-
-			return activeProcId == procId;
-		}*/
 	}
 }
