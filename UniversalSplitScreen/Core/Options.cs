@@ -1,24 +1,135 @@
-﻿namespace UniversalSplitScreen.Core
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace UniversalSplitScreen.Core
 {
-	public class Options
+	class Options
 	{
-		public bool SendRawMouseInput { get; set; } = true;
-		public bool SendRawKeyboardInput { get; set; } = false;
-		public bool SendNormalMouseInput { get; set; } = true;
-		public bool SendNormalKeyboardInput { get; set; } = true;
+		private static List<OptionsStructure> options = new List<OptionsStructure>();
+		public static OptionsStructure CurrentOptions { get; private set; } = new OptionsStructure();
 
-		public bool SendWM_ACTIVATE { get; set; } = true;
-		public bool SendWM_SETFOCUS { get; set; } = false;
+		public static void LoadOptions()
+		{
+			CurrentOptions = CurrentOptions ?? new OptionsStructure();
+			options.Add(CurrentOptions);//Default
 
-		public bool RefreshWindowBoundsOnMouseClick { get; set; } = false;
+			DirectoryInfo dInfo = new DirectoryInfo(GetConfigFolder());
 
-		public bool DrawMouse { get; set; } = true;
-		public int DrawMouseEveryXMilliseconds { get; set; } = 15;
+			foreach (var file in dInfo.GetFiles("*.json"))
+			{
+				if (ReadFromFile(file.FullName, out OptionsStructure o))
+				{
+					options.Add(o);
+					Console.WriteLine($"Loaded {file.Name} : {o.OptionsName}");
+				}
+			}
 
-		public bool Hook_FilterRawInput { get; set; } = false;
-		public bool Hook_FilterWindowsMouseInput { get; set; } = false;
-		public bool Hook_GetForegroundWindow { get; set; } = false;
+			CurrentOptions = options[0];
 
-		public ushort EndVKey { get; set; } = 0x23;
+			var comboBox = Program.Form.OptionsComboBox;
+			var array = options.ToArray();
+			comboBox.Items.AddRange(array);
+			comboBox.SelectedItem = CurrentOptions;
+		}
+		
+		public static void LoadButtonClicked()
+		{
+			CurrentOptions = (OptionsStructure)Program.Form.OptionsComboBox.SelectedItem;
+			Program.Form.SetupOptionsPage();
+		}
+
+		public static void SaveButtonClicked()
+		{
+			WriteToFile(CurrentOptions);
+		}
+
+		public static void NewButtonClicked(string name)
+		{
+			CurrentOptions = CurrentOptions.Clone();
+			CurrentOptions.OptionsName = name;
+			options.Add(CurrentOptions);
+
+			var cb = Program.Form.OptionsComboBox;
+			cb.Items.Add(CurrentOptions);
+			cb.SelectedItem = CurrentOptions;
+		}
+
+		public static void DeleteButtonClicked()
+		{
+			//TODO: add ok/cancel
+			var cb = Program.Form.OptionsComboBox;
+			var toDelete = (OptionsStructure)cb.SelectedItem;
+			DeleteFile(toDelete);
+			
+			if (cb.Items.Count > 1 && cb.Items.Contains(toDelete))
+			{
+				cb.Items.Remove(toDelete);
+				cb.SelectedItem = cb.Items[0];
+			}
+		}
+		
+		private static bool WriteToFile(OptionsStructure options)
+		{
+			try
+			{
+				string directory = GetConfigFolder();
+				Directory.CreateDirectory(directory);
+
+				using (StreamWriter file = File.CreateText(Path.Combine(directory, options.OptionsName + ".json")))
+				{
+					JsonSerializer serializer = new JsonSerializer();
+					serializer.Serialize(file, options);
+				}
+
+				return true;
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine($"Error writing options to file: {e}");
+				return false;
+			}
+		}
+		
+		private static  bool ReadFromFile(string path, out OptionsStructure options)
+		{
+			try
+			{
+				using (StreamReader file = File.OpenText(path))
+				{
+					JsonSerializer serializer = new JsonSerializer();
+					options = (OptionsStructure)serializer.Deserialize(file, typeof(OptionsStructure));
+					return true;
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine($"Error reading options from a file: {e}");
+				options = null;
+				return false;
+			}
+		}
+
+		private static bool DeleteFile(OptionsStructure options)
+		{
+			try
+			{
+				string path = Path.Combine(GetConfigFolder(), options.OptionsName + ".json");
+				Console.WriteLine($"Deleting {path}");
+				File.Delete(path);
+				return true;
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine($"Error deleting options file: {e}");
+				return false;
+			}
+		}
+
+		private static string GetConfigFolder() => Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "config");
 	}
 }

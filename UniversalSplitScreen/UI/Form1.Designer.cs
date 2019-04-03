@@ -1,4 +1,4 @@
-﻿namespace UniversalSplitScreen
+﻿namespace UniversalSplitScreen.UI
 {
 	partial class Form1
 	{
@@ -53,6 +53,7 @@
 			this.hWndLabel = new System.Windows.Forms.Label();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
 			this.panel1 = new System.Windows.Forms.Panel();
+			this.endButtonSetter = new System.Windows.Forms.Button();
 			this.hooksBox = new System.Windows.Forms.GroupBox();
 			this.checkBoxHook_getForegroundWindow = new System.Windows.Forms.CheckBox();
 			this.checkBoxHook_filterCallWndProc = new System.Windows.Forms.CheckBox();
@@ -68,7 +69,12 @@
 			this.sendNormalMouseCheckbox = new System.Windows.Forms.CheckBox();
 			this.sendRawKeyboardCheckbox = new System.Windows.Forms.CheckBox();
 			this.sendRawMouseCheckbox = new System.Windows.Forms.CheckBox();
-			this.endButtonSetter = new System.Windows.Forms.Button();
+			this.panel2 = new System.Windows.Forms.Panel();
+			this.optionsComboBox = new System.Windows.Forms.ComboBox();
+			this.buttonOptions_delete = new System.Windows.Forms.Button();
+			this.buttonOptions_save = new System.Windows.Forms.Button();
+			this.buttonOptions_load = new System.Windows.Forms.Button();
+			this.buttonOptions_New = new System.Windows.Forms.Button();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -82,6 +88,7 @@
 			this.panel1.SuspendLayout();
 			this.hooksBox.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.drawMouseEveryXmsField)).BeginInit();
+			this.panel2.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -322,6 +329,7 @@
 			// 
 			// tabPage2
 			// 
+			this.tabPage2.Controls.Add(this.panel2);
 			this.tabPage2.Controls.Add(this.panel1);
 			this.tabPage2.Location = new System.Drawing.Point(4, 22);
 			this.tabPage2.Name = "tabPage2";
@@ -346,10 +354,20 @@
 			this.panel1.Controls.Add(this.sendNormalMouseCheckbox);
 			this.panel1.Controls.Add(this.sendRawKeyboardCheckbox);
 			this.panel1.Controls.Add(this.sendRawMouseCheckbox);
-			this.panel1.Location = new System.Drawing.Point(7, 7);
+			this.panel1.Location = new System.Drawing.Point(6, 43);
 			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(755, 390);
+			this.panel1.Size = new System.Drawing.Size(755, 351);
 			this.panel1.TabIndex = 0;
+			// 
+			// endButtonSetter
+			// 
+			this.endButtonSetter.Location = new System.Drawing.Point(4, 314);
+			this.endButtonSetter.Name = "endButtonSetter";
+			this.endButtonSetter.Size = new System.Drawing.Size(175, 23);
+			this.endButtonSetter.TabIndex = 11;
+			this.endButtonSetter.Text = "Stop button = End";
+			this.endButtonSetter.UseVisualStyleBackColor = true;
+			this.endButtonSetter.Click += new System.EventHandler(this.endButtonSetter_Click);
 			// 
 			// hooksBox
 			// 
@@ -359,7 +377,7 @@
 			this.hooksBox.Controls.Add(this.hooksWarningLabel);
 			this.hooksBox.Location = new System.Drawing.Point(472, 3);
 			this.hooksBox.Name = "hooksBox";
-			this.hooksBox.Size = new System.Drawing.Size(280, 384);
+			this.hooksBox.Size = new System.Drawing.Size(280, 334);
 			this.hooksBox.TabIndex = 10;
 			this.hooksBox.TabStop = false;
 			this.hooksBox.Text = "Hooks";
@@ -520,15 +538,67 @@
 			this.sendRawMouseCheckbox.UseVisualStyleBackColor = true;
 			this.sendRawMouseCheckbox.CheckedChanged += new System.EventHandler(this.sendRawMouseCheckbox_CheckedChanged);
 			// 
-			// endButtonSetter
+			// panel2
 			// 
-			this.endButtonSetter.Location = new System.Drawing.Point(4, 363);
-			this.endButtonSetter.Name = "endButtonSetter";
-			this.endButtonSetter.Size = new System.Drawing.Size(175, 23);
-			this.endButtonSetter.TabIndex = 11;
-			this.endButtonSetter.Text = "Stop button = End";
-			this.endButtonSetter.UseVisualStyleBackColor = true;
-			this.endButtonSetter.Click += new System.EventHandler(this.endButtonSetter_Click);
+			this.panel2.Controls.Add(this.buttonOptions_New);
+			this.panel2.Controls.Add(this.buttonOptions_load);
+			this.panel2.Controls.Add(this.buttonOptions_save);
+			this.panel2.Controls.Add(this.buttonOptions_delete);
+			this.panel2.Controls.Add(this.optionsComboBox);
+			this.panel2.Location = new System.Drawing.Point(6, 7);
+			this.panel2.Name = "panel2";
+			this.panel2.Size = new System.Drawing.Size(756, 30);
+			this.panel2.TabIndex = 1;
+			// 
+			// optionsComboBox
+			// 
+			this.optionsComboBox.FormattingEnabled = true;
+			this.optionsComboBox.Location = new System.Drawing.Point(4, 4);
+			this.optionsComboBox.Name = "optionsComboBox";
+			this.optionsComboBox.Size = new System.Drawing.Size(425, 21);
+			this.optionsComboBox.TabIndex = 0;
+			this.optionsComboBox.SelectedIndexChanged += new System.EventHandler(this.optionsComboBox_SelectedIndexChanged);
+			// 
+			// buttonOptions_delete
+			// 
+			this.buttonOptions_delete.Location = new System.Drawing.Point(678, 3);
+			this.buttonOptions_delete.Name = "buttonOptions_delete";
+			this.buttonOptions_delete.Size = new System.Drawing.Size(75, 23);
+			this.buttonOptions_delete.TabIndex = 12;
+			this.buttonOptions_delete.Text = "Delete";
+			this.buttonOptions_delete.UseVisualStyleBackColor = true;
+			this.buttonOptions_delete.Click += new System.EventHandler(this.button_optionsDelete_Click);
+			// 
+			// buttonOptions_save
+			// 
+			this.buttonOptions_save.Enabled = false;
+			this.buttonOptions_save.Location = new System.Drawing.Point(597, 3);
+			this.buttonOptions_save.Name = "buttonOptions_save";
+			this.buttonOptions_save.Size = new System.Drawing.Size(75, 23);
+			this.buttonOptions_save.TabIndex = 13;
+			this.buttonOptions_save.Text = "Save";
+			this.buttonOptions_save.UseVisualStyleBackColor = true;
+			this.buttonOptions_save.Click += new System.EventHandler(this.buttonOptions_save_Click);
+			// 
+			// buttonOptions_load
+			// 
+			this.buttonOptions_load.Location = new System.Drawing.Point(516, 4);
+			this.buttonOptions_load.Name = "buttonOptions_load";
+			this.buttonOptions_load.Size = new System.Drawing.Size(75, 23);
+			this.buttonOptions_load.TabIndex = 14;
+			this.buttonOptions_load.Text = "Load";
+			this.buttonOptions_load.UseVisualStyleBackColor = true;
+			this.buttonOptions_load.Click += new System.EventHandler(this.buttonOptions_load_Click);
+			// 
+			// buttonOptions_New
+			// 
+			this.buttonOptions_New.Location = new System.Drawing.Point(435, 3);
+			this.buttonOptions_New.Name = "buttonOptions_New";
+			this.buttonOptions_New.Size = new System.Drawing.Size(75, 23);
+			this.buttonOptions_New.TabIndex = 12;
+			this.buttonOptions_New.Text = "New";
+			this.buttonOptions_New.UseVisualStyleBackColor = true;
+			this.buttonOptions_New.Click += new System.EventHandler(this.buttonOptions_New_Click);
 			// 
 			// Form1
 			// 
@@ -562,6 +632,7 @@
 			this.hooksBox.ResumeLayout(false);
 			this.hooksBox.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.drawMouseEveryXmsField)).EndInit();
+			this.panel2.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -608,5 +679,11 @@
 		private System.Windows.Forms.CheckBox checkBoxHook_filterCallWndProc;
 		private System.Windows.Forms.CheckBox checkBoxHook_getForegroundWindow;
 		private System.Windows.Forms.Button endButtonSetter;
+		private System.Windows.Forms.Panel panel2;
+		private System.Windows.Forms.Button buttonOptions_load;
+		private System.Windows.Forms.Button buttonOptions_save;
+		private System.Windows.Forms.Button buttonOptions_delete;
+		private System.Windows.Forms.ComboBox optionsComboBox;
+		private System.Windows.Forms.Button buttonOptions_New;
 	}
 }

@@ -68,7 +68,7 @@ namespace UniversalSplitScreen.Core
 				if (!deviceToWindows.ContainsKey(window.KeyboardAttached))
 					deviceToWindows[window.KeyboardAttached] = windows.Values.Where(x => x.KeyboardAttached == window.KeyboardAttached).ToArray();
 
-				if (Program.Options.SendWM_ACTIVATE || Program.Options.SendWM_SETFOCUS)
+				if (Options.CurrentOptions.SendWM_ACTIVATE || Options.CurrentOptions.SendWM_SETFOCUS)
 				{
 					CancellationTokenSource c = new CancellationTokenSource();
 					Task task = new Task(() => SetFocus(pair.Key, c.Token), c.Token);
@@ -76,7 +76,7 @@ namespace UniversalSplitScreen.Core
 					setFocusTasks.Add(task, c);
 				}
 
-				if (Program.Options.DrawMouse)
+				if (Options.CurrentOptions.DrawMouse)
 				{
 					CancellationTokenSource c = new CancellationTokenSource();
 					Task task = new Task(() => DrawMouse(hWnd, c.Token), c.Token);
@@ -85,7 +85,7 @@ namespace UniversalSplitScreen.Core
 				}
 
 				//EasyHook
-				if (Program.Options.Hook_FilterRawInput || Program.Options.Hook_FilterWindowsMouseInput || Program.Options.Hook_GetForegroundWindow)
+				if (Options.CurrentOptions.Hook_FilterRawInput || Options.CurrentOptions.Hook_FilterWindowsMouseInput || Options.CurrentOptions.Hook_GetForegroundWindow)
 				{
 					string channelName = null;
 					var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
@@ -113,9 +113,9 @@ namespace UniversalSplitScreen.Core
 							injectionLibrary_getRawInputData,   // 32-bit library to inject (if target is 32-bit)
 							injectionLibrary_getRawInputData,   // 64-bit library to inject (if target is 64-bit)
 							channelName,                            // the parameters to pass into injected library
-							Program.Options.Hook_FilterRawInput,
-							Program.Options.Hook_FilterWindowsMouseInput,
-							Program.Options.Hook_GetForegroundWindow
+							Options.CurrentOptions.Hook_FilterRawInput,
+							Options.CurrentOptions.Hook_FilterWindowsMouseInput,
+							Options.CurrentOptions.Hook_GetForegroundWindow
 						);
 
 						window.GetRawInputData_HookIPCServerChannel = serverChannel_getRawInputData;
@@ -195,10 +195,10 @@ namespace UniversalSplitScreen.Core
 			{
 				Thread.Sleep(1000);//TODO: configurable this
 
-				if (Program.Options.SendWM_ACTIVATE)
+				if (Options.CurrentOptions.SendWM_ACTIVATE)
 					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_ACTIVATE, (IntPtr)2, (IntPtr)null);//2 or 1?
 
-				if (Program.Options.SendWM_SETFOCUS)
+				if (Options.CurrentOptions.SendWM_SETFOCUS)
 					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_SETFOCUS, (IntPtr)null, (IntPtr)null);
 				
 				if (token.IsCancellationRequested)
@@ -213,7 +213,7 @@ namespace UniversalSplitScreen.Core
 
 			while (true)
 			{
-				Thread.Sleep(Program.Options.DrawMouseEveryXMilliseconds);
+				Thread.Sleep(Options.CurrentOptions.DrawMouseEveryXMilliseconds);
 
 				if (windows.TryGetValue(hWnd, out Window window))
 				{

@@ -85,6 +85,9 @@
     <Reference Include="EasyHook, Version=2.7.6789.0, Culture=neutral, PublicKeyToken=4b580fca19d0b0c5, processorArchitecture=MSIL">
       <HintPath>..\packages\EasyHook.2.7.6789\lib\net40\EasyHook.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -103,12 +106,13 @@
   <ItemGroup>
     <Compile Include="Core\IntVector2.cs" />
     <Compile Include="Core\Options.cs" />
+    <Compile Include="Core\OptionsStructure.cs" />
     <Compile Include="Core\WinApi.cs" />
     <Compile Include="Core\Window.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="UI\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
+    <Compile Include="UI\Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Core\Program.cs" />
@@ -143,6 +147,7 @@
     <Compile Include="SendInput\WinApi.cs" />
     <Compile Include="Core\SplitScreenManager.cs" />
     <Compile Include="SendInput\WM_MOUSEMOVE_wParam.cs" />
+    <Compile Include="UI\Prompt.cs" />
     <Compile Include="WindowManagement\RECT.cs" />
     <Compile Include="WindowManagement\WinApi.cs" />
   </ItemGroup>
@@ -151,7 +156,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Form1.resx">
+    <EmbeddedResource Include="UI\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>

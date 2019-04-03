@@ -52,13 +52,13 @@ namespace UniversalSplitScreen.RawInput
 		{
 			WaitingToSetEndKey = false;
 			Program.Form.SetEndButtonText($"Stop button = {System.Windows.Input.KeyInterop.KeyFromVirtualKey(endVKey)}");
-			Program.Options.EndVKey = endVKey;
+			Options.CurrentOptions.EndVKey = endVKey;
 		}
 		#endregion
 
 		public MessageProcessor()
 		{
-			endVKey = Program.Options.EndVKey;
+			endVKey = Options.CurrentOptions.EndVKey;
 		}
 
 		public void WndProc(ref Message msg)
@@ -139,7 +139,7 @@ namespace UniversalSplitScreen.RawInput
 										IntPtr hWnd = window.hWnd;
 
 										//Works better than ahk (doesn't lock mouse when two keyboards are held, and works with Source games)
-										if (Program.Options.SendNormalKeyboardInput)
+										if (Options.CurrentOptions.SendNormalKeyboardInput)
 										{
 											uint scanCode = rawBuffer.data.keyboard.MakeCode;
 											ushort VKey = rawBuffer.data.keyboard.VKey;
@@ -154,7 +154,7 @@ namespace UniversalSplitScreen.RawInput
 										}
 
 										//Resend raw input to application. Works for some games only
-										if (Program.Options.SendRawKeyboardInput)
+										if (Options.CurrentOptions.SendRawKeyboardInput)
 											SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)hRawInput);
 									}
 								}
@@ -182,7 +182,7 @@ namespace UniversalSplitScreen.RawInput
 								IntPtr hWnd = window.hWnd;
 
 								//Resend raw input to application. Works for some games only
-								if (Program.Options.SendRawMouseInput)
+								if (Options.CurrentOptions.SendRawMouseInput)
 								{
 									SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)hRawInput);//TODO: 0 or 1?
 								}
@@ -201,7 +201,7 @@ namespace UniversalSplitScreen.RawInput
 								Cursor.Position = new System.Drawing.Point(0, 0);
 								Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
 
-								if (Program.Options.SendNormalMouseInput)
+								if (Options.CurrentOptions.SendNormalMouseInput)
 								{
 									ushort mouseMoveState = 0x0000;
 									var (l, m, r, x1, x2) = window.MouseState;
@@ -233,7 +233,7 @@ namespace UniversalSplitScreen.RawInput
 												case 1:
 													state.l = isButtonDown;
 
-													if (Program.Options.RefreshWindowBoundsOnMouseClick)
+													if (Options.CurrentOptions.RefreshWindowBoundsOnMouseClick)
 														window.UpdateBounds();
 
 													break;

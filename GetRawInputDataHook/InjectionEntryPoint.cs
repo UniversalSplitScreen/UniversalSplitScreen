@@ -61,7 +61,7 @@ namespace GetRawInputDataHook
 		#endregion
 
 		#region GetCursorPos hook
-		private static EasyHook.LocalHook getCursorPosHook;
+		/*private static EasyHook.LocalHook getCursorPosHook;
 
 		[DllImport("user32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
@@ -93,7 +93,7 @@ namespace GetRawInputDataHook
 			//lpPoint = p;
 			
 			//return true;
-		}
+		}*/
 		#endregion
 
 		#region SDL MouseGetGlobalState hook
@@ -249,9 +249,9 @@ namespace GetRawInputDataHook
 				EasyHook.LocalHook CreateHook(string InModule, string InSymbolName, Delegate dele)
 				{
 					var x = EasyHook.LocalHook.CreateUnmanaged(
-							EasyHook.LocalHook.GetProcAddress(InModule, InSymbolName),
-							Marshal.GetFunctionPointerForDelegate(dele),
-							IntPtr.Zero);
+								EasyHook.LocalHook.GetProcAddress(InModule, InSymbolName),
+								Marshal.GetFunctionPointerForDelegate(dele),
+								IntPtr.Zero);
 
 					x.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
 

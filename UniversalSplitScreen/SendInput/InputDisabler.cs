@@ -32,13 +32,18 @@ namespace UniversalSplitScreen.SendInput
 
 		public static void Init()
 		{
-			initTask = Task.Run(() => //TODO: this delays the UI from responding?
+			initTask = Task.Run(() => 
 			{
 				try
 				{
+					Console.WriteLine("Initialising InputDisabler");
 					ahk = AutoHotkeyEngine.Instance;
-					ahk.ExecRaw("*RButton:: return");//The star means it will disable even with modifier keys e.g. Shift
-					ahk.ExecRaw("*LButton:: return");
+					ahk.Suspend();
+
+					//TODO: this delays the UI from responding
+
+					//The star means it will disable even with modifier keys e.g. Shift
+					
 					ahk.ExecRaw("*MButton:: return");
 					ahk.ExecRaw("*XButton1:: return");
 					ahk.ExecRaw("*XButton2:: return");
@@ -47,13 +52,16 @@ namespace UniversalSplitScreen.SendInput
 					ahk.ExecRaw("*Control:: return");
 					ahk.ExecRaw("*Alt:: return");
 					ahk.ExecRaw("*Shift:: return");//Important or shift will not function properly in game
-					
+
 					//ahk.ExecRaw("*Space:: return");//Prevents space being detected in minecraft?
 
 					/*foreach (char c in "wasd")//Prevents characters being detected in raw input
 					{
 						ahk.ExecRaw($"*{c}:: return");
 					}*/
+
+					ahk.ExecRaw("*RButton:: return");
+					ahk.ExecRaw("*LButton:: return");
 
 					ahk.Suspend();
 

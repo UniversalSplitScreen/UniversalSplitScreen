@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using UniversalSplitScreen.Core;
 using UniversalSplitScreen.RawInput;
 using UniversalSplitScreen.SendInput;
+using UniversalSplitScreen.UI;
 
 namespace UniversalSplitScreen
 {
@@ -21,7 +22,7 @@ namespace UniversalSplitScreen
 		public static IntPtr Form_hWnd { get; private set; }
 		public static SplitScreenManager SplitScreenManager { get; private set; }
 		public static MessageProcessor MessageProcessor { get; private set; }
-		public static Options Options { get; private set; }
+		public static OptionsStructure Options { get; private set; }
 
 		static void Main(string[] args)
 		{
@@ -34,14 +35,16 @@ namespace UniversalSplitScreen
 				excArgs.SetObserved();
 			};
 
-			Options = new Options();
-
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
 			Form = new Form1();
 			Form_hWnd = Form.Handle;
+			
+			Options = new OptionsStructure();
 
+			Core.Options.LoadOptions();
+			
 			SplitScreenManager = new SplitScreenManager();
 			SplitScreenManager.Init();
 

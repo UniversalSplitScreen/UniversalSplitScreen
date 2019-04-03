@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using UniversalSplitScreen.RawInput;
 using UniversalSplitScreen.SendInput;
 
-namespace UniversalSplitScreen
+namespace UniversalSplitScreen.UI
 {
 	public partial class Form1 : Form
 	{
@@ -20,6 +20,8 @@ namespace UniversalSplitScreen
 		public string WindowHandleText { get => hWndLabel.Text; set => hWndLabel.Text = value; }
 		public string MouseHandleText { get => mouseHandleLabel.Text; set => mouseHandleLabel.Text = value; }
 		public string KeyboardHandleText { get => keyboardHandleLabel.Text; set => keyboardHandleLabel.Text = value; }
+
+		public ComboBox OptionsComboBox => optionsComboBox;
 
 		public Form1()
 		{
@@ -31,17 +33,17 @@ namespace UniversalSplitScreen
 			SetupOptionsPage();
 		}
 
-		private void SetupOptionsPage()
+		public void SetupOptionsPage()
 		{
-			sendRawMouseCheckbox.Checked = Program.Options.SendRawMouseInput;
-			sendRawKeyboardCheckbox.Checked = Program.Options.SendRawKeyboardInput;
-			sendNormalMouseCheckbox.Checked = Program.Options.SendNormalMouseInput;
-			sendNormalKeyboardCheckbox.Checked = Program.Options.SendNormalKeyboardInput;
-			send_WM_ACTIVATE_checkbox.Checked = Program.Options.SendWM_ACTIVATE;
-			send_WM_FOCUS_checkbox.Checked = Program.Options.SendWM_SETFOCUS;
-			refreshWindowBoundsOnLMBCheckbox.Checked = Program.Options.RefreshWindowBoundsOnMouseClick;
-			drawMouseCheckbox.Checked = Program.Options.DrawMouse;
-			drawMouseEveryXmsField.Value = Program.Options.DrawMouseEveryXMilliseconds;
+			sendRawMouseCheckbox.Checked = Core.Options.CurrentOptions.SendRawMouseInput;
+			sendRawKeyboardCheckbox.Checked = Core.Options.CurrentOptions.SendRawKeyboardInput;
+			sendNormalMouseCheckbox.Checked = Core.Options.CurrentOptions.SendNormalMouseInput;
+			sendNormalKeyboardCheckbox.Checked = Core.Options.CurrentOptions.SendNormalKeyboardInput;
+			send_WM_ACTIVATE_checkbox.Checked = Core.Options.CurrentOptions.SendWM_ACTIVATE;
+			send_WM_FOCUS_checkbox.Checked = Core.Options.CurrentOptions.SendWM_SETFOCUS;
+			refreshWindowBoundsOnLMBCheckbox.Checked = Core.Options.CurrentOptions.RefreshWindowBoundsOnMouseClick;
+			drawMouseCheckbox.Checked = Core.Options.CurrentOptions.DrawMouse;
+			drawMouseEveryXmsField.Value = Core.Options.CurrentOptions.DrawMouseEveryXMilliseconds;
 		}
 
 		protected override void WndProc(ref Message msg)
@@ -94,62 +96,62 @@ namespace UniversalSplitScreen
 		#region Options page value change events
 		private void sendRawMouseCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Program.Options.SendRawMouseInput = sendRawMouseCheckbox.Checked;
+			Core.Options.CurrentOptions.SendRawMouseInput = sendRawMouseCheckbox.Checked;
 		}
 
 		private void sendRawKeyboardCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Program.Options.SendRawKeyboardInput = sendRawKeyboardCheckbox.Checked;
+			Core.Options.CurrentOptions.SendRawKeyboardInput = sendRawKeyboardCheckbox.Checked;
 		}
 
 		private void sendNormalMouseCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Program.Options.SendNormalMouseInput = sendNormalMouseCheckbox.Checked;
+			Core.Options.CurrentOptions.SendNormalMouseInput = sendNormalMouseCheckbox.Checked;
 		}
 
 		private void sendNormalKeyboardCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Program.Options.SendNormalKeyboardInput = sendNormalKeyboardCheckbox.Checked;
+			Core.Options.CurrentOptions.SendNormalKeyboardInput = sendNormalKeyboardCheckbox.Checked;
 		}
 
 		private void send_WM_ACTIVATE_checkbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Program.Options.SendWM_ACTIVATE = send_WM_ACTIVATE_checkbox.Checked;
+			Core.Options.CurrentOptions.SendWM_ACTIVATE = send_WM_ACTIVATE_checkbox.Checked;
 		}
 
 		private void send_WM_FOCUS_checkbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Program.Options.SendWM_SETFOCUS = send_WM_FOCUS_checkbox.Checked;
+			Core.Options.CurrentOptions.SendWM_SETFOCUS = send_WM_FOCUS_checkbox.Checked;
 		}
 
 		private void refreshWindowBoundsOnLMBCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Program.Options.RefreshWindowBoundsOnMouseClick = refreshWindowBoundsOnLMBCheckbox.Checked;
+			Core.Options.CurrentOptions.RefreshWindowBoundsOnMouseClick = refreshWindowBoundsOnLMBCheckbox.Checked;
 		}
 
 		private void drawMouseEveryXmsField_ValueChanged(object sender, EventArgs e)
 		{
-			Program.Options.DrawMouseEveryXMilliseconds = (int)drawMouseEveryXmsField.Value;
+			Core.Options.CurrentOptions.DrawMouseEveryXMilliseconds = (int)drawMouseEveryXmsField.Value;
 		}
 
 		private void drawMouseCheckbox_CheckedChanged(object sender, EventArgs e)
 		{
-			Program.Options.DrawMouse = drawMouseCheckbox.Checked;
+			Core.Options.CurrentOptions.DrawMouse = drawMouseCheckbox.Checked;
 		}
 
 		private void checkBoxHook_filterWindowsRawInput_CheckedChanged(object sender, EventArgs e)
 		{
-			Program.Options.Hook_FilterRawInput = checkBoxHook_filterWindowsRawInput.Checked;
+			Core.Options.CurrentOptions.Hook_FilterRawInput = checkBoxHook_filterWindowsRawInput.Checked;
 		}
 
 		private void checkBoxHook_filterCallWndProc_CheckedChanged(object sender, EventArgs e)
 		{
-			Program.Options.Hook_FilterWindowsMouseInput = checkBoxHook_filterCallWndProc.Checked;
+			Core.Options.CurrentOptions.Hook_FilterWindowsMouseInput = checkBoxHook_filterCallWndProc.Checked;
 		}
 
 		private void checkBoxHook_getForegroundWindow_CheckedChanged(object sender, EventArgs e)
 		{
-			Program.Options.Hook_GetForegroundWindow = checkBoxHook_getForegroundWindow.Checked;
+			Core.Options.CurrentOptions.Hook_GetForegroundWindow = checkBoxHook_getForegroundWindow.Checked;
 		}
 		#endregion
 
@@ -185,6 +187,37 @@ namespace UniversalSplitScreen
 		private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			Program.MessageProcessor.StopWaitingToSetEndKey();
+		}
+
+		private void buttonOptions_load_Click(object sender, EventArgs e)
+		{
+			Core.Options.LoadButtonClicked();
+		}
+
+		private void buttonOptions_save_Click(object sender, EventArgs e)
+		{
+			Core.Options.SaveButtonClicked();
+		}
+
+		private void button_optionsDelete_Click(object sender, EventArgs e)
+		{
+			Core.Options.DeleteButtonClicked();
+		}
+
+		private void optionsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			bool b = optionsComboBox.SelectedItem?.ToString() != "Default";
+			buttonOptions_delete.Enabled = b;
+			buttonOptions_save.Enabled = b;
+		}
+
+		private void buttonOptions_New_Click(object sender, EventArgs e)
+		{
+			string name = Prompt.ShowDialog("Enter preset name");
+			if (!string.IsNullOrWhiteSpace(name))
+			{
+				Core.Options.NewButtonClicked(name);
+			}
 		}
 	}
 }
