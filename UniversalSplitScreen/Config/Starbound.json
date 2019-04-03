@@ -1,0 +1,16 @@
+{
+	"OptionsName": "Starbound",
+	"SendRawMouseInput": false,
+	"SendRawKeyboardInput": false,
+	"SendNormalMouseInput": true,
+	"SendNormalKeyboardInput": true,
+	"SendWM_ACTIVATE": false,
+	"SendWM_SETFOCUS": false,
+	"RefreshWindowBoundsOnMouseClick": false,
+	"DrawMouse": false,
+	"DrawMouseEveryXMilliseconds": 15,
+	"Hook_FilterRawInput": false,
+	"Hook_FilterWindowsMouseInput": true,
+	"Hook_GetForegroundWindow": false,
+	"EndVKey": 35
+}

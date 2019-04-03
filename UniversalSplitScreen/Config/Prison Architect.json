@@ -1,0 +1,16 @@
+{
+	"OptionsName": "Prison Architect",
+	"SendRawMouseInput": false,
+	"SendRawKeyboardInput": false,
+	"SendNormalMouseInput": true,
+	"SendNormalKeyboardInput": true,
+	"SendWM_ACTIVATE": false,
+	"SendWM_SETFOCUS": false,
+	"RefreshWindowBoundsOnMouseClick": false,
+	"DrawMouse": true,
+	"DrawMouseEveryXMilliseconds": 0,
+	"Hook_FilterRawInput": false,
+	"Hook_FilterWindowsMouseInput": false,
+	"Hook_GetForegroundWindow": false,
+	"EndVKey": 35
+}

@@ -55,19 +55,29 @@ namespace UniversalSplitScreen.Core
 			Intercept.IsOn = true;
 			deviceToWindows.Clear();
 
+			//Check if windows still exist
+			for (int i = 0; i < windows.Count; i++)
+			{
+				IntPtr hWnd = windows.ElementAt(i).Key;
+				if (!WinApi.IsWindow(hWnd))
+					windows.Remove(hWnd);
+			}
+
 			foreach (var pair in windows)
 			{
 				IntPtr hWnd = pair.Key;
 				Window window = pair.Value;
 
 				Console.WriteLine($"hWnd={hWnd}, mouse={window.MouseAttached}, kb={window.KeyboardAttached}");
-				
+
+				//Initialise deviceToWindows
 				if (!deviceToWindows.ContainsKey(window.MouseAttached))
 					deviceToWindows[window.MouseAttached] = windows.Values.Where(x => x.MouseAttached == window.MouseAttached).ToArray();
 
 				if (!deviceToWindows.ContainsKey(window.KeyboardAttached))
 					deviceToWindows[window.KeyboardAttached] = windows.Values.Where(x => x.KeyboardAttached == window.KeyboardAttached).ToArray();
 
+				//WM_ACTIVATE/WM_SETFOCUS tasks
 				if (Options.CurrentOptions.SendWM_ACTIVATE || Options.CurrentOptions.SendWM_SETFOCUS)
 				{
 					CancellationTokenSource c = new CancellationTokenSource();
@@ -76,6 +86,7 @@ namespace UniversalSplitScreen.Core
 					setFocusTasks.Add(task, c);
 				}
 
+				//Draw mouse tasks
 				if (Options.CurrentOptions.DrawMouse)
 				{
 					CancellationTokenSource c = new CancellationTokenSource();
@@ -227,9 +238,11 @@ namespace UniversalSplitScreen.Core
 						{
 							Cursors.Default.Draw(g, new System.Drawing.Rectangle(new System.Drawing.Point(x, y), Cursors.Default.Size));
 						}
-						catch (Exception)
+						catch (Exception e)
 						{
-
+							Console.WriteLine($"Exception while drawing mouse. (Checking if window still exists): {e}");
+							if (!WinApi.IsWindow(hWnd))
+								windows.Remove(hWnd);
 						}
 					}
 				}

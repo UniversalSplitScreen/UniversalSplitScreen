@@ -38,7 +38,7 @@ namespace UniversalSplitScreen.RawInput
 		};
 
 		#region End key
-		private ushort endVKey = 0x23;//End
+		private ushort endVKey = 0x23;//End. 0x23 = 35
 		private bool WaitingToSetEndKey = false;
 
 
