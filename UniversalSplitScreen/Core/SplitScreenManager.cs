@@ -15,8 +15,6 @@ namespace UniversalSplitScreen.Core
 {
 	class SplitScreenManager
 	{
-		//public GetRawInputDataHook.ServerInterface GetRawInputDataHookServer;
-
 		public bool IsRunningInSplitScreen { get; private set; } = false;
 
 		Dictionary<Task, CancellationTokenSource> setFocusTasks = new Dictionary<Task, CancellationTokenSource>();
@@ -123,7 +121,7 @@ namespace UniversalSplitScreen.Core
 							window.pid,                         // ID of process to inject into
 							injectionLibrary_getRawInputData,   // 32-bit library to inject (if target is 32-bit)
 							injectionLibrary_getRawInputData,   // 64-bit library to inject (if target is 64-bit)
-							channelName,                            // the parameters to pass into injected library
+							channelName,                        // the parameters to pass into injected library
 							Options.CurrentOptions.Hook_FilterRawInput,
 							Options.CurrentOptions.Hook_FilterWindowsMouseInput,
 							Options.CurrentOptions.Hook_GetForegroundWindow

@@ -174,7 +174,9 @@ namespace GetRawInputDataHook
 
 				if (Msg == 0x0200 && ((int)wParam & 0b10000000) > 0)
 					return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
-				else if ((Msg >= 0x020B && Msg <= 0x020D) || Msg == 0x0200 || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x00FF || Msg == 0x02A3)//Other mouse events. 
+
+				// || Msg == 0x00FF
+				else if ((Msg >= 0x020B && Msg <= 0x020D) || Msg == 0x0200 || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x02A3)//Other mouse events. 
 					return IntPtr.Zero;
 				else
 				{
@@ -210,6 +212,7 @@ namespace GetRawInputDataHook
 
 			hWnd = _server.GetGame_hWnd();
 			allowedRawInputDevice = _server.GetAllowed_hDevice();
+			_server.ReportMessage($"InjectionEntryPoint: hWnd={hWnd}, rid={allowedRawInputDevice}");
 
 			try
 			{
@@ -261,19 +264,20 @@ namespace GetRawInputDataHook
 				if (hookRawInput)
 				{
 					getRawInputDataHook = CreateHook("user32.dll", "GetRawInputData", new GetRawInputDataDelegate(GetRawInputDataHook));
+					_server.ReportMessage($"Hooked GetRawInputData on {pid}");
 				}
 
 				if (hookGetForegroundWindow)
 				{
 					getForegroundWindowHook = CreateHook("user32.dll", "GetForegroundWindow", new GetForegroundWindowDelegate(GetForegroundWindowHook));
+					_server.ReportMessage($"Hooked GetForegroundWindow on {pid}");
 				}
 
 				if (hookCallWndProc)
 				{
 					callWindowProcHook = CreateHook("user32.dll", "CallWindowProcW", new CallWindowProcDelegate(CallWindowProcHook));
+					_server.ReportMessage($"Hooked CallWindowProcW on on {pid}");
 				}
-
-				_server.ReportMessage($"Installed GetRawInputData hook on {pid}");
 			}
 			catch(Exception e)
 			{

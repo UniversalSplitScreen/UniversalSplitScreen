@@ -13,6 +13,8 @@ namespace UniversalSplitScreen.RawInput
 {
 	class MessageProcessor
 	{
+		
+
 		/// <summary>
 		/// Only updated when split screen is deactivated
 		/// </summary>
@@ -177,8 +179,10 @@ namespace UniversalSplitScreen.RawInput
 								break; 
 							}
 
-							foreach (Window window in Program.SplitScreenManager.GetWindowsForDevice(mouseHandle))
+							var windows = Program.SplitScreenManager.GetWindowsForDevice(mouseHandle);
+							for (int windowI = 0; windowI < windows.Length; windowI++)
 							{
+								Window window = windows[windowI];
 								IntPtr hWnd = window.hWnd;
 
 								//Resend raw input to application. Works for some games only
@@ -198,8 +202,8 @@ namespace UniversalSplitScreen.RawInput
 
 								//TODO: move away to reduce lag?
 								//TODO: BL2 menus work when cursor isn't clipped (it uses the os mouse pointer though)
-								Cursor.Position = new System.Drawing.Point(0, 0);
-								Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
+								//Cursor.Position = new System.Drawing.Point(0, 0);
+								//Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
 
 								if (Options.CurrentOptions.SendNormalMouseInput)
 								{
@@ -210,7 +214,7 @@ namespace UniversalSplitScreen.RawInput
 									if (r) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_RBUTTON;
 									if (x1) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_XBUTTON1;
 									if (x2) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_XBUTTON2;
-									mouseMoveState |= 1 << 7;//Signature for USS 
+									mouseMoveState |= 0b10000000;//Signature for USS 
 									SendInput.WinApi.PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEMOVE, (IntPtr)mouseMoveState, (IntPtr)packedXY);
 									//SendInput.WinApi.PostMessageA(hWnd, (uint)MouseInputNotifications.WM_NCMOUSEMOVE, (IntPtr)0x0000, (IntPtr)packedXY);
 								}

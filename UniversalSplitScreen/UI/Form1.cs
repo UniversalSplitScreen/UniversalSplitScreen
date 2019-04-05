@@ -44,6 +44,10 @@ namespace UniversalSplitScreen.UI
 			refreshWindowBoundsOnLMBCheckbox.Checked = Core.Options.CurrentOptions.RefreshWindowBoundsOnMouseClick;
 			drawMouseCheckbox.Checked = Core.Options.CurrentOptions.DrawMouse;
 			drawMouseEveryXmsField.Value = Core.Options.CurrentOptions.DrawMouseEveryXMilliseconds;
+
+			checkBoxHook_filterCallWndProc.Checked = Core.Options.CurrentOptions.Hook_FilterWindowsMouseInput;
+			checkBoxHook_filterWindowsRawInput.Checked = Core.Options.CurrentOptions.Hook_FilterRawInput;
+			checkBoxHook_getForegroundWindow.Checked = Core.Options.CurrentOptions.Hook_GetForegroundWindow;
 		}
 
 		protected override void WndProc(ref Message msg)
