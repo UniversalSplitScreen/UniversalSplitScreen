@@ -148,11 +148,29 @@ namespace UniversalSplitScreen.RawInput
 
 											bool keyDown = keyboardMessage == (uint)KeyboardMessages.WM_KEYDOWN;
 
-											uint code = 0x000000000000001 | (scanCode << 16);//32-bit
-											if (!keyDown) code |= 0xC0000000;//WM_KEYUP required the bit 31 and 30 to be 1
+											//uint code = 0x000000000000001 | (scanCode << 16);//32-bit
+											uint code = (scanCode << 16);//32-bit
 
-											uint t = keyDown ? (uint)SendMessageTypes.WM_KEYDOWN : (uint)SendMessageTypes.WM_KEYUP;
-											SendInput.WinApi.PostMessageA(hWnd, t, (IntPtr)VKey, (UIntPtr)code);
+											var keysDown = window.keysDown;
+
+											if (keyDown)
+											{
+												//bit 30 : The previous key state. The value is 1 if the key is down before the message is sent, or it is zero if the key is up.
+												if (keysDown.TryGetValue(VKey, out bool wasDown) && wasDown)
+												{
+													code |= 0x40000000;
+												}
+											}
+											else
+											{
+												code |= 0xC0000000;//WM_KEYUP required the bit 31 and 30 to be 1
+												code |= 0x000000000000001;
+											}
+
+											keysDown[VKey] = keyDown;
+
+											//uint t = keyDown ? (uint)SendMessageTypes.WM_KEYDOWN : (uint)SendMessageTypes.WM_KEYUP;
+											SendInput.WinApi.PostMessageA(hWnd, keyboardMessage, (IntPtr)VKey, (UIntPtr)code);
 										}
 
 										//Resend raw input to application. Works for some games only

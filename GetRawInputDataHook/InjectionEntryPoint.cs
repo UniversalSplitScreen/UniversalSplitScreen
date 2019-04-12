@@ -256,6 +256,11 @@ namespace GetRawInputDataHook
 								Marshal.GetFunctionPointerForDelegate(dele),
 								IntPtr.Zero);
 
+					/*var x = EasyHook.LocalHook.Create(
+								EasyHook.LocalHook.GetProcAddress(InModule, InSymbolName),
+								dele,
+								this);*/
+
 					x.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
 
 					return x;

@@ -169,7 +169,9 @@ namespace UniversalSplitScreen.Core
 
 		public void SetMousePointer(IntPtr mouse)
 		{
-			if (!windows.ContainsKey(active_hWnd)) windows[active_hWnd] = new Window(active_hWnd);
+			if (!windows.ContainsKey(active_hWnd))
+				windows[active_hWnd] = new Window(active_hWnd);
+
 			windows[active_hWnd].MouseAttached = mouse;
 
 			Program.Form.MouseHandleText = mouse.ToString();
