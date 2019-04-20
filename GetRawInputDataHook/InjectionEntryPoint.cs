@@ -29,34 +29,57 @@ namespace GetRawInputDataHook
 		[DllImport("user32.dll")]
 		public static extern uint GetRawInputData(IntPtr hRawInput, DataCommand uiCommand, out RAWINPUT pData, ref uint pcbSize, int cbSizeHeader);
 
+		//https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-registerrawinputdevices
+		[DllImport("User32.dll")]
+		public static extern bool RegisterRawInputDevices(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize);
+
+		int x = 0;
 		public uint GetRawInputDataHook(IntPtr hRawInput, DataCommand uiCommand, out RAWINPUT pData, ref uint pcbSize, int cbSizeHeader)
 		{
 			//TODO: remove try catch to improve performance?
-			try
+
+			if (x < 15)
 			{
-
-				#region Works in BL2, not GMod
-				//run the function, check if it is the allowed device, then pass through or not
-				GetRawInputData(hRawInput, uiCommand, out RAWINPUT ri, ref pcbSize, cbSizeHeader);
-
-				if (ri.header.hDevice == allowedRawInputDevice)
+				try
 				{
-					return GetRawInputData(hRawInput, uiCommand, out pData, ref pcbSize, cbSizeHeader);
-				}
-				else
-				{
-					GetRawInputData(hRawInput, uiCommand, out pData, ref pcbSize, cbSizeHeader);
-					return 0xFFFFFFFF;//Gmod/source ignores this error message
-				}
-				#endregion
+					RAWINPUTDEVICE[] rid = new RAWINPUTDEVICE[1];
 
-				//TODO: for gmod, do pData = default(RAWINPUT) when ignoring a message. (Crashes BL2)
+					//Mouse
+					rid[0].usUsagePage = 0x01;
+					rid[0].usUsage = 0x02;
+					rid[0].dwFlags = (uint)0x00000001;
+					rid[0].hwndTarget = (IntPtr)null;
+					//rid[0].hwndTarget = hWnd;
+
+					bool success = RegisterRawInputDevices(rid, (uint)rid.Length, (uint)Marshal.SizeOf(rid[0]));
+					_server.ReportMessage($"unregister success = {success}");
+					x++;
+				}
+				catch (Exception e)
+				{
+					_server.ReportMessage($"unregister error = {e}");
+				}
 			}
-			catch(Exception e)
+
+			ReleaseGetRawInputDataHook();
+			return GetRawInputData(hRawInput, uiCommand, out pData, ref pcbSize, cbSizeHeader);//TODO: REMOVE?
+
+			#region Works in BL2, not GMod
+			//run the function, check if it is the allowed device, then pass through or not
+			GetRawInputData(hRawInput, uiCommand, out RAWINPUT ri, ref pcbSize, cbSizeHeader);
+			
+			if (ri.header.hDevice == allowedRawInputDevice)
 			{
-				_server.ReportMessage($"error in GetRawInputDataHook: {e.ToString()}");
 				return GetRawInputData(hRawInput, uiCommand, out pData, ref pcbSize, cbSizeHeader);
 			}
+			else
+			{
+				GetRawInputData(hRawInput, uiCommand, out pData, ref pcbSize, cbSizeHeader);
+				return 0xFFFFFFFF;//Gmod/source ignores this error message
+			}
+			#endregion
+
+			//TODO: for gmod, do pData = default(RAWINPUT) when ignoring a message. (Crashes BL2)
 		}
 		#endregion
 
@@ -139,15 +162,7 @@ namespace GetRawInputDataHook
 
 		public IntPtr GetForegroundWindowHook()
 		{
-			try
-			{
-				return hWnd;
-			}
-			catch (Exception)
-			{
-				_server.ReportMessage("Error in GetForegroundWindowHook");
-				return GetForegroundWindow();
-			}
+			return hWnd;
 		}
 
 		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
@@ -308,11 +323,17 @@ namespace GetRawInputDataHook
 			ReleaseHooks();
 		}
 
-		private void ReleaseHooks()
+		private void ReleaseGetRawInputDataHook()
 		{
 			_server.ReportMessage("Releasing GetRawInputData hook");
-
 			getRawInputDataHook?.Dispose();
+		}
+
+		private void ReleaseHooks()
+		{
+			_server.ReportMessage("Releasing hooks");
+
+			ReleaseGetRawInputDataHook();
 			//getCursorPosHook?.Dispose();
 			//sdlMouseGetGlobalStateHook?.Dispose();
 			getForegroundWindowHook?.Dispose();

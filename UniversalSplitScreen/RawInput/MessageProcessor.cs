@@ -206,7 +206,7 @@ namespace UniversalSplitScreen.RawInput
 								//Resend raw input to application. Works for some games only
 								if (Options.CurrentOptions.SendRawMouseInput)
 								{
-									SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)hRawInput);//TODO: 0 or 1?
+									SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0000, (IntPtr)hRawInput);//TODO: 0 or 1?
 								}
 
 								IntVector2 mouseVec = window.MousePosition;
