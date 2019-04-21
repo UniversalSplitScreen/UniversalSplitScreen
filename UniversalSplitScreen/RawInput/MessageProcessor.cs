@@ -206,7 +206,8 @@ namespace UniversalSplitScreen.RawInput
 								//Resend raw input to application. Works for some games only
 								if (Options.CurrentOptions.SendRawMouseInput)
 								{
-									SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0000, (IntPtr)hRawInput);//TODO: 0 or 1?
+									SendInput.WinApi.PostMessageA(window.borderlands2_DIEmWin_hWnd == IntPtr.Zero ? hWnd : window.borderlands2_DIEmWin_hWnd, 
+										(uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0000, hRawInput);
 								}
 
 								IntVector2 mouseVec = window.MousePosition;
@@ -220,8 +221,8 @@ namespace UniversalSplitScreen.RawInput
 
 								//TODO: move away to reduce lag?
 								//TODO: BL2 menus work when cursor isn't clipped (it uses the os mouse pointer though)
-								//Cursor.Position = new System.Drawing.Point(0, 0);
-								//Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
+								Cursor.Position = new System.Drawing.Point(0, 0);
+								Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
 
 								if (Options.CurrentOptions.SendNormalMouseInput)
 								{

@@ -41,5 +41,10 @@ namespace UniversalSplitScreen.Core
 
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern bool IsWindow(IntPtr hWnd);
+
+
+		public delegate int EnumWindowsProc(IntPtr hwnd, int lParam);
+		[DllImport("user32.Dll")]
+		public static extern int EnumWindows(EnumWindowsProc x, int y);
 	}
 }

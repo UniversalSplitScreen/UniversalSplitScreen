@@ -120,5 +120,14 @@ namespace UniversalSplitScreen.SendInput
 
 		[DllImport("user32.dll")]
 		public static extern bool BlockInput(bool fBlockIt);
+
+
+
+		[return: MarshalAs(UnmanagedType.Bool)]
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool PostThreadMessage(uint idThread, uint Msg, UIntPtr wParam, IntPtr lParam);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 	}
 }

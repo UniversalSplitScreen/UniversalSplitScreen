@@ -29,10 +29,6 @@ namespace GetRawInputDataHook
 		[DllImport("user32.dll")]
 		public static extern uint GetRawInputData(IntPtr hRawInput, DataCommand uiCommand, out RAWINPUT pData, ref uint pcbSize, int cbSizeHeader);
 
-		//https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-registerrawinputdevices
-		[DllImport("User32.dll")]
-		public static extern bool RegisterRawInputDevices(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize);
-
 		int x = 0;
 		public uint GetRawInputDataHook(IntPtr hRawInput, DataCommand uiCommand, out RAWINPUT pData, ref uint pcbSize, int cbSizeHeader)
 		{
@@ -186,7 +182,6 @@ namespace GetRawInputDataHook
 			try
 			{
 				//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
-
 				if (Msg == 0x0200 && ((int)wParam & 0b10000000) > 0)
 					return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
 
@@ -208,6 +203,56 @@ namespace GetRawInputDataHook
 			}
 		}
 
+		#endregion
+
+		#region RegisterRawInputDevices hook
+		//TODO: MAKE CONFIGURABLE
+
+		private static EasyHook.LocalHook registerRawInputDevicesHook;
+
+		//https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-registerrawinputdevices
+		[DllImport("User32.dll")]
+		public static extern bool RegisterRawInputDevices(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize);
+
+		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+		delegate bool RegisterRawInputDevicesDelegate(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize);
+
+		public bool RegisterRawInputDevicesHook(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize)
+		{
+			return true;//Pretend it succeeded
+		}
+		#endregion
+
+		#region GetFocus hook
+		private static EasyHook.LocalHook getFocusHook;
+
+		//https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getfocus
+		[DllImport("User32.dll")]
+		public static extern IntPtr GetFocus();
+
+		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+		delegate IntPtr GetFocusDelegate();
+		
+		public IntPtr GetFocusHook()
+		{
+			return hWnd;
+		}
+		#endregion
+
+		#region GetActiveWindow hook
+		private static EasyHook.LocalHook getActiveWindowHook;
+
+		//https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getactivewindow
+		[DllImport("User32.dll")]
+		public static extern IntPtr GetActiveWindow();
+
+		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+		delegate IntPtr GetActiveWindowDelegate();
+		
+		public IntPtr GetActiveWindowHook()
+		{
+			return hWnd;
+		}
 		#endregion
 
 		ServerInterface _server = null;
@@ -284,12 +329,20 @@ namespace GetRawInputDataHook
 				if (hookRawInput)
 				{
 					getRawInputDataHook = CreateHook("user32.dll", "GetRawInputData", new GetRawInputDataDelegate(GetRawInputDataHook));
-					_server.ReportMessage($"Hooked GetRawInputData on {pid}");
+					registerRawInputDevicesHook = CreateHook("user32.dll", "RegisterRawInputDevices", new RegisterRawInputDevicesDelegate(RegisterRawInputDevicesHook));
+
+					_server.ReportMessage($"Hooked GetRawInputData and RegisterRawInputDevices on {pid}");
 				}
 
 				if (hookGetForegroundWindow)
 				{
 					getForegroundWindowHook = CreateHook("user32.dll", "GetForegroundWindow", new GetForegroundWindowDelegate(GetForegroundWindowHook));
+
+					//TODO: allow these to be activated in their own separate options checkbox
+					//getFocusHook = CreateHook("user32.dll", "GetFocus", new GetFocusDelegate(GetFocusHook));
+					//getActiveWindowHook = CreateHook("user32.dll", "GetActiveWindow", new GetActiveWindowDelegate(GetActiveWindowHook));
+
+
 					_server.ReportMessage($"Hooked GetForegroundWindow on {pid}");
 				}
 
@@ -338,6 +391,8 @@ namespace GetRawInputDataHook
 			//sdlMouseGetGlobalStateHook?.Dispose();
 			getForegroundWindowHook?.Dispose();
 			callWindowProcHook?.Dispose();
+			getActiveWindowHook?.Dispose();
+			getFocusHook?.Dispose();
 
 			EasyHook.LocalHook.Release();
 		}

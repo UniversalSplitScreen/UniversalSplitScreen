@@ -75,6 +75,29 @@ namespace UniversalSplitScreen.Core
 				if (!deviceToWindows.ContainsKey(window.KeyboardAttached))
 					deviceToWindows[window.KeyboardAttached] = windows.Values.Where(x => x.KeyboardAttached == window.KeyboardAttached).ToArray();
 
+				//Borderlands 2 requriest WM_INPUT to be sent to a window named DIEmWin, not the main hWnd.
+				foreach (ProcessThread thread in Process.GetProcessById(window.pid).Threads)
+				{
+					int WindowEnum(IntPtr _hWnd, int lParam)
+					{
+						int threadID = WinApi.GetWindowThreadProcessId(_hWnd, out int pid);
+						if (threadID == lParam)
+						{
+							string windowText = WinApi.GetWindowText(_hWnd);
+							Console.WriteLine($" - thread id=0x{threadID:x}, _hWnd=0x{_hWnd:x}, window text={windowText}");
+
+							if (windowText.ToLower().Contains("DIEmWin".ToLower()))//TODO: make configurable
+							{
+								window.borderlands2_DIEmWin_hWnd = _hWnd;
+							}
+						}
+
+						return 1;
+					}
+
+					WinApi.EnumWindows(WindowEnum, thread.Id);
+				}
+
 				//WM_ACTIVATE/WM_SETFOCUS tasks
 				if (Options.CurrentOptions.SendWM_ACTIVATE || Options.CurrentOptions.SendWM_SETFOCUS)
 				{
