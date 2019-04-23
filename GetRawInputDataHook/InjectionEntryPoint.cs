@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -47,13 +49,13 @@ namespace GetRawInputDataHook
 					rid[0].hwndTarget = (IntPtr)null;
 					//rid[0].hwndTarget = hWnd;
 
-					bool success = RegisterRawInputDevices(rid, (uint)rid.Length, (uint)Marshal.SizeOf(rid[0]));
-					_server.ReportMessage($"unregister success = {success}");
+					bool success = RegisterRawInputDevices(rid, (uint)rid.Length, (uint)Marshal.SizeOf(rid[0]));//TODO: UNREGISTER RAW KEYBOARD???? (for bl2)
+					ReportMessage($"unregister success = {success}");
 					x++;
 				}
 				catch (Exception e)
 				{
-					_server.ReportMessage($"unregister error = {e}");
+					ReportMessage($"unregister error = {e}");
 				}
 			}
 
@@ -63,7 +65,7 @@ namespace GetRawInputDataHook
 			#region Works in BL2, not GMod
 			//run the function, check if it is the allowed device, then pass through or not
 			GetRawInputData(hRawInput, uiCommand, out RAWINPUT ri, ref pcbSize, cbSizeHeader);
-			
+
 			if (ri.header.hDevice == allowedRawInputDevice)
 			{
 				return GetRawInputData(hRawInput, uiCommand, out pData, ref pcbSize, cbSizeHeader);
@@ -80,39 +82,33 @@ namespace GetRawInputDataHook
 		#endregion
 
 		#region GetCursorPos hook
-		/*private static EasyHook.LocalHook getCursorPosHook;
-
+		private static EasyHook.LocalHook getCursorPosHook;
+		
 		[DllImport("user32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool GetCursorPos(out POINT lpPoint);
+		public static extern bool GetCursorPos(out POINT lpPoint);
 
-		[DllImport("user32.dll", SetLastError = true)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool GetCursorPos([Out] IntPtr lpPoint);
+		[DllImport("user32.dll")]
+		public static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
 
 		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
-		delegate bool GetCursorPosDelegate(out IntPtr lpPoint);
-
-		public bool GetCursorPosHook(out IntPtr lpPoint)
+		public delegate bool GetCursorPosDelegate(out POINT lpPoint);
+		
+		public bool GetCursorPosHook(out POINT lpPoint)
 		{
-			_server.ReportMessage("GetCursorPos called");
-			//GetCursorPos(out lpPoint);
+			_server.GetCursorPosition(out int x, out int y);
+
 			POINT p = new POINT();
-			IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(POINT)));
-			Marshal.StructureToPtr(p, ptr, false);
+			p.x = x;
+			p.y = y;
 
-			lpPoint = ptr;
+			ClientToScreen(hWnd, ref p);
 
-			return false;
-			//return GetCursorPos(out lpPoint);
-			//POINT p = new POINT();
-			//p.x = 200;
-			//p.y = 200;
+			lpPoint = p;
 
-			//lpPoint = p;
-			
-			//return true;
-		}*/
+			return true;
+		}
+	
 		#endregion
 
 		#region SDL MouseGetGlobalState hook
@@ -136,7 +132,7 @@ namespace GetRawInputDataHook
 
 		public UInt32 SdlGetGlobalMouseStateHook(out int x, out int y)
 		{
-			_server.ReportMessage("SDL get mouse state called");
+			ReportMessage("SDL get mouse state called");
 			x = 250;
 			y = 250;
 			return 0;
@@ -144,7 +140,7 @@ namespace GetRawInputDataHook
 
 		public IntPtr SdlGetMouseHook()
 		{
-			_server.ReportMessage("SDL get mouse called");
+			ReportMessage("SDL get mouse called");
 			return IntPtr.Zero;
 		}*/
 		#endregion
@@ -198,7 +194,7 @@ namespace GetRawInputDataHook
 			}
 			catch(Exception e)
 			{
-				_server.ReportMessage($"Error in CallWindowProcHook: {e.ToString()}");
+				ReportMessage($"Error in CallWindowProcHook: {e.ToString()}");
 				return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
 			}
 		}
@@ -272,8 +268,8 @@ namespace GetRawInputDataHook
 
 			hWnd = _server.GetGame_hWnd();
 			allowedRawInputDevice = _server.GetAllowed_hDevice();
-			_server.ReportMessage($"InjectionEntryPoint: hWnd={hWnd}, rid={allowedRawInputDevice}");
-
+			ReportMessage($"InjectionEntryPoint: hWnd={hWnd}, rid={allowedRawInputDevice}");
+			
 			try
 			{
 				#region disabled
@@ -289,10 +285,10 @@ namespace GetRawInputDataHook
 				//string sdlPath = @"G:\SteamGames2\steamapps\common\Starbound\win64\SDL2.dll";
 
 				//IntPtr SDLPtr = LoadLibraryW(sdlPath);
-				//_server.ReportMessage($"SDL ptr = {SDLPtr}");
+				//ReportMessage($"SDL ptr = {SDLPtr}");
 
 				IntPtr procAddr = EasyHook.LocalHook.GetProcAddress("SDL2.dll", "SDL_GetGlobalMouseState");
-				_server.ReportMessage($"SDL proc addr = {procAddr}");
+				ReportMessage($"SDL proc addr = {procAddr}");
 
 				sdlMouseGetGlobalStateHook = EasyHook.LocalHook.Create(
 						procAddr,
@@ -311,27 +307,34 @@ namespace GetRawInputDataHook
 
 				EasyHook.LocalHook CreateHook(string InModule, string InSymbolName, Delegate dele)
 				{
-					var x = EasyHook.LocalHook.CreateUnmanaged(
+					//TODO: make checkbox for Create/CreateUnmanaged (CreateUnmanaged crashes XNA games)
+					/*var x = EasyHook.LocalHook.CreateUnmanaged(
 								EasyHook.LocalHook.GetProcAddress(InModule, InSymbolName),
 								Marshal.GetFunctionPointerForDelegate(dele),
-								IntPtr.Zero);
+								IntPtr.Zero);*/
 
-					/*var x = EasyHook.LocalHook.Create(
+					var x = EasyHook.LocalHook.Create(
 								EasyHook.LocalHook.GetProcAddress(InModule, InSymbolName),
 								dele,
-								this);*/
+								this);
 
 					x.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
 
 					return x;
 				}
 
+				
+				getCursorPosHook = CreateHook("user32.dll", "GetCursorPos", new GetCursorPosDelegate(GetCursorPosHook));
+				
+
+				ReportMessage($"Hooked GetCursorPos on {pid}");
+
 				if (hookRawInput)
 				{
 					getRawInputDataHook = CreateHook("user32.dll", "GetRawInputData", new GetRawInputDataDelegate(GetRawInputDataHook));
 					registerRawInputDevicesHook = CreateHook("user32.dll", "RegisterRawInputDevices", new RegisterRawInputDevicesDelegate(RegisterRawInputDevicesHook));
 
-					_server.ReportMessage($"Hooked GetRawInputData and RegisterRawInputDevices on {pid}");
+					ReportMessage($"Hooked GetRawInputData and RegisterRawInputDevices on {pid}");
 				}
 
 				if (hookGetForegroundWindow)
@@ -343,19 +346,21 @@ namespace GetRawInputDataHook
 					//getActiveWindowHook = CreateHook("user32.dll", "GetActiveWindow", new GetActiveWindowDelegate(GetActiveWindowHook));
 
 
-					_server.ReportMessage($"Hooked GetForegroundWindow on {pid}");
+					ReportMessage($"Hooked GetForegroundWindow on {pid}");
 				}
 
 				if (hookCallWndProc)
 				{
 					callWindowProcHook = CreateHook("user32.dll", "CallWindowProcW", new CallWindowProcDelegate(CallWindowProcHook));
-					_server.ReportMessage($"Hooked CallWindowProcW on on {pid}");
+					ReportMessage($"Hooked CallWindowProcW on on {pid}");
 				}
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
-				_server.ReportMessage($"Error installing hook: {e.ToString()}");
+				ReportMessage($"Error installing hook: {e.ToString()}");
 			}
+		
+
 
 			try
 			{
@@ -368,7 +373,7 @@ namespace GetRawInputDataHook
 						break;
 				}
 			}
-			catch
+			catch (Exception)
 			{
 
 			}
@@ -378,13 +383,13 @@ namespace GetRawInputDataHook
 
 		private void ReleaseGetRawInputDataHook()
 		{
-			_server.ReportMessage("Releasing GetRawInputData hook");
+			ReportMessage("Releasing GetRawInputData hook");
 			getRawInputDataHook?.Dispose();
 		}
 
 		private void ReleaseHooks()
 		{
-			_server.ReportMessage("Releasing hooks");
+			ReportMessage("Releasing hooks");
 
 			ReleaseGetRawInputDataHook();
 			//getCursorPosHook?.Dispose();
@@ -397,6 +402,16 @@ namespace GetRawInputDataHook
 			EasyHook.LocalHook.Release();
 		}
 
-		
+		private void ReportMessage(string message)
+		{
+			try
+			{
+				_server.ReportMessage(message);
+			}
+			catch (Exception)
+			{
+
+			}
+		}
 	}
 }

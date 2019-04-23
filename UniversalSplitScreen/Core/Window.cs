@@ -29,7 +29,7 @@ namespace UniversalSplitScreen.Core
 			this.hWnd = hWnd;
 			WinApi.GetWindowThreadProcessId(hWnd, out this.pid);
 			UpdateBounds();
-			Console.WriteLine($"Bounds for {hWnd}: Left={Bounds.Left}, Right={Bounds.Right}, Top={Bounds.Top}, Bottom={Bounds.Bottom}, WIDTH={Width}, HEIGHT={Height}");
+			//Console.WriteLine($"Bounds for hWnd={hWnd}: Left={Bounds.Left}, Right={Bounds.Right}, Top={Bounds.Top}, Bottom={Bounds.Bottom}, WIDTH={Width}, HEIGHT={Height}");
 		}
 
 		public void UpdateBounds()

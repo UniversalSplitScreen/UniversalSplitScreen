@@ -44,6 +44,7 @@ namespace UniversalSplitScreen.Core
 			IntPtr m_hhook = WinApi.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, EVENT_SYSTEM_FOREGROUND_delegate, 0, 0, WINEVENT_OUTOFCONTEXT);
 		}
 
+		List<object> threads = new List<object>();
 		public void ActivateSplitScreen()
 		{
 			Program.Form.WindowState = FormWindowState.Minimized;
@@ -78,6 +79,7 @@ namespace UniversalSplitScreen.Core
 				//Borderlands 2 requriest WM_INPUT to be sent to a window named DIEmWin, not the main hWnd.
 				foreach (ProcessThread thread in Process.GetProcessById(window.pid).Threads)
 				{
+
 					int WindowEnum(IntPtr _hWnd, int lParam)
 					{
 						int threadID = WinApi.GetWindowThreadProcessId(_hWnd, out int pid);
@@ -117,7 +119,8 @@ namespace UniversalSplitScreen.Core
 				}
 
 				//EasyHook
-				if (Options.CurrentOptions.Hook_FilterRawInput || Options.CurrentOptions.Hook_FilterWindowsMouseInput || Options.CurrentOptions.Hook_GetForegroundWindow)
+				//TODO: REMOVE TRUE
+				if (true || Options.CurrentOptions.Hook_FilterRawInput || Options.CurrentOptions.Hook_FilterWindowsMouseInput || Options.CurrentOptions.Hook_GetForegroundWindow)
 				{
 					string channelName = null;
 					var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);

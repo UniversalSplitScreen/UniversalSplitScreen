@@ -168,8 +168,7 @@ namespace UniversalSplitScreen.RawInput
 											}
 
 											keysDown[VKey] = keyDown;
-
-											//uint t = keyDown ? (uint)SendMessageTypes.WM_KEYDOWN : (uint)SendMessageTypes.WM_KEYUP;
+											
 											SendInput.WinApi.PostMessageA(hWnd, keyboardMessage, (IntPtr)VKey, (UIntPtr)code);
 										}
 
@@ -202,6 +201,7 @@ namespace UniversalSplitScreen.RawInput
 							{
 								Window window = windows[windowI];
 								IntPtr hWnd = window.hWnd;
+								GetRawInputDataHook.ServerInterface server = window.GetRawInputData_HookServer;
 
 								//Resend raw input to application. Works for some games only
 								if (Options.CurrentOptions.SendRawMouseInput)
@@ -215,14 +215,16 @@ namespace UniversalSplitScreen.RawInput
 								mouseVec.x = Math.Min(window.Width, Math.Max(mouseVec.x + mouse.lLastX, 0));
 								mouseVec.y = Math.Min(window.Height, Math.Max(mouseVec.y + mouse.lLastY, 0));
 
+								server.SetCursorPosition(mouseVec.x, mouseVec.y);//TODO: make configurable with GetCursorPos checkbox
+
 								//Console.WriteLine($"MOUSE. flags={mouse.usFlags}, X={mouseVec.x}, y={mouseVec.y}, buttonFlags={mouse.usButtonFlags} device pointer = {rawBuffer.header.hDevice}");
 
 								long packedXY = (mouseVec.y * 0x10000) + mouseVec.x;
 
 								//TODO: move away to reduce lag?
 								//TODO: BL2 menus work when cursor isn't clipped (it uses the os mouse pointer though)
-								Cursor.Position = new System.Drawing.Point(0, 0);
-								Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
+								//Cursor.Position = new System.Drawing.Point(0, 0);
+								//Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
 
 								if (Options.CurrentOptions.SendNormalMouseInput)
 								{

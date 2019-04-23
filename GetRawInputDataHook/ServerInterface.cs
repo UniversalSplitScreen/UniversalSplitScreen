@@ -11,6 +11,8 @@ namespace GetRawInputDataHook
 		private IntPtr allowed_hDevice = IntPtr.Zero;//create two for kb/mouse
 		private bool shouldExit = false;
 		private IntPtr hWnd;
+		private int cursorX;
+		private int cursorY;
 
 		public void SetToReleaseHook()
 		{
@@ -20,6 +22,18 @@ namespace GetRawInputDataHook
 		public bool ShouldReleaseHook()
 		{
 			return shouldExit;
+		}
+
+		public void SetCursorPosition(int x, int y)
+		{
+			cursorX = x;
+			cursorY = y;
+		}
+
+		public void GetCursorPosition(out int x, out int y)
+		{
+			x = cursorX;
+			y = cursorY;
 		}
 
 		public void SetGame_hWnd(IntPtr hWnd)
