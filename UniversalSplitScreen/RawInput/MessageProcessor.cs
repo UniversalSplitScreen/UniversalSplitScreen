@@ -21,22 +21,22 @@ namespace UniversalSplitScreen.RawInput
 		public IntPtr LastKeyboardPressed { get; private set; } = new IntPtr(0);
 		
 		//leftMiddleRight: left=1, middle=2, right=3, xbutton1=4, xbutton2=5
-		readonly Dictionary<ButtonFlags, (MouseInputNotifications msg, uint wParam, ushort leftMiddleRight, bool isButtonDown)> ButtonFlagToMouseInputNotifications = new Dictionary<ButtonFlags, (MouseInputNotifications, uint, ushort, bool)>()
+		readonly Dictionary<ButtonFlags, (MouseInputNotifications msg, uint wParam, ushort leftMiddleRight, bool isButtonDown, int VKey)> ButtonFlagToMouseInputNotifications = new Dictionary<ButtonFlags, (MouseInputNotifications, uint, ushort, bool, int)>()
 		{
-			{ ButtonFlags.RI_MOUSE_LEFT_BUTTON_DOWN,	(MouseInputNotifications.WM_LBUTTONDOWN ,	0x0001,		1, true) },
-			{ ButtonFlags.RI_MOUSE_LEFT_BUTTON_UP,		(MouseInputNotifications.WM_LBUTTONUP,		0,			1, false) },
+			{ ButtonFlags.RI_MOUSE_LEFT_BUTTON_DOWN,	(MouseInputNotifications.WM_LBUTTONDOWN ,	0x0001,		1, true,    0x01) },
+			{ ButtonFlags.RI_MOUSE_LEFT_BUTTON_UP,		(MouseInputNotifications.WM_LBUTTONUP,		0,			1, false,   0x01) },
 
-			{ ButtonFlags.RI_MOUSE_RIGHT_BUTTON_DOWN,	(MouseInputNotifications.WM_RBUTTONDOWN,	0x0002,		2, true) },
-			{ ButtonFlags.RI_MOUSE_RIGHT_BUTTON_UP,		(MouseInputNotifications.WM_RBUTTONUP,		0,			2, false) },
+			{ ButtonFlags.RI_MOUSE_RIGHT_BUTTON_DOWN,	(MouseInputNotifications.WM_RBUTTONDOWN,	0x0002,		2, true,    0x02) },
+			{ ButtonFlags.RI_MOUSE_RIGHT_BUTTON_UP,		(MouseInputNotifications.WM_RBUTTONUP,		0,			2, false,   0x02) },
 
-			{ ButtonFlags.RI_MOUSE_MIDDLE_BUTTON_DOWN,	(MouseInputNotifications.WM_MBUTTONDOWN,	0x0010,		3, true) },
-			{ ButtonFlags.RI_MOUSE_MIDDLE_BUTTON_UP,	(MouseInputNotifications.WM_MBUTTONUP,		0,			3, false) },
+			{ ButtonFlags.RI_MOUSE_MIDDLE_BUTTON_DOWN,	(MouseInputNotifications.WM_MBUTTONDOWN,	0x0010,		3, true,    0x04) },
+			{ ButtonFlags.RI_MOUSE_MIDDLE_BUTTON_UP,	(MouseInputNotifications.WM_MBUTTONUP,		0,			3, false,   0x04) },
 
-			{ ButtonFlags.RI_MOUSE_BUTTON_4_DOWN,		(MouseInputNotifications.WM_XBUTTONDOWN,	0x0120,		4, true) },// (0x0001 << 8) | 0x0020 = 0x0120
-			{ ButtonFlags.RI_MOUSE_BUTTON_4_UP,			(MouseInputNotifications.WM_XBUTTONUP,		0,			4, false) },
+			{ ButtonFlags.RI_MOUSE_BUTTON_4_DOWN,		(MouseInputNotifications.WM_XBUTTONDOWN,	0x0120,		4, true,    0x05) },// (0x0001 << 8) | 0x0020 = 0x0120
+			{ ButtonFlags.RI_MOUSE_BUTTON_4_UP,			(MouseInputNotifications.WM_XBUTTONUP,		0,			4, false,   0x05) },
 
-			{ ButtonFlags.RI_MOUSE_BUTTON_5_DOWN,		(MouseInputNotifications.WM_XBUTTONDOWN,    0x0240,		5, true) },//(0x0002 << 8) | 0x0040 = 0x0240
-			{ ButtonFlags.RI_MOUSE_BUTTON_5_UP,			(MouseInputNotifications.WM_XBUTTONUP,		0,			5, false) }
+			{ ButtonFlags.RI_MOUSE_BUTTON_5_DOWN,		(MouseInputNotifications.WM_XBUTTONDOWN,    0x0240,		5, true,    0x06) },//(0x0002 << 8) | 0x0040 = 0x0240
+			{ ButtonFlags.RI_MOUSE_BUTTON_5_UP,			(MouseInputNotifications.WM_XBUTTONUP,		0,			5, false,   0x06) }
 		};
 
 		#region End key
@@ -169,6 +169,7 @@ namespace UniversalSplitScreen.RawInput
 
 											keysDown[VKey] = keyDown;
 											
+											//This also makes GetKeyboardState work, as windows uses the message queue for GetKeyboardState
 											SendInput.WinApi.PostMessageA(hWnd, keyboardMessage, (IntPtr)VKey, (UIntPtr)code);
 										}
 
@@ -223,8 +224,8 @@ namespace UniversalSplitScreen.RawInput
 
 								//TODO: move away to reduce lag?
 								//TODO: BL2 menus work when cursor isn't clipped (it uses the os mouse pointer though)
-								//Cursor.Position = new System.Drawing.Point(0, 0);
-								//Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
+								Cursor.Position = new System.Drawing.Point(0, 0);
+								Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
 
 								if (Options.CurrentOptions.SendNormalMouseInput)
 								{
@@ -248,9 +249,12 @@ namespace UniversalSplitScreen.RawInput
 									{
 										if ((f & (ushort)pair.Key) > 0)
 										{
-											var (msg, wParam, leftMiddleRight, isButtonDown) = pair.Value;
+											var (msg, wParam, leftMiddleRight, isButtonDown, VKey) = pair.Value;
 											//Console.WriteLine(pair.Key);
 											SendInput.WinApi.PostMessageA(hWnd, (uint)msg, (IntPtr)wParam, (IntPtr)packedXY);
+
+											//TODO: MAKE CONFIGURABLE FOR GetAsyncKeyState hook checkbox
+											server.SetVKey(VKey, isButtonDown);
 
 											var state = window.MouseState;
 											switch (leftMiddleRight)

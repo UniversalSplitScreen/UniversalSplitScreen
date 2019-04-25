@@ -12,13 +12,7 @@ namespace GetRawInputDataHook
 	public class InjectionEntryPoint : EasyHook.IEntryPoint
 	{
 		private static IntPtr hWnd = IntPtr.Zero;
-
-		[DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
-		public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-
-		[DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
-		public static extern IntPtr LoadLibraryW(string lpszLib);
-
+		
 		#region GetRawInputData hook
 		private static EasyHook.LocalHook getRawInputDataHook;
 
@@ -82,6 +76,7 @@ namespace GetRawInputDataHook
 		#endregion
 
 		#region GetCursorPos hook
+		//TODO: test with monogame games? (MonoGame uses SDL)
 		private static EasyHook.LocalHook getCursorPosHook;
 		
 		[DllImport("user32.dll", SetLastError = true)]
@@ -108,12 +103,69 @@ namespace GetRawInputDataHook
 
 			return true;
 		}
-	
+
 		#endregion
 
-		#region SDL MouseGetGlobalState hook
-		/*private static EasyHook.LocalHook sdlMouseGetGlobalStateHook;
 		
+		#region GetAsyncKeyState hook
+		private static EasyHook.LocalHook getAsyncKeyStateHook;
+
+		[DllImport("user32.dll")]
+		public static extern short GetAsyncKeyState(int vKey);
+
+		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+		public delegate short GetAsyncKeyStateDelegate(int vKey);
+
+		public short GetAsyncKeyStateHook(int vKey)
+		{
+			return (short)(_server.GetIsVKeyPressed(vKey) ? (1 << 15) : 0); ;
+		}
+		#endregion
+
+
+		/* GetKeyboardState Hook: unnecessary as posting keyboard input to message queue already affects GetKeyboardState
+		#region GetKeyboardState Hook
+		//TODO: make configurable
+		private static EasyHook.LocalHook getKeyboardStateHook;
+
+		[DllImport("user32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetKeyboardState(IntPtr lpKeyState);
+
+		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+		public delegate bool GetKeyboardStateDelegate(out IntPtr lpKeyState);
+
+		public bool GetKeyboardStateHook(out IntPtr lpKeyState)
+		{
+			IntPtr ptr = Marshal.AllocHGlobal(256 * sizeof(byte));
+			//GetKeyboardState(ptr);
+
+			byte[] kbBytes = new byte[256];
+
+			//Marshal.Copy(ptr, kbBytes, 0, 256);
+			Marshal.Copy(kbBytes, 0, ptr, 256);
+			
+			
+
+			for (int i = 0; i < 256; i++)
+			{
+				if (kbBytes[i] != 0)
+					_server.ReportMessage($"i={i}, byte={kbBytes[i]}");
+			}
+			//lpKeyState = kbBytes;
+
+			lpKeyState = ptr;
+			return true;
+		}
+
+
+		#endregion
+		*/
+
+		/*SDL MouseGetGlobalState Hook
+		#region SDL MouseGetGlobalState Hook
+		private static EasyHook.LocalHook sdlMouseGetGlobalStateHook;
+
 		[Flags]
 		public enum Button
 		{
@@ -142,8 +194,9 @@ namespace GetRawInputDataHook
 		{
 			ReportMessage("SDL get mouse called");
 			return IntPtr.Zero;
-		}*/
+		}
 		#endregion
+		*/
 
 		#region GetForegroundWindow hook
 		//Used by BL2 and starbound
@@ -325,9 +378,14 @@ namespace GetRawInputDataHook
 
 				
 				getCursorPosHook = CreateHook("user32.dll", "GetCursorPos", new GetCursorPosDelegate(GetCursorPosHook));
-				
-
 				ReportMessage($"Hooked GetCursorPos on {pid}");
+
+				getAsyncKeyStateHook = CreateHook("user32.dll", "GetAsyncKeyState", new GetAsyncKeyStateDelegate(GetAsyncKeyStateHook));
+				ReportMessage($"Hooked GetAsyncKeyState on {pid}");
+
+				//getKeyboardStateHook = CreateHook("user32.dll", "GetKeyboardState", new GetKeyboardStateDelegate(GetKeyboardStateHook));
+				//ReportMessage($"Hooked GetKeyboardState on {pid}");
+
 
 				if (hookRawInput)
 				{
@@ -398,6 +456,10 @@ namespace GetRawInputDataHook
 			callWindowProcHook?.Dispose();
 			getActiveWindowHook?.Dispose();
 			getFocusHook?.Dispose();
+
+			getCursorPosHook?.Dispose();
+			getAsyncKeyStateHook?.Dispose();
+			getKeyboardStateHook?.Dispose();
 
 			EasyHook.LocalHook.Release();
 		}

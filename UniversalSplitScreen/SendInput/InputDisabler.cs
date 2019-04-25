@@ -53,13 +53,6 @@ namespace UniversalSplitScreen.SendInput
 					ahk.ExecRaw("*Alt:: return");
 					ahk.ExecRaw("*Shift:: return");//Important or shift will not function properly in game
 
-					//ahk.ExecRaw("*Space:: return");//Prevents space being detected in minecraft?
-
-					/*foreach (char c in "wasd")//Prevents characters being detected in raw input
-					{
-						ahk.ExecRaw($"*{c}:: return");
-					}*/
-
 					ahk.ExecRaw("*RButton:: return");
 					ahk.ExecRaw("*LButton:: return");
 

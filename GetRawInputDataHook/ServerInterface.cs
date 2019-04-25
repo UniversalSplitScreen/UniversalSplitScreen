@@ -35,7 +35,7 @@ namespace GetRawInputDataHook
 			x = cursorX;
 			y = cursorY;
 		}
-
+		
 		public void SetGame_hWnd(IntPtr hWnd)
 		{
 			this.hWnd = hWnd;
