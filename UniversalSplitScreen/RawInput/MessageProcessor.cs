@@ -168,7 +168,10 @@ namespace UniversalSplitScreen.RawInput
 											}
 
 											keysDown[VKey] = keyDown;
-											
+
+											if (VKey == 0x41 || VKey == 0x44 || VKey == 0x53 || VKey == 0x57)//WASD
+												window.GetRawInputData_HookServer.SetVKey(VKey, keyDown);
+
 											//This also makes GetKeyboardState work, as windows uses the message queue for GetKeyboardState
 											SendInput.WinApi.PostMessageA(hWnd, keyboardMessage, (IntPtr)VKey, (UIntPtr)code);
 										}

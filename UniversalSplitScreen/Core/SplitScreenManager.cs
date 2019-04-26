@@ -43,8 +43,7 @@ namespace UniversalSplitScreen.Core
 			EVENT_SYSTEM_FOREGROUND_delegate = new WinApi.WinEventDelegate(EVENT_SYSTEM_FOREGROUND_Proc);
 			IntPtr m_hhook = WinApi.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, EVENT_SYSTEM_FOREGROUND_delegate, 0, 0, WINEVENT_OUTOFCONTEXT);
 		}
-
-		List<object> threads = new List<object>();
+		
 		public void ActivateSplitScreen()
 		{
 			Program.Form.WindowState = FormWindowState.Minimized;
@@ -288,7 +287,7 @@ namespace UniversalSplitScreen.Core
 			string title = WinApi.GetWindowText(hWnd);
 			Console.WriteLine($"Activated hWnd {hWnd}, self = {our_hWnd == hWnd}, Title = {title}");
 
-			if (our_hWnd != hWnd && desktop_hWnd != hWnd && !string.IsNullOrWhiteSpace(title) && title != "Task Switching")
+			if (our_hWnd != hWnd && desktop_hWnd != hWnd && !string.IsNullOrWhiteSpace(title) && title != "Task Switching" && title != "Cortana")
 			{
 				active_hWnd = hWnd;
 				Program.Form.WindowTitleText = title;

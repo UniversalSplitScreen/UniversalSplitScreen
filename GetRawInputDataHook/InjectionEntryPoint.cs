@@ -12,7 +12,11 @@ namespace GetRawInputDataHook
 	public class InjectionEntryPoint : EasyHook.IEntryPoint
 	{
 		private static IntPtr hWnd = IntPtr.Zero;
-		
+
+		ServerInterface _server = null;
+
+		IntPtr allowedRawInputDevice = IntPtr.Zero;//TODO: remove (unused)
+
 		#region GetRawInputData hook
 		private static EasyHook.LocalHook getRawInputDataHook;
 
@@ -56,6 +60,7 @@ namespace GetRawInputDataHook
 			ReleaseGetRawInputDataHook();
 			return GetRawInputData(hRawInput, uiCommand, out pData, ref pcbSize, cbSizeHeader);//TODO: REMOVE?
 
+			/*
 			#region Works in BL2, not GMod
 			//run the function, check if it is the allowed device, then pass through or not
 			GetRawInputData(hRawInput, uiCommand, out RAWINPUT ri, ref pcbSize, cbSizeHeader);
@@ -72,6 +77,7 @@ namespace GetRawInputDataHook
 			#endregion
 
 			//TODO: for gmod, do pData = default(RAWINPUT) when ignoring a message. (Crashes BL2)
+			*/
 		}
 		#endregion
 
@@ -93,9 +99,11 @@ namespace GetRawInputDataHook
 		{
 			_server.GetCursorPosition(out int x, out int y);
 
-			POINT p = new POINT();
-			p.x = x;
-			p.y = y;
+			POINT p = new POINT
+			{
+				x = x,
+				y = y
+			};
 
 			ClientToScreen(hWnd, ref p);
 
@@ -119,6 +127,24 @@ namespace GetRawInputDataHook
 		public short GetAsyncKeyStateHook(int vKey)
 		{
 			return (short)(_server.GetIsVKeyPressed(vKey) ? (1 << 15) : 0); ;
+		}
+		#endregion
+
+		#region GetKeyState hook
+		private static EasyHook.LocalHook getKeyStateHook;
+
+		[DllImport("user32.dll")]
+		public static extern short GetKeyState(int nVirtKey);
+
+		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+		public delegate short GetKeyStateDelegate(int nVirtKey);
+
+		public short GetKeyStateHook(int nVirtKey)
+		{
+			if (nVirtKey == 0x41 || nVirtKey == 0x44 || nVirtKey == 0x53 || nVirtKey == 0x57)//WASD
+				return _server.GetIsVKeyPressed(nVirtKey) ? (short)-32768 : (short)0;//-32768: Key down (aka high order bit = 1)
+			else
+				return GetKeyState(nVirtKey);
 		}
 		#endregion
 
@@ -272,6 +298,7 @@ namespace GetRawInputDataHook
 		}
 		#endregion
 
+		/* GetFocus Hook
 		#region GetFocus hook
 		private static EasyHook.LocalHook getFocusHook;
 
@@ -287,7 +314,9 @@ namespace GetRawInputDataHook
 			return hWnd;
 		}
 		#endregion
+		*/
 
+		/* GetActiveWindow Hook
 		#region GetActiveWindow hook
 		private static EasyHook.LocalHook getActiveWindowHook;
 
@@ -303,10 +332,9 @@ namespace GetRawInputDataHook
 			return hWnd;
 		}
 		#endregion
+		*/
 
-		ServerInterface _server = null;
-
-		IntPtr allowedRawInputDevice = IntPtr.Zero;
+		
 
 		public InjectionEntryPoint(EasyHook.RemoteHooking.IContext context, string channelName, bool hookRawInput, bool hookCallWndProc, bool hookGetForegroundWindow)
 		{
@@ -383,9 +411,8 @@ namespace GetRawInputDataHook
 				getAsyncKeyStateHook = CreateHook("user32.dll", "GetAsyncKeyState", new GetAsyncKeyStateDelegate(GetAsyncKeyStateHook));
 				ReportMessage($"Hooked GetAsyncKeyState on {pid}");
 
-				//getKeyboardStateHook = CreateHook("user32.dll", "GetKeyboardState", new GetKeyboardStateDelegate(GetKeyboardStateHook));
-				//ReportMessage($"Hooked GetKeyboardState on {pid}");
-
+				getKeyStateHook = CreateHook("user32.dll", "GetKeyState", new GetKeyStateDelegate(GetKeyStateHook));
+				ReportMessage($"Hooked GetKeyState on {pid}");
 
 				if (hookRawInput)
 				{
@@ -450,16 +477,14 @@ namespace GetRawInputDataHook
 			ReportMessage("Releasing hooks");
 
 			ReleaseGetRawInputDataHook();
-			//getCursorPosHook?.Dispose();
-			//sdlMouseGetGlobalStateHook?.Dispose();
 			getForegroundWindowHook?.Dispose();
 			callWindowProcHook?.Dispose();
-			getActiveWindowHook?.Dispose();
-			getFocusHook?.Dispose();
+			//getActiveWindowHook?.Dispose();
+			//getFocusHook?.Dispose();
 
 			getCursorPosHook?.Dispose();
 			getAsyncKeyStateHook?.Dispose();
-			getKeyboardStateHook?.Dispose();
+			getKeyStateHook?.Dispose();
 
 			EasyHook.LocalHook.Release();
 		}
