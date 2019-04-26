@@ -336,13 +336,13 @@ namespace GetRawInputDataHook
 
 		
 
-		public InjectionEntryPoint(EasyHook.RemoteHooking.IContext context, string channelName, bool hookRawInput, bool hookCallWndProc, bool hookGetForegroundWindow)
+		public InjectionEntryPoint(EasyHook.RemoteHooking.IContext context, string channelName, bool hookRawInput, bool hookCallWndProc, bool hookGetForegroundWindow, bool hookGetCursorPos, bool hookGetAsyncKeyState, bool hookGetKeyState)
 		{
 			_server = EasyHook.RemoteHooking.IpcConnectClient<ServerInterface>(channelName);
 			_server.Ping();
 		}
 
-		public void Run(EasyHook.RemoteHooking.IContext context, string channelName, bool hookRawInput, bool hookCallWndProc, bool hookGetForegroundWindow)
+		public void Run(EasyHook.RemoteHooking.IContext context, string channelName, bool hookRawInput, bool hookCallWndProc, bool hookGetForegroundWindow, bool hookGetCursorPos, bool hookGetAsyncKeyState, bool hookGetKeyState)
 		{
 			int pid = EasyHook.RemoteHooking.GetCurrentProcessId();
 			_server.IsInstalled(pid);
@@ -404,15 +404,23 @@ namespace GetRawInputDataHook
 					return x;
 				}
 
-				
-				getCursorPosHook = CreateHook("user32.dll", "GetCursorPos", new GetCursorPosDelegate(GetCursorPosHook));
-				ReportMessage($"Hooked GetCursorPos on {pid}");
+				if (hookGetCursorPos)
+				{
+					getCursorPosHook = CreateHook("user32.dll", "GetCursorPos", new GetCursorPosDelegate(GetCursorPosHook));
+					ReportMessage($"Hooked GetCursorPos on {pid}");
+				}
 
-				getAsyncKeyStateHook = CreateHook("user32.dll", "GetAsyncKeyState", new GetAsyncKeyStateDelegate(GetAsyncKeyStateHook));
-				ReportMessage($"Hooked GetAsyncKeyState on {pid}");
+				if (hookGetAsyncKeyState)
+				{
+					getAsyncKeyStateHook = CreateHook("user32.dll", "GetAsyncKeyState", new GetAsyncKeyStateDelegate(GetAsyncKeyStateHook));
+					ReportMessage($"Hooked GetAsyncKeyState on {pid}");
+				}
 
-				getKeyStateHook = CreateHook("user32.dll", "GetKeyState", new GetKeyStateDelegate(GetKeyStateHook));
-				ReportMessage($"Hooked GetKeyState on {pid}");
+				if (hookGetKeyState)
+				{
+					getKeyStateHook = CreateHook("user32.dll", "GetKeyState", new GetKeyStateDelegate(GetKeyStateHook));
+					ReportMessage($"Hooked GetKeyState on {pid}");
+				}
 
 				if (hookRawInput)
 				{

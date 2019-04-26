@@ -25,6 +25,9 @@ namespace UniversalSplitScreen.Core
 		public bool Hook_FilterRawInput { get; set; } = false;
 		public bool Hook_FilterWindowsMouseInput { get; set; } = false;
 		public bool Hook_GetForegroundWindow { get; set; } = false;
+		public bool Hook_GetCursorPos { get; set; } = false;
+		public bool Hook_GetAsyncKeyState { get; set; } = false;
+		public bool Hook_GetKeyState { get; set; } = false;
 
 		public ushort EndVKey { get; set; } = 0x23;
 

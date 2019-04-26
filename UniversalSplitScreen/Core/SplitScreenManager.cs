@@ -118,8 +118,12 @@ namespace UniversalSplitScreen.Core
 				}
 
 				//EasyHook
-				//TODO: REMOVE TRUE
-				if (true || Options.CurrentOptions.Hook_FilterRawInput || Options.CurrentOptions.Hook_FilterWindowsMouseInput || Options.CurrentOptions.Hook_GetForegroundWindow)
+				if (Options.CurrentOptions.Hook_FilterRawInput || 
+					Options.CurrentOptions.Hook_FilterWindowsMouseInput || 
+					Options.CurrentOptions.Hook_GetForegroundWindow || 
+					Options.CurrentOptions.Hook_GetCursorPos || 
+					Options.CurrentOptions.Hook_GetKeyState || 
+					Options.CurrentOptions.Hook_GetAsyncKeyState)
 				{
 					string channelName = null;
 					var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
@@ -145,11 +149,15 @@ namespace UniversalSplitScreen.Core
 						EasyHook.RemoteHooking.Inject(
 							window.pid,                         // ID of process to inject into
 							injectionLibrary_getRawInputData,   // 32-bit library to inject (if target is 32-bit)
+							//TODO: switch 32/64???
 							injectionLibrary_getRawInputData,   // 64-bit library to inject (if target is 64-bit)
 							channelName,                        // the parameters to pass into injected library
 							Options.CurrentOptions.Hook_FilterRawInput,
 							Options.CurrentOptions.Hook_FilterWindowsMouseInput,
-							Options.CurrentOptions.Hook_GetForegroundWindow
+							Options.CurrentOptions.Hook_GetForegroundWindow,
+							Options.CurrentOptions.Hook_GetCursorPos,
+							Options.CurrentOptions.Hook_GetAsyncKeyState,
+							Options.CurrentOptions.Hook_GetKeyState
 						);
 
 						window.GetRawInputData_HookIPCServerChannel = serverChannel_getRawInputData;

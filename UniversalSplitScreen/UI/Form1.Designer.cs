@@ -52,6 +52,12 @@
 			this.hwndBox = new System.Windows.Forms.GroupBox();
 			this.hWndLabel = new System.Windows.Forms.Label();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
+			this.panel2 = new System.Windows.Forms.Panel();
+			this.buttonOptions_New = new System.Windows.Forms.Button();
+			this.buttonOptions_load = new System.Windows.Forms.Button();
+			this.buttonOptions_save = new System.Windows.Forms.Button();
+			this.buttonOptions_delete = new System.Windows.Forms.Button();
+			this.optionsComboBox = new System.Windows.Forms.ComboBox();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.endButtonSetter = new System.Windows.Forms.Button();
 			this.hooksBox = new System.Windows.Forms.GroupBox();
@@ -69,12 +75,9 @@
 			this.sendNormalMouseCheckbox = new System.Windows.Forms.CheckBox();
 			this.sendRawKeyboardCheckbox = new System.Windows.Forms.CheckBox();
 			this.sendRawMouseCheckbox = new System.Windows.Forms.CheckBox();
-			this.panel2 = new System.Windows.Forms.Panel();
-			this.optionsComboBox = new System.Windows.Forms.ComboBox();
-			this.buttonOptions_delete = new System.Windows.Forms.Button();
-			this.buttonOptions_save = new System.Windows.Forms.Button();
-			this.buttonOptions_load = new System.Windows.Forms.Button();
-			this.buttonOptions_New = new System.Windows.Forms.Button();
+			this.checkBoxHook_GetCursorPos = new System.Windows.Forms.CheckBox();
+			this.checkBoxHook_GetAsyncKeyState = new System.Windows.Forms.CheckBox();
+			this.checkBoxHook_GetKeyState = new System.Windows.Forms.CheckBox();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -85,10 +88,10 @@
 			this.flowLayoutPanel1.SuspendLayout();
 			this.hwndBox.SuspendLayout();
 			this.tabPage2.SuspendLayout();
+			this.panel2.SuspendLayout();
 			this.panel1.SuspendLayout();
 			this.hooksBox.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.drawMouseEveryXmsField)).BeginInit();
-			this.panel2.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -339,6 +342,68 @@
 			this.tabPage2.Text = "Options";
 			this.tabPage2.UseVisualStyleBackColor = true;
 			// 
+			// panel2
+			// 
+			this.panel2.Controls.Add(this.buttonOptions_New);
+			this.panel2.Controls.Add(this.buttonOptions_load);
+			this.panel2.Controls.Add(this.buttonOptions_save);
+			this.panel2.Controls.Add(this.buttonOptions_delete);
+			this.panel2.Controls.Add(this.optionsComboBox);
+			this.panel2.Location = new System.Drawing.Point(6, 7);
+			this.panel2.Name = "panel2";
+			this.panel2.Size = new System.Drawing.Size(756, 30);
+			this.panel2.TabIndex = 1;
+			// 
+			// buttonOptions_New
+			// 
+			this.buttonOptions_New.Location = new System.Drawing.Point(435, 3);
+			this.buttonOptions_New.Name = "buttonOptions_New";
+			this.buttonOptions_New.Size = new System.Drawing.Size(75, 23);
+			this.buttonOptions_New.TabIndex = 12;
+			this.buttonOptions_New.Text = "New";
+			this.buttonOptions_New.UseVisualStyleBackColor = true;
+			this.buttonOptions_New.Click += new System.EventHandler(this.buttonOptions_New_Click);
+			// 
+			// buttonOptions_load
+			// 
+			this.buttonOptions_load.Location = new System.Drawing.Point(516, 4);
+			this.buttonOptions_load.Name = "buttonOptions_load";
+			this.buttonOptions_load.Size = new System.Drawing.Size(75, 23);
+			this.buttonOptions_load.TabIndex = 14;
+			this.buttonOptions_load.Text = "Load";
+			this.buttonOptions_load.UseVisualStyleBackColor = true;
+			this.buttonOptions_load.Click += new System.EventHandler(this.buttonOptions_load_Click);
+			// 
+			// buttonOptions_save
+			// 
+			this.buttonOptions_save.Enabled = false;
+			this.buttonOptions_save.Location = new System.Drawing.Point(597, 3);
+			this.buttonOptions_save.Name = "buttonOptions_save";
+			this.buttonOptions_save.Size = new System.Drawing.Size(75, 23);
+			this.buttonOptions_save.TabIndex = 13;
+			this.buttonOptions_save.Text = "Save";
+			this.buttonOptions_save.UseVisualStyleBackColor = true;
+			this.buttonOptions_save.Click += new System.EventHandler(this.buttonOptions_save_Click);
+			// 
+			// buttonOptions_delete
+			// 
+			this.buttonOptions_delete.Location = new System.Drawing.Point(678, 3);
+			this.buttonOptions_delete.Name = "buttonOptions_delete";
+			this.buttonOptions_delete.Size = new System.Drawing.Size(75, 23);
+			this.buttonOptions_delete.TabIndex = 12;
+			this.buttonOptions_delete.Text = "Delete";
+			this.buttonOptions_delete.UseVisualStyleBackColor = true;
+			this.buttonOptions_delete.Click += new System.EventHandler(this.button_optionsDelete_Click);
+			// 
+			// optionsComboBox
+			// 
+			this.optionsComboBox.FormattingEnabled = true;
+			this.optionsComboBox.Location = new System.Drawing.Point(4, 4);
+			this.optionsComboBox.Name = "optionsComboBox";
+			this.optionsComboBox.Size = new System.Drawing.Size(425, 21);
+			this.optionsComboBox.TabIndex = 0;
+			this.optionsComboBox.SelectedIndexChanged += new System.EventHandler(this.optionsComboBox_SelectedIndexChanged);
+			// 
 			// panel1
 			// 
 			this.panel1.AutoScroll = true;
@@ -371,10 +436,13 @@
 			// 
 			// hooksBox
 			// 
+			this.hooksBox.Controls.Add(this.checkBoxHook_GetKeyState);
 			this.hooksBox.Controls.Add(this.checkBoxHook_getForegroundWindow);
 			this.hooksBox.Controls.Add(this.checkBoxHook_filterCallWndProc);
+			this.hooksBox.Controls.Add(this.checkBoxHook_GetAsyncKeyState);
 			this.hooksBox.Controls.Add(this.checkBoxHook_filterWindowsRawInput);
 			this.hooksBox.Controls.Add(this.hooksWarningLabel);
+			this.hooksBox.Controls.Add(this.checkBoxHook_GetCursorPos);
 			this.hooksBox.Location = new System.Drawing.Point(472, 3);
 			this.hooksBox.Name = "hooksBox";
 			this.hooksBox.Size = new System.Drawing.Size(280, 334);
@@ -385,7 +453,7 @@
 			// checkBoxHook_getForegroundWindow
 			// 
 			this.checkBoxHook_getForegroundWindow.AutoSize = true;
-			this.checkBoxHook_getForegroundWindow.Location = new System.Drawing.Point(9, 121);
+			this.checkBoxHook_getForegroundWindow.Location = new System.Drawing.Point(9, 119);
 			this.checkBoxHook_getForegroundWindow.Name = "checkBoxHook_getForegroundWindow";
 			this.checkBoxHook_getForegroundWindow.Size = new System.Drawing.Size(165, 17);
 			this.checkBoxHook_getForegroundWindow.TabIndex = 11;
@@ -396,7 +464,7 @@
 			// checkBoxHook_filterCallWndProc
 			// 
 			this.checkBoxHook_filterCallWndProc.AutoSize = true;
-			this.checkBoxHook_filterCallWndProc.Location = new System.Drawing.Point(9, 97);
+			this.checkBoxHook_filterCallWndProc.Location = new System.Drawing.Point(9, 96);
 			this.checkBoxHook_filterCallWndProc.Name = "checkBoxHook_filterCallWndProc";
 			this.checkBoxHook_filterCallWndProc.Size = new System.Drawing.Size(228, 17);
 			this.checkBoxHook_filterCallWndProc.TabIndex = 10;
@@ -538,67 +606,38 @@
 			this.sendRawMouseCheckbox.UseVisualStyleBackColor = true;
 			this.sendRawMouseCheckbox.CheckedChanged += new System.EventHandler(this.sendRawMouseCheckbox_CheckedChanged);
 			// 
-			// panel2
+			// checkBoxHook_GetCursorPos
 			// 
-			this.panel2.Controls.Add(this.buttonOptions_New);
-			this.panel2.Controls.Add(this.buttonOptions_load);
-			this.panel2.Controls.Add(this.buttonOptions_save);
-			this.panel2.Controls.Add(this.buttonOptions_delete);
-			this.panel2.Controls.Add(this.optionsComboBox);
-			this.panel2.Location = new System.Drawing.Point(6, 7);
-			this.panel2.Name = "panel2";
-			this.panel2.Size = new System.Drawing.Size(756, 30);
-			this.panel2.TabIndex = 1;
+			this.checkBoxHook_GetCursorPos.AutoSize = true;
+			this.checkBoxHook_GetCursorPos.Location = new System.Drawing.Point(9, 142);
+			this.checkBoxHook_GetCursorPos.Name = "checkBoxHook_GetCursorPos";
+			this.checkBoxHook_GetCursorPos.Size = new System.Drawing.Size(120, 17);
+			this.checkBoxHook_GetCursorPos.TabIndex = 12;
+			this.checkBoxHook_GetCursorPos.Text = "Hook GetCursorPos";
+			this.checkBoxHook_GetCursorPos.UseVisualStyleBackColor = true;
+			this.checkBoxHook_GetCursorPos.CheckedChanged += new System.EventHandler(this.checkBoxHook_GetCursorPos_CheckedChanged);
 			// 
-			// optionsComboBox
+			// checkBoxHook_GetAsyncKeyState
 			// 
-			this.optionsComboBox.FormattingEnabled = true;
-			this.optionsComboBox.Location = new System.Drawing.Point(4, 4);
-			this.optionsComboBox.Name = "optionsComboBox";
-			this.optionsComboBox.Size = new System.Drawing.Size(425, 21);
-			this.optionsComboBox.TabIndex = 0;
-			this.optionsComboBox.SelectedIndexChanged += new System.EventHandler(this.optionsComboBox_SelectedIndexChanged);
+			this.checkBoxHook_GetAsyncKeyState.AutoSize = true;
+			this.checkBoxHook_GetAsyncKeyState.Location = new System.Drawing.Point(9, 165);
+			this.checkBoxHook_GetAsyncKeyState.Name = "checkBoxHook_GetAsyncKeyState";
+			this.checkBoxHook_GetAsyncKeyState.Size = new System.Drawing.Size(231, 17);
+			this.checkBoxHook_GetAsyncKeyState.TabIndex = 13;
+			this.checkBoxHook_GetAsyncKeyState.Text = "Hook GetAsyncKeyState for mouse buttons";
+			this.checkBoxHook_GetAsyncKeyState.UseVisualStyleBackColor = true;
+			this.checkBoxHook_GetAsyncKeyState.CheckedChanged += new System.EventHandler(this.checkBoxHook_GetAsyncKeyState_CheckedChanged);
 			// 
-			// buttonOptions_delete
+			// checkBoxHook_GetKeyState
 			// 
-			this.buttonOptions_delete.Location = new System.Drawing.Point(678, 3);
-			this.buttonOptions_delete.Name = "buttonOptions_delete";
-			this.buttonOptions_delete.Size = new System.Drawing.Size(75, 23);
-			this.buttonOptions_delete.TabIndex = 12;
-			this.buttonOptions_delete.Text = "Delete";
-			this.buttonOptions_delete.UseVisualStyleBackColor = true;
-			this.buttonOptions_delete.Click += new System.EventHandler(this.button_optionsDelete_Click);
-			// 
-			// buttonOptions_save
-			// 
-			this.buttonOptions_save.Enabled = false;
-			this.buttonOptions_save.Location = new System.Drawing.Point(597, 3);
-			this.buttonOptions_save.Name = "buttonOptions_save";
-			this.buttonOptions_save.Size = new System.Drawing.Size(75, 23);
-			this.buttonOptions_save.TabIndex = 13;
-			this.buttonOptions_save.Text = "Save";
-			this.buttonOptions_save.UseVisualStyleBackColor = true;
-			this.buttonOptions_save.Click += new System.EventHandler(this.buttonOptions_save_Click);
-			// 
-			// buttonOptions_load
-			// 
-			this.buttonOptions_load.Location = new System.Drawing.Point(516, 4);
-			this.buttonOptions_load.Name = "buttonOptions_load";
-			this.buttonOptions_load.Size = new System.Drawing.Size(75, 23);
-			this.buttonOptions_load.TabIndex = 14;
-			this.buttonOptions_load.Text = "Load";
-			this.buttonOptions_load.UseVisualStyleBackColor = true;
-			this.buttonOptions_load.Click += new System.EventHandler(this.buttonOptions_load_Click);
-			// 
-			// buttonOptions_New
-			// 
-			this.buttonOptions_New.Location = new System.Drawing.Point(435, 3);
-			this.buttonOptions_New.Name = "buttonOptions_New";
-			this.buttonOptions_New.Size = new System.Drawing.Size(75, 23);
-			this.buttonOptions_New.TabIndex = 12;
-			this.buttonOptions_New.Text = "New";
-			this.buttonOptions_New.UseVisualStyleBackColor = true;
-			this.buttonOptions_New.Click += new System.EventHandler(this.buttonOptions_New_Click);
+			this.checkBoxHook_GetKeyState.AutoSize = true;
+			this.checkBoxHook_GetKeyState.Location = new System.Drawing.Point(9, 188);
+			this.checkBoxHook_GetKeyState.Name = "checkBoxHook_GetKeyState";
+			this.checkBoxHook_GetKeyState.Size = new System.Drawing.Size(191, 17);
+			this.checkBoxHook_GetKeyState.TabIndex = 14;
+			this.checkBoxHook_GetKeyState.Text = "Hook GetKeyState for WASD keys";
+			this.checkBoxHook_GetKeyState.UseVisualStyleBackColor = true;
+			this.checkBoxHook_GetKeyState.CheckedChanged += new System.EventHandler(this.checkBoxHook_GetKeyState_CheckedChanged);
 			// 
 			// Form1
 			// 
@@ -627,12 +666,12 @@
 			this.hwndBox.ResumeLayout(false);
 			this.hwndBox.PerformLayout();
 			this.tabPage2.ResumeLayout(false);
+			this.panel2.ResumeLayout(false);
 			this.panel1.ResumeLayout(false);
 			this.panel1.PerformLayout();
 			this.hooksBox.ResumeLayout(false);
 			this.hooksBox.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.drawMouseEveryXmsField)).EndInit();
-			this.panel2.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -685,5 +724,8 @@
 		private System.Windows.Forms.Button buttonOptions_delete;
 		private System.Windows.Forms.ComboBox optionsComboBox;
 		private System.Windows.Forms.Button buttonOptions_New;
+		private System.Windows.Forms.CheckBox checkBoxHook_GetKeyState;
+		private System.Windows.Forms.CheckBox checkBoxHook_GetAsyncKeyState;
+		private System.Windows.Forms.CheckBox checkBoxHook_GetCursorPos;
 	}
 }
