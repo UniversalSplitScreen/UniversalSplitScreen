@@ -57,7 +57,7 @@ namespace UniversalSplitScreen.SendInput
 
 
 
-
+			/*
 			var kb = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
 
 			//.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
@@ -68,7 +68,7 @@ namespace UniversalSplitScreen.SendInput
 			return ret;
 
 			//return (IsOn && kb.vkCode != Core.Options.CurrentOptions.EndVKey) ? (IntPtr)1 : IntPtr.Zero;				 
-
+			*/
 
 
 
