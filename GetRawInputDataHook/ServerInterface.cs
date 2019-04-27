@@ -32,10 +32,15 @@ namespace GetRawInputDataHook
 			cursorY = y;
 		}
 
-		public void GetCursorPosition(out int x, out int y)
+		/*public void GetCursorPosition(out int x, out int y)
 		{
 			x = cursorX;
 			y = cursorY;
+		}*/
+
+		public long GetCursorPosition()
+		{
+			return (long)cursorY << 32 | (long)(uint)cursorX;
 		}
 
 		public void SetVKey(int VKey, bool isPressed)

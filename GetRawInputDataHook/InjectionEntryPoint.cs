@@ -97,19 +97,29 @@ namespace GetRawInputDataHook
 		
 		public bool GetCursorPosHook(out POINT lpPoint)
 		{
-			_server.GetCursorPosition(out int x, out int y);
-
-			POINT p = new POINT
+			try
 			{
-				x = x,
-				y = y
-			};
+				long packedXY = _server.GetCursorPosition();
+				int x = (int)(packedXY & 0xFFFFFFFFL);
+				int y = (int)(packedXY >> 32);
 
-			ClientToScreen(hWnd, ref p);
+				POINT p = new POINT
+				{
+					x = x,
+					y = y
+				};
 
-			lpPoint = p;
+				ClientToScreen(hWnd, ref p);
 
-			return true;
+				lpPoint = p;
+
+				return true;
+			}catch (Exception e)
+			{
+				_server.ReportMessage($"Exception in GetCursorPos: {e}");
+				lpPoint = new POINT();
+				return true;
+			}
 		}
 
 		#endregion
@@ -126,7 +136,14 @@ namespace GetRawInputDataHook
 
 		public short GetAsyncKeyStateHook(int vKey)
 		{
-			return (short)(_server.GetIsVKeyPressed(vKey) ? (1 << 15) : 0); ;
+			try
+			{
+				return (short)(_server.GetIsVKeyPressed(vKey) ? (1 << 15) : 0);
+			}
+			catch (Exception)
+			{
+				return 0;
+			}
 		}
 		#endregion
 
@@ -141,10 +158,17 @@ namespace GetRawInputDataHook
 
 		public short GetKeyStateHook(int nVirtKey)
 		{
-			if (nVirtKey == 0x41 || nVirtKey == 0x44 || nVirtKey == 0x53 || nVirtKey == 0x57)//WASD
-				return _server.GetIsVKeyPressed(nVirtKey) ? (short)-32768 : (short)0;//-32768: Key down (aka high order bit = 1)
-			else
-				return GetKeyState(nVirtKey);
+			try
+			{
+				if (nVirtKey == 0x41 || nVirtKey == 0x44 || nVirtKey == 0x53 || nVirtKey == 0x57)//WASD
+					return _server.GetIsVKeyPressed(nVirtKey) ? (short)-32768 : (short)0;//-32768: Key down (aka high order bit = 1)
+				else
+					return GetKeyState(nVirtKey);
+			}
+			catch (Exception)
+			{
+				return 0;
+			}
 		}
 		#endregion
 
@@ -233,7 +257,15 @@ namespace GetRawInputDataHook
 
 		public IntPtr GetForegroundWindowHook()
 		{
-			return hWnd;
+			try
+			{
+				return hWnd;
+			}
+			catch (Exception e)
+			{
+				_server.ReportMessage($"Exception in GetForegroundWindow: {e}");
+				return IntPtr.Zero;
+			}
 		}
 
 		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
@@ -388,7 +420,7 @@ namespace GetRawInputDataHook
 
 				EasyHook.LocalHook CreateHook(string InModule, string InSymbolName, Delegate dele)
 				{
-					//TODO: make checkbox for Create/CreateUnmanaged (CreateUnmanaged crashes XNA games)
+					//TODO: make checkbox for Create/CreateUnmanaged (CreateUnmanaged can crash games)
 					/*var x = EasyHook.LocalHook.CreateUnmanaged(
 								EasyHook.LocalHook.GetProcAddress(InModule, InSymbolName),
 								Marshal.GetFunctionPointerForDelegate(dele),
