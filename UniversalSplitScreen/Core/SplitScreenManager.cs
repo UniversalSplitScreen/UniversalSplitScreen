@@ -15,6 +15,18 @@ namespace UniversalSplitScreen.Core
 {
 	class SplitScreenManager
 	{
+		/*[DllImport("EasyHook32.dll", SetLastError = true)]
+		static extern int RhInjectLibrary(ulong InTargetPID, ulong InWakeUpTID, ulong InInjectionOptions, 
+			[MarshalAsAttribute(UnmanagedType.LPWStr)] string InLibraryPath_x86, 
+			[MarshalAsAttribute(UnmanagedType.LPWStr)] string InLibraryPath_x64,
+			IntPtr InPassThruBuffer,
+			ulong InPassThruSize);*/
+
+		[DllImport("InjectorCPP.dll", SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+		static extern uint Inject(
+			int pid, 
+			[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath);
+
 		public bool IsRunningInSplitScreen { get; private set; } = false;
 
 		Dictionary<Task, CancellationTokenSource> setFocusTasks = new Dictionary<Task, CancellationTokenSource>();
@@ -118,7 +130,8 @@ namespace UniversalSplitScreen.Core
 				}
 
 				//EasyHook
-				if (Options.CurrentOptions.Hook_FilterRawInput || 
+				//TODO: REMOVE TRUE
+				if (true ||Options.CurrentOptions.Hook_FilterRawInput || 
 					Options.CurrentOptions.Hook_FilterWindowsMouseInput || 
 					Options.CurrentOptions.Hook_GetForegroundWindow || 
 					Options.CurrentOptions.Hook_GetCursorPos || 
@@ -127,7 +140,7 @@ namespace UniversalSplitScreen.Core
 				{
 					string channelName = null;
 					var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
-
+					
 					//string channelName = "sstest";
 					//var serverChannel = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton, System.Security.Principal.WellKnownSidType.WorldSid);
 
@@ -138,16 +151,32 @@ namespace UniversalSplitScreen.Core
 					server_getRawInputData.SetGame_hWnd(hWnd);
 					server_getRawInputData.SetAllowed_hDevice(window.MouseAttached);
 
-					string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "GetRawInputDataHook.dll");
+					//C#
+					//string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(
+					//	System.Reflection.Assembly.GetExecutingAssembly().Location), 
+					//	"GetRawInputDataHook.dll");
 
-					try
+					//C++
+					//string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(
+					//	System.Reflection.Assembly.GetExecutingAssembly().Location), 
+					//	"HookCPP32",
+					//	"HooksCPP.dll");
+
+					//TODO: FIX PATH
+					string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP.dll";
+
+					Console.WriteLine($"running func = {Inject(window.pid, injectionLibrary):x}");
+					
+					
+
+					/*try
 					{
 						// Injecting into existing process by Id
 						Console.WriteLine("Attempting to inject (GetRawInputData) into process {0}", window.pid);
 
 						// inject into existing process
 						EasyHook.RemoteHooking.Inject(
-							window.pid,                         // ID of process to inject into
+							window.pid,// ID of process to inject into
 							injectionLibrary_getRawInputData,   // 32-bit library to inject (if target is 32-bit)
 							//TODO: switch 32/64???
 							injectionLibrary_getRawInputData,   // 64-bit library to inject (if target is 64-bit)
@@ -169,7 +198,7 @@ namespace UniversalSplitScreen.Core
 						Console.WriteLine("There was an error while injecting hook into target:");
 						Console.ResetColor();
 						Console.WriteLine(e.ToString());
-					}
+					}*/
 				}
 			}
 
