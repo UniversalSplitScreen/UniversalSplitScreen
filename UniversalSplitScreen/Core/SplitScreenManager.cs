@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using UniversalSplitScreen.Piping;
 using UniversalSplitScreen.RawInput;
 using UniversalSplitScreen.SendInput;
 
@@ -22,10 +24,13 @@ namespace UniversalSplitScreen.Core
 			IntPtr InPassThruBuffer,
 			ulong InPassThruSize);*/
 
-		[DllImport("InjectorCPP.dll", SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
+		[DllImport("InjectorCPP.dll", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
 		static extern uint Inject(
 			int pid, 
-			[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath);
+			[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath,
+			IntPtr hWnd,
+			string ipcChannelName,
+			int pipeHandle);
 
 		public bool IsRunningInSplitScreen { get; private set; } = false;
 
@@ -140,7 +145,9 @@ namespace UniversalSplitScreen.Core
 				{
 					string channelName = null;
 					var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
-					
+					Console.WriteLine($"Channel name = {channelName}");
+
+
 					//string channelName = "sstest";
 					//var serverChannel = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton, System.Security.Principal.WellKnownSidType.WorldSid);
 
@@ -162,12 +169,53 @@ namespace UniversalSplitScreen.Core
 					//	"HookCPP32",
 					//	"HooksCPP.dll");
 
+
+
+					/*AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.None);
+					pipeServer.ReadMode = PipeTransmissionMode.Byte;
+
+					string clientHandle = pipeServer.GetClientHandleAsString();
+					
+					int.TryParse(clientHandle, out int clientHandleInt);
+					Console.WriteLine($"pipe client handle = {clientHandle}, int form = {clientHandleInt}");
+
 					//TODO: FIX PATH
 					string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP.dll";
 
-					Console.WriteLine($"running func = {Inject(window.pid, injectionLibrary):x}");
-					
-					
+					uint result = Inject(window.pid, injectionLibrary, window.hWnd, channelName, clientHandleInt);
+					Console.WriteLine($"InjectorCPP.Inject result = {result:x}");
+
+					pipeServer.DisposeLocalCopyOfClientHandle();
+
+					//Thread.Sleep(2000);
+
+					byte[] bytes = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+					//pipeServer.Write(bytes, 0, 9);
+					pipeServer.WriteByte(bytes[0]);*/
+
+
+					var pipe = new AnonymousPipe();
+					int handle = pipe.GetReadHandle().ToInt32();
+
+					Console.WriteLine($"Pipe handle = {handle}");
+
+					//TODO: FIX PATH
+					string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP.dll";
+
+					uint result = Inject(window.pid, injectionLibrary, window.hWnd, channelName, handle);
+					Console.WriteLine($"InjectorCPP.Inject result = {result:x}");
+
+
+					for (int i = 0; i < 20; i++)
+					{
+						Thread.Sleep(5000);
+
+						pipe.TestWrite();
+					}
+
+
+
+
 
 					/*try
 					{

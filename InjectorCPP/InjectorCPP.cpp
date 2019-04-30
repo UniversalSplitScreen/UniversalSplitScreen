@@ -7,10 +7,32 @@
 #include <cstring>
 #include <easyhook.h>
 
-extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath)
+
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+struct UserData
 {
-	std::cout << "injector cpp";
-	DWORD testData = 77;
+	HWND hWnd;
+	char ipcChannelName[30];//EasyHook.RemoteHooking.GenerateName will be between 20 and 29 characters
+	int pipeHandle;
+};
+
+extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath, HWND hWnd, char* ipcChannelName, int pipeHandle)
+{
+	ofstream myfile;
+	myfile.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\InjectorCPP_Output.txt");
+	std::string ipcChannelName2(ipcChannelName);
+	myfile << ipcChannelName2 << "\n";
+	myfile << ipcChannelName << "\n";
+	myfile << &ipcChannelName;
+	myfile.close();
+	
+	UserData* data = new UserData();
+	data->hWnd = hWnd;
+	strcpy_s(data->ipcChannelName, ipcChannelName);
+	data->pipeHandle = pipeHandle;
 
 	NTSTATUS nt = RhInjectLibrary(
 		pid,
@@ -18,8 +40,8 @@ extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath)
 		EASYHOOK_INJECT_DEFAULT,
 		injectionDllPath,
 		NULL,
-		&testData,
-		sizeof(DWORD)
+		data,
+		sizeof(UserData)
 	);
 
 	return nt;//NTSTATUS: 32-bit

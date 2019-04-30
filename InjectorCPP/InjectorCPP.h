@@ -2,4 +2,4 @@
 
 #include "stdafx.h"
 
-extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath);
+extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath, HWND hWnd, char* ipcChannelName, int pipeHandle);
