@@ -1,29 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO.Pipes;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace UniversalSplitScreen.Piping
 {
 	public class NamedPipe
 	{
 		public readonly string pipeName;
-
-		Thread serverThread;
+		
 		NamedPipeServerStream pipeServer;
-		Queue<(byte msg, int param1, int param2)> messageQueue = new Queue<(byte, int, int)>();
 
 		public NamedPipe()
 		{
 			pipeName = GenerateName();
-
-			serverThread = new Thread(Start);
-			serverThread.Start();
-			//Start();
+			
+			Start();
 		}
 
 		public void Start()
@@ -33,30 +25,17 @@ namespace UniversalSplitScreen.Piping
 			Console.WriteLine($"Created pipe {pipeName}");
 			pipeServer.WaitForConnection();
 			Console.WriteLine($"Client connected to pipe {pipeName}");
-
-			while (true)
-			{
-				if (messageQueue.Count > 0)
-				{
-					var (msg, param1, param2) = messageQueue.Dequeue();
-
-					byte[] bytes = {
-						msg,
-						(byte)(param1 >> 24), (byte)(param1 >> 16), (byte)(param1 >> 8), (byte)param1,
-						(byte)(param2 >> 24), (byte)(param2 >> 16), (byte)(param2 >> 8), (byte)param2
-					};
-
-					pipeServer.Write(bytes, 0, 9);//TODO: throws exception if game is closed
-
-					//Console.WriteLine($"Wrote Msg={msg}, param1={param1}, param2={param2}");
-				}
-			}
-
 		}
 
 		public void AddMessage(byte message, int param1, int param2)
 		{
-			messageQueue.Enqueue((message, param1, param2));
+			byte[] bytes = {
+					message,
+					(byte)(param1 >> 24), (byte)(param1 >> 16), (byte)(param1 >> 8), (byte)param1,
+					(byte)(param2 >> 24), (byte)(param2 >> 16), (byte)(param2 >> 8), (byte)param2
+				};
+
+			pipeServer.Write(bytes, 0, 9);
 		}
 
 		//https://github.com/EasyHook/EasyHook/blob/master/EasyHook/RemoteHook.cs
