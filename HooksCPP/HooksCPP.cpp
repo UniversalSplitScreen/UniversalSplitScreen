@@ -10,6 +10,9 @@ static int x;
 static int y;
 UINT16 vkey_state;
 
+
+
+
 BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 {
 	POINT p = POINT();
@@ -49,6 +52,27 @@ SHORT WINAPI GetAsyncKeyState_Hook(int vKey)
 {
 	return (vkey_state & (1 << getBitShiftForVKey(vKey))) == 0 ? 0 : 0b1000000000000000;
 }
+
+
+LRESULT CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+	//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
+	if (Msg == 0x0200 && ((int)wParam & 0b10000000) > 0)
+		return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
+
+	// || Msg == 0x00FF
+	else if ((Msg >= 0x020B && Msg <= 0x020D) || Msg == 0x0200 || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x02A3)//Other mouse events. 
+		return 0;
+	else
+	{
+		if (false && Msg == 0x0006) //0x0006 is WM_ACTIVATE, which resets the mouse position for starbound [citation needed]
+			return CallWindowProc(lpPrevWndFunc, hWnd, Msg, 1, 0);
+		else
+			return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
+	}
+}
+
+
 
 inline int bytesToInt(BYTE* bytes)
 {
@@ -169,11 +193,11 @@ void installHook(LPCSTR moduleHandle, LPCSTR lpProcName, void* InCallback)
 	{
 		ULONG ACLEntries[1] = { 0 };
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
-		std::cout << "Successfully install hook " << lpProcName << "\n";
+		std::cout << "Successfully installed hook " << lpProcName << "\n";
 	}
 	else
 	{
-		std::cout << "Failed install hook " << lpProcName << "\n";
+		std::cout << "Failed to install hook " << lpProcName << ". NSTATUS: " << hookResult << "\n";
 	}
 }
 
@@ -206,6 +230,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		installHook(TEXT("user32"),	"GetCursorPos",			GetCursorPos_Hook);
 		installHook(TEXT("user32"),	"GetForegroundWindow",	GetForegroundWindow_Hook);
 		installHook(TEXT("user32"), "GetAsyncKeyState",		GetAsyncKeyState_Hook);
+		installHook(TEXT("user32"), "CallWindowProcW",		CallWindowProc_Hook);
+		//installHook(TEXT("user32"), "CallWindowProcA",	CallWindowProc_Hook);
 
 		//Start named pipe client
 		startPipe();

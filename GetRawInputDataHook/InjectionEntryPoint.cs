@@ -81,6 +81,24 @@ namespace GetRawInputDataHook
 		}
 		#endregion
 
+		#region RegisterRawInputDevices hook
+		//TODO: MAKE CONFIGURABLE
+
+		private static EasyHook.LocalHook registerRawInputDevicesHook;
+
+		//https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-registerrawinputdevices
+		[DllImport("User32.dll")]
+		public static extern bool RegisterRawInputDevices(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize);
+
+		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+		delegate bool RegisterRawInputDevicesDelegate(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize);
+
+		public bool RegisterRawInputDevicesHook(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize)
+		{
+			return true;//Pretend it succeeded
+		}
+		#endregion
+
 		#region GetCursorPos hook
 		//TODO: test with monogame games? (MonoGame uses SDL)
 		private static EasyHook.LocalHook getCursorPosHook;
@@ -312,23 +330,7 @@ namespace GetRawInputDataHook
 
 		#endregion
 
-		#region RegisterRawInputDevices hook
-		//TODO: MAKE CONFIGURABLE
-
-		private static EasyHook.LocalHook registerRawInputDevicesHook;
-
-		//https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-registerrawinputdevices
-		[DllImport("User32.dll")]
-		public static extern bool RegisterRawInputDevices(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize);
-
-		[UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
-		delegate bool RegisterRawInputDevicesDelegate(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize);
-
-		public bool RegisterRawInputDevicesHook(RAWINPUTDEVICE[] pRawInputDevice, uint uiNumDevices, uint cbSize)
-		{
-			return true;//Pretend it succeeded
-		}
-		#endregion
+		
 
 		/* GetFocus Hook
 		#region GetFocus hook
