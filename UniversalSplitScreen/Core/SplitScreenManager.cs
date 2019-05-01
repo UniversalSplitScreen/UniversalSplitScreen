@@ -104,7 +104,7 @@ namespace UniversalSplitScreen.Core
 							string windowText = WinApi.GetWindowText(_hWnd);
 							Console.WriteLine($" - thread id=0x{threadID:x}, _hWnd=0x{_hWnd:x}, window text={windowText}");
 
-							if (windowText.ToLower().Contains("DIEmWin".ToLower()))//TODO: make configurable
+							if (windowText != null && windowText.ToLower().Contains("DIEmWin".ToLower()))//TODO: make configurable
 							{
 								window.borderlands2_DIEmWin_hWnd = _hWnd;
 							}
@@ -143,9 +143,9 @@ namespace UniversalSplitScreen.Core
 					Options.CurrentOptions.Hook_GetKeyState || 
 					Options.CurrentOptions.Hook_GetAsyncKeyState)
 				{
-					string channelName = null;
-					var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
-					Console.WriteLine($"Channel name = {channelName}");
+					//string channelName = null;
+					//var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
+					//Console.WriteLine($"Channel name = {channelName}");
 
 
 					//string channelName = "sstest";
@@ -153,15 +153,11 @@ namespace UniversalSplitScreen.Core
 
 					//Console.WriteLine($"Channel name = {channelName}, Channel uri = {serverChannel_getRawInputData.GetChannelUri()}");
 
-					var server_getRawInputData = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
-					server_getRawInputData.Ping();
-					server_getRawInputData.SetGame_hWnd(hWnd);
-					server_getRawInputData.SetAllowed_hDevice(window.MouseAttached);
+					//var server_getRawInputData = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
+					//server_getRawInputData.Ping();
+					//server_getRawInputData.SetGame_hWnd(hWnd);
+					//server_getRawInputData.SetAllowed_hDevice(window.MouseAttached);
 
-					//C#
-					//string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(
-					//	System.Reflection.Assembly.GetExecutingAssembly().Location), 
-					//	"GetRawInputDataHook.dll");
 
 					//C++
 					//string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(
@@ -170,54 +166,30 @@ namespace UniversalSplitScreen.Core
 					//	"HooksCPP.dll");
 
 
-
-					/*AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.None);
-					pipeServer.ReadMode = PipeTransmissionMode.Byte;
-
-					string clientHandle = pipeServer.GetClientHandleAsString();
-					
-					int.TryParse(clientHandle, out int clientHandleInt);
-					Console.WriteLine($"pipe client handle = {clientHandle}, int form = {clientHandleInt}");
+					var pipe = new NamedPipe();
+					window.HooksCPPNamedPipe = pipe;
 
 					//TODO: FIX PATH
+#if DEBUG
 					string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP.dll";
+#else
+					string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Release\HooksCPP.dll";
+#endif
 
-					uint result = Inject(window.pid, injectionLibrary, window.hWnd, channelName, clientHandleInt);
+					uint result = Inject(window.pid, injectionLibrary, window.hWnd, pipe.pipeName, 0);
 					Console.WriteLine($"InjectorCPP.Inject result = {result:x}");
 
-					pipeServer.DisposeLocalCopyOfClientHandle();
-
-					//Thread.Sleep(2000);
-
-					byte[] bytes = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-					//pipeServer.Write(bytes, 0, 9);
-					pipeServer.WriteByte(bytes[0]);*/
-
-
-					var pipe = new AnonymousPipe();
-					int handle = pipe.GetReadHandle().ToInt32();
-
-					Console.WriteLine($"Pipe handle = {handle}");
-
-					//TODO: FIX PATH
-					string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP.dll";
-
-					uint result = Inject(window.pid, injectionLibrary, window.hWnd, channelName, handle);
-					Console.WriteLine($"InjectorCPP.Inject result = {result:x}");
-
-
-					for (int i = 0; i < 20; i++)
-					{
-						Thread.Sleep(5000);
-
-						pipe.TestWrite();
-					}
+					//pipe.Start();
 
 
 
-
-
-					/*try
+					/*
+					 * //C#
+					//string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(
+					//	System.Reflection.Assembly.GetExecutingAssembly().Location), 
+					//	"GetRawInputDataHook.dll");
+					 * 
+					 * try
 					{
 						// Injecting into existing process by Id
 						Console.WriteLine("Attempting to inject (GetRawInputData) into process {0}", window.pid);
@@ -308,7 +280,7 @@ namespace UniversalSplitScreen.Core
 			Program.Form.KeyboardHandleText = "0";
 		}
 
-		#endregion
+#endregion
 
 		private void SetFocus(IntPtr hWnd, CancellationToken token)
 		{

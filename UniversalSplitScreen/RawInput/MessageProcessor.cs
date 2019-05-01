@@ -219,6 +219,8 @@ namespace UniversalSplitScreen.RawInput
 								mouseVec.x = Math.Min(window.Width, Math.Max(mouseVec.x + mouse.lLastX, 0));
 								mouseVec.y = Math.Min(window.Height, Math.Max(mouseVec.y + mouse.lLastY, 0));
 
+								window.HooksCPPNamedPipe.AddMessage(0x01, mouseVec.x, mouseVec.y);
+
 								server?.SetCursorPosition(mouseVec.x, mouseVec.y);//TODO: make configurable with GetCursorPos checkbox
 
 								//Console.WriteLine($"MOUSE. flags={mouse.usFlags}, X={mouseVec.x}, y={mouseVec.y}, buttonFlags={mouse.usButtonFlags} device pointer = {rawBuffer.header.hDevice}");

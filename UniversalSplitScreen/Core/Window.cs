@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Remoting.Channels.Ipc;
+using UniversalSplitScreen.Piping;
 
 namespace UniversalSplitScreen.Core
 {
@@ -23,6 +24,8 @@ namespace UniversalSplitScreen.Core
 		public WindowManagement.RECT Bounds { get; private set; }
 		public int Width => Bounds.Right - Bounds.Left;
 		public int Height => Bounds.Bottom - Bounds.Top;
+
+		public NamedPipe HooksCPPNamedPipe { get; set; }
 
 		public Window(IntPtr hWnd)
 		{

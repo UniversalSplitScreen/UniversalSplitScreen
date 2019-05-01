@@ -15,7 +15,7 @@ using namespace std;
 struct UserData
 {
 	HWND hWnd;
-	char ipcChannelName[30];//EasyHook.RemoteHooking.GenerateName will be between 20 and 29 characters
+	char ipcChannelName[256];//EasyHook.RemoteHooking.GenerateName will be between 20 and 29 characters
 	int pipeHandle;
 };
 

@@ -110,8 +110,7 @@
     <Compile Include="Core\OptionsStructure.cs" />
     <Compile Include="Core\WinApi.cs" />
     <Compile Include="Core\Window.cs" />
-    <Compile Include="Piping\AnonymousPipe.cs" />
-    <Compile Include="Piping\SECURITY_ATTRIBUTES.cs" />
+    <Compile Include="Piping\NamedPipe.cs" />
     <Compile Include="Piping\WinApi.cs" />
     <Compile Include="UI\Form1.cs">
       <SubType>Form</SubType>
