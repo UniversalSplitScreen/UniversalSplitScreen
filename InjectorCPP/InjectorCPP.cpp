@@ -7,32 +7,19 @@
 #include <cstring>
 #include <easyhook.h>
 
-
-#include <iostream>
-#include <fstream>
 using namespace std;
 
 struct UserData
 {
 	HWND hWnd;
-	char ipcChannelName[256];//EasyHook.RemoteHooking.GenerateName will be between 20 and 29 characters
-	int pipeHandle;
+	char ipcChannelName[256];//Name will be 30 characters
 };
 
-extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath, HWND hWnd, char* ipcChannelName, int pipeHandle)
-{
-	ofstream myfile;
-	myfile.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\InjectorCPP_Output.txt");
-	std::string ipcChannelName2(ipcChannelName);
-	myfile << ipcChannelName2 << "\n";
-	myfile << ipcChannelName << "\n";
-	myfile << &ipcChannelName;
-	myfile.close();
-	
+extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath, HWND hWnd, char* ipcChannelName)
+{	
 	UserData* data = new UserData();
 	data->hWnd = hWnd;
 	strcpy_s(data->ipcChannelName, ipcChannelName);
-	data->pipeHandle = pipeHandle;
 
 	NTSTATUS nt = RhInjectLibrary(
 		pid,
