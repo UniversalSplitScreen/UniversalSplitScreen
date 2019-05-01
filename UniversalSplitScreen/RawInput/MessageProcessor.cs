@@ -218,7 +218,7 @@ namespace UniversalSplitScreen.RawInput
 
 								mouseVec.x = Math.Min(window.Width, Math.Max(mouseVec.x + mouse.lLastX, 0));
 								mouseVec.y = Math.Min(window.Height, Math.Max(mouseVec.y + mouse.lLastY, 0));
-
+								
 								window.HooksCPPNamedPipe.AddMessage(0x01, mouseVec.x, mouseVec.y);
 
 								server?.SetCursorPosition(mouseVec.x, mouseVec.y);//TODO: make configurable with GetCursorPos checkbox
@@ -259,6 +259,7 @@ namespace UniversalSplitScreen.RawInput
 
 											//TODO: MAKE CONFIGURABLE FOR GetAsyncKeyState hook checkbox
 											server?.SetVKey(VKey, isButtonDown);
+											window.HooksCPPNamedPipe.AddMessage(0x02, VKey, isButtonDown ? 1 : 0);
 
 											var state = window.MouseState;
 											switch (leftMiddleRight)

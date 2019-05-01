@@ -8,6 +8,7 @@ HWND hWnd = 0;
 std::string _ipcChannelName;
 static int x;
 static int y;
+UINT16 vkey_state;
 
 BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 {
@@ -19,7 +20,35 @@ BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 	return true;
 }
 
+HWND WINAPI GetForegroundWindow_Hook()
+{
+	return hWnd;
+}
 
+inline int getBitShiftForVKey(int VKey)
+{
+	int shift = 0;
+	if (VKey <= 6)
+	{
+		return VKey - 1;
+	}
+	else
+	{
+		switch (VKey)
+		{
+			case 0x41: return 5;
+			case 0x44: return 6;
+			case 0x53: return 7;
+			case 0x47: return 8;
+			default: return 9;
+		}
+	}
+}
+
+SHORT WINAPI GetAsyncKeyState_Hook(int vKey)
+{
+	return (vkey_state & (1 << getBitShiftForVKey(vKey))) == 0 ? 0 : 0b1000000000000000;
+}
 
 inline int bytesToInt(BYTE* bytes)
 {
@@ -100,6 +129,19 @@ void startPipe()
 					y = param2;
 					break;
 				}
+				case 0x02:
+				{
+					UINT16 shift = (1 << getBitShiftForVKey(param1));
+					if (param2 == 0)//Button up
+					{
+						vkey_state &= (~shift);//Sets to 0
+					}
+					else//Button down
+					{
+						vkey_state |= shift;//Sets to 1
+					}
+					break;
+				}
 				default:
 				{
 					break;
@@ -161,8 +203,9 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		std::cout << "Received IPC channel: " << ipcChannelName << "\n";
 		
 		//Install hooks
-		installHook(TEXT("user32"), "GetCursorPos", GetCursorPos_Hook);
-
+		installHook(TEXT("user32"),	"GetCursorPos",			GetCursorPos_Hook);
+		installHook(TEXT("user32"),	"GetForegroundWindow",	GetForegroundWindow_Hook);
+		installHook(TEXT("user32"), "GetAsyncKeyState",		GetAsyncKeyState_Hook);
 
 		//Start named pipe client
 		startPipe();
