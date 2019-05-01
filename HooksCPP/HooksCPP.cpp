@@ -3,6 +3,11 @@
 #include <string>
 #include <iostream>
 #include <Windows.h>
+#include <tlhelp32.h>
+
+#include <iostream>
+#include <fstream>
+
 
 HWND hWnd = 0;
 std::string _ipcChannelName;
@@ -56,6 +61,11 @@ SHORT WINAPI GetAsyncKeyState_Hook(int vKey)
 
 LRESULT CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
+	/*std::ofstream myfile;
+	myfile.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt");
+	myfile << Msg << "\n";
+	myfile.close();*/
+
 	//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
 	if (Msg == 0x0200 && ((int)wParam & 0b10000000) > 0)
 		return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
@@ -207,6 +217,23 @@ struct UserData
 	char ipcChannelName[256];
 };
 
+LRESULT CALLBACK GetMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+	MSG* lpMsg = (MSG*)lParam;
+
+	UINT Msg = lpMsg->message;
+
+	if ((Msg == 0x0200 && ((int)wParam & 0b10000000) > 0)
+		|| !((Msg >= 0x020B && Msg <= 0x020D) || Msg == 0x0200 || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x02A3))
+	{
+		return CallNextHookEx(NULL, code, wParam, lParam);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
 	//Cout will go to the games console
@@ -230,8 +257,18 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		installHook(TEXT("user32"),	"GetCursorPos",			GetCursorPos_Hook);
 		installHook(TEXT("user32"),	"GetForegroundWindow",	GetForegroundWindow_Hook);
 		installHook(TEXT("user32"), "GetAsyncKeyState",		GetAsyncKeyState_Hook);
-		installHook(TEXT("user32"), "CallWindowProcW",		CallWindowProc_Hook);
-		//installHook(TEXT("user32"), "CallWindowProcA",	CallWindowProc_Hook);
+		//installHook(TEXT("user32"), "CallWindowProcW",		CallWindowProc_Hook);
+		
+		HANDLE hThreadSnap = INVALID_HANDLE_VALUE;
+		THREADENTRY32 te32;
+		hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+		Thread32First(hThreadSnap, &te32);
+		do
+		{
+			SetWindowsHookEx(3, GetMsgProc, NULL, te32.th32ThreadID);
+		} while (Thread32Next(hThreadSnap, &te32));
+
+		
 
 		//Start named pipe client
 		startPipe();
