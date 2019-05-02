@@ -143,82 +143,82 @@ namespace UniversalSplitScreen.Core
 					Options.CurrentOptions.Hook_GetKeyState || 
 					Options.CurrentOptions.Hook_GetAsyncKeyState)
 				{
-					//string channelName = null;
-					//var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
-					//Console.WriteLine($"Channel name = {channelName}");
+
+					{
+
+						//C++
+						//string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(
+						//	System.Reflection.Assembly.GetExecutingAssembly().Location), 
+						//	"HookCPP32",
+						//	"HooksCPP.dll");
 
 
-					//string channelName = "sstest";
-					//var serverChannel = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton, System.Security.Principal.WellKnownSidType.WorldSid);
+						var pipe = new NamedPipe();
+						window.HooksCPPNamedPipe = pipe;
 
-					//Console.WriteLine($"Channel name = {channelName}, Channel uri = {serverChannel_getRawInputData.GetChannelUri()}");
-
-					//var server_getRawInputData = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
-					//server_getRawInputData.Ping();
-					//server_getRawInputData.SetGame_hWnd(hWnd);
-					//server_getRawInputData.SetAllowed_hDevice(window.MouseAttached);
-
-
-					//C++
-					//string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(
-					//	System.Reflection.Assembly.GetExecutingAssembly().Location), 
-					//	"HookCPP32",
-					//	"HooksCPP.dll");
-
-
-					var pipe = new NamedPipe();
-					window.HooksCPPNamedPipe = pipe;
-
-					//TODO: FIX PATH
+						//TODO: FIX PATH
 #if DEBUG
-					string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP.dll";
+						string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP.dll";
 #else
 					string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Release\HooksCPP.dll";
 #endif
 
-					uint result = Inject(window.pid, injectionLibrary, window.hWnd, pipe.pipeName, 0);
-					Console.WriteLine($"InjectorCPP.Inject result = {result:x}");
+						uint result = Inject(window.pid, injectionLibrary, window.hWnd, pipe.pipeName, 0);
+						Console.WriteLine($"InjectorCPP.Inject result = {result:x}");
 
-					//pipe.Start();
-
-
-
-					/*
-					 * //C#
-					//string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(
-					//	System.Reflection.Assembly.GetExecutingAssembly().Location), 
-					//	"GetRawInputDataHook.dll");
-					 * 
-					 * try
-					{
-						// Injecting into existing process by Id
-						Console.WriteLine("Attempting to inject (GetRawInputData) into process {0}", window.pid);
-
-						// inject into existing process
-						EasyHook.RemoteHooking.Inject(
-							window.pid,// ID of process to inject into
-							injectionLibrary_getRawInputData,   // 32-bit library to inject (if target is 32-bit)
-							//TODO: switch 32/64???
-							injectionLibrary_getRawInputData,   // 64-bit library to inject (if target is 64-bit)
-							channelName,                        // the parameters to pass into injected library
-							Options.CurrentOptions.Hook_FilterRawInput,
-							Options.CurrentOptions.Hook_FilterWindowsMouseInput,
-							Options.CurrentOptions.Hook_GetForegroundWindow,
-							Options.CurrentOptions.Hook_GetCursorPos,
-							Options.CurrentOptions.Hook_GetAsyncKeyState,
-							Options.CurrentOptions.Hook_GetKeyState
-						);
-
-						window.GetRawInputData_HookIPCServerChannel = serverChannel_getRawInputData;
-						window.GetRawInputData_HookServer = server_getRawInputData;
+						//pipe.Start();
 					}
-					catch (Exception e)
+
+
+
 					{
-						Console.ForegroundColor = ConsoleColor.Red;
-						Console.WriteLine("There was an error while injecting hook into target:");
-						Console.ResetColor();
-						Console.WriteLine(e.ToString());
-					}*/
+						//C#
+						/*string channelName = null;
+						var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
+						Console.WriteLine($"Channel name = {channelName}");
+
+
+						var server_getRawInputData = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
+						server_getRawInputData.Ping();
+						server_getRawInputData.SetGame_hWnd(hWnd);
+						server_getRawInputData.SetAllowed_hDevice(window.MouseAttached);
+
+
+						string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(
+							System.Reflection.Assembly.GetExecutingAssembly().Location),
+							"GetRawInputDataHook.dll");
+
+						try
+						{
+							// Injecting into existing process by Id
+							Console.WriteLine("Attempting to inject (GetRawInputData) into process {0}", window.pid);
+
+							// inject into existing process
+							EasyHook.RemoteHooking.Inject(
+								window.pid,// ID of process to inject into
+								injectionLibrary_getRawInputData,   // 32-bit library to inject (if target is 32-bit)
+																	//TODO: switch 32/64???
+								injectionLibrary_getRawInputData,   // 64-bit library to inject (if target is 64-bit)
+								channelName,                        // the parameters to pass into injected library
+								Options.CurrentOptions.Hook_FilterRawInput,
+								Options.CurrentOptions.Hook_FilterWindowsMouseInput,
+								Options.CurrentOptions.Hook_GetForegroundWindow,
+								Options.CurrentOptions.Hook_GetCursorPos,
+								Options.CurrentOptions.Hook_GetAsyncKeyState,
+								Options.CurrentOptions.Hook_GetKeyState
+							);
+
+							window.GetRawInputData_HookIPCServerChannel = serverChannel_getRawInputData;
+							window.GetRawInputData_HookServer = server_getRawInputData;
+						}
+						catch (Exception e)
+						{
+							Console.ForegroundColor = ConsoleColor.Red;
+							Console.WriteLine("There was an error while injecting hook into target:");
+							Console.ResetColor();
+							Console.WriteLine(e.ToString());
+						}*/
+					}
 				}
 			}
 

@@ -100,9 +100,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(SolutionDir)$(Configuration)\$(ProjectName).dll $(SolutionDir)UniversalSplitScreen\bin\$(AppxManifestMetadataClTargetArchDir)\$(Configuration)
-copy $(SolutionDir)$(Configuration)\$(ProjectName).dll $(SolutionDir)TestingConsole\bin\$(AppxManifestMetadataClTargetArchDir)\$(Configuration)
-echo copy $(SolutionDir)$(Configuration)\$(ProjectName).dll $(SolutionDir)UniversalSplitScreen\bin\$(AppxManifestMetadataClTargetArchDir)\$(Configuration)</Command>
+      <Command>copy $(SolutionDir)$(Configuration)\$(ProjectName).dll $(SolutionDir)UniversalSplitScreen\bin\$(AppxManifestMetadataClTargetArchDir)\$(Configuration)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

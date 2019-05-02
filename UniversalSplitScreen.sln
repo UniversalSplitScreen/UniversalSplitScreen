@@ -16,8 +16,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HooksCPP", "HooksCPP\HooksC
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InjectorCPP", "InjectorCPP\InjectorCPP.vcxproj", "{C84F2C67-4C2C-4F7C-8540-084253929B28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestingConsole", "TestingConsole\TestingConsole.csproj", "{0954B48E-FB22-47A1-94C7-9E80B86152EE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,18 +70,6 @@ Global
 		{C84F2C67-4C2C-4F7C-8540-084253929B28}.Release|x64.Build.0 = Release|x64
 		{C84F2C67-4C2C-4F7C-8540-084253929B28}.Release|x86.ActiveCfg = Release|Win32
 		{C84F2C67-4C2C-4F7C-8540-084253929B28}.Release|x86.Build.0 = Release|Win32
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Debug|x64.Build.0 = Debug|Any CPU
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Debug|x86.Build.0 = Debug|Any CPU
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Release|x64.ActiveCfg = Release|Any CPU
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Release|x64.Build.0 = Release|Any CPU
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Release|x86.ActiveCfg = Release|x86
-		{0954B48E-FB22-47A1-94C7-9E80B86152EE}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

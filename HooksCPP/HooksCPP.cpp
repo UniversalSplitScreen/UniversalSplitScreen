@@ -282,7 +282,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 				te32.dwSize = sizeof(THREADENTRY32);
 				if (Thread32First(hThreadSnap, &te32))
 				{
-					cout << "Install mouse message filter for all threads\n";
+					cout << "Installed mouse message filter for all threads\n";
 					do
 					{
 						SetWindowsHookEx(WH_GETMESSAGE, GetMsgProc, NULL, te32.th32ThreadID);

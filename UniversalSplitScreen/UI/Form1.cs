@@ -53,6 +53,7 @@ namespace UniversalSplitScreen.UI
 			checkBoxHook_GetAsyncKeyState.Checked		=	Core.Options.CurrentOptions.Hook_GetAsyncKeyState;
 			checkBoxHook_GetKeyState.Checked			=	Core.Options.CurrentOptions.Hook_GetKeyState;
 		}
+		
 
 		protected override void WndProc(ref Message msg)
 		{
