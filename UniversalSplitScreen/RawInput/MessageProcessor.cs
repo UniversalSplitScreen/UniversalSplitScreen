@@ -169,8 +169,23 @@ namespace UniversalSplitScreen.RawInput
 
 											keysDown[VKey] = keyDown;
 
-											if (VKey == 0x41 || VKey == 0x44 || VKey == 0x53 || VKey == 0x57)//WASD
+											//if (VKey == 0x41 || VKey == 0x44 || VKey == 0x53 || VKey == 0x57)//WASD
+											//{
+											//	window.GetRawInputData_HookServer?.SetVKey(VKey, keyDown);
+											//	window.HooksCPPNamedPipe?.AddMessage(0x02, VKey, keyDown ? 1 : 0);
+											//}
+											
+											byte shift = (byte)(VKey == 0x41 ? 0x0001 : (VKey == 0x44 ? 0x0010 : (VKey == 0x53 ? 0x0100 : (VKey == 0x57 ? 0x1000 : 0))));
+											if ((window.WASD_State & shift) != 0)
+											{
+												if (keyDown)
+													window.WASD_State |= shift;
+												else
+													window.WASD_State &= (byte)~shift;
+
 												window.GetRawInputData_HookServer?.SetVKey(VKey, keyDown);
+												window.HooksCPPNamedPipe?.AddMessage(0x02, VKey, keyDown ? 1 : 0);
+											}
 
 											//This also makes GetKeyboardState work, as windows uses the message queue for GetKeyboardState
 											SendInput.WinApi.PostMessageA(hWnd, keyboardMessage, (IntPtr)VKey, (UIntPtr)code);
@@ -219,7 +234,7 @@ namespace UniversalSplitScreen.RawInput
 								mouseVec.x = Math.Min(window.Width, Math.Max(mouseVec.x + mouse.lLastX, 0));
 								mouseVec.y = Math.Min(window.Height, Math.Max(mouseVec.y + mouse.lLastY, 0));
 								
-								window.HooksCPPNamedPipe.AddMessage(0x01, mouseVec.x, mouseVec.y);
+								window.HooksCPPNamedPipe?.AddMessage(0x01, mouseVec.x, mouseVec.y);
 
 								server?.SetCursorPosition(mouseVec.x, mouseVec.y);//TODO: make configurable with GetCursorPos checkbox
 

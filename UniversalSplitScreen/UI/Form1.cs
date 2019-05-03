@@ -57,9 +57,14 @@ namespace UniversalSplitScreen.UI
 
 		protected override void WndProc(ref Message msg)
 		{
-			Program.MessageProcessor?.WndProc(ref msg);
-
-			base.WndProc(ref msg);
+			if (msg.Msg == 0x00FF)
+			{
+				Program.MessageProcessor?.WndProc(ref msg);
+			}
+			else
+			{
+				base.WndProc(ref msg);
+			}
 		}
 
 		#region Main page events

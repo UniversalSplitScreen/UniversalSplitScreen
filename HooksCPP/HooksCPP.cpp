@@ -89,6 +89,7 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 	}
 }
 
+/*
 LRESULT CALLBACK GetMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
 	MSG* lpMsg = (MSG*)lParam;
@@ -105,6 +106,12 @@ LRESULT CALLBACK GetMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPara
 	{
 		return 0;
 	}
+}
+*/
+
+BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize)
+{
+	return true;
 }
 
 inline int bytesToInt(BYTE* bytes)
@@ -265,14 +272,15 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		cout << "Received IPC channel: " << ipcChannelName << "\n";
 		
 		//Install hooks
-		installHook(TEXT("user32"),	"GetCursorPos",			GetCursorPos_Hook);
-		installHook(TEXT("user32"),	"GetForegroundWindow",	GetForegroundWindow_Hook);
-		installHook(TEXT("user32"), "GetAsyncKeyState",		GetAsyncKeyState_Hook);
-		installHook(TEXT("user32"), "GetKeyState",			GetKeyState_Hook);
-		installHook(TEXT("user32"), "CallWindowProcW",		CallWindowProc_Hook);
+		installHook(TEXT("user32"),	"GetCursorPos",				GetCursorPos_Hook);
+		installHook(TEXT("user32"),	"GetForegroundWindow",		GetForegroundWindow_Hook);
+		installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
+		//installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
+		//installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
+		installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 		
 		//Filter mouse messages
-		if (false)
+		/*if (false)
 		{
 			HANDLE hThreadSnap = INVALID_HANDLE_VALUE;
 			THREADENTRY32 te32;
@@ -294,8 +302,18 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 				}
 				//CloseHandle(hThreadSnap);
 			}
-		}
+		}*/
 
+		//De-register from Raw Input
+		RAWINPUTDEVICE rid[1];
+		rid[0].usUsagePage = 0x01;
+		rid[0].usUsage = 0x02;
+		rid[0].dwFlags = RIDEV_REMOVE;
+		rid[0].hwndTarget = NULL;
+
+		BOOL unregisterSuccess = RegisterRawInputDevices(rid, 4, sizeof(rid[0]));
+		cout << "Unregister success: " << unregisterSuccess << endl;
+		
 		//Start named pipe client
 		startPipe();
 	}
