@@ -17,6 +17,7 @@ namespace UniversalSplitScreen.RawInput
 		public static extern int GetRawInputData(IntPtr hRawInput, DataCommand uiCommand, [Out] IntPtr pData, ref uint pcbSize, int cbSizeHeader);
 		[DllImport("User32.dll")]
 		public static extern int GetRawInputData(IntPtr hRawInput, DataCommand uiCommand, out RAWINPUT pData, ref uint pcbSize, int cbSizeHeader);
+		
 
 		//https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getrawinputdevicelist
 		[DllImport("User32.dll")]

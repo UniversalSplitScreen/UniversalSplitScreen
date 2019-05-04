@@ -40,11 +40,11 @@ inline int getBitShiftForVKey(int VKey)
 	{
 		switch (VKey)
 		{
-			case 0x41: return 5;
-			case 0x44: return 6;
-			case 0x53: return 7;
-			case 0x57: return 8;
-			default: return 9;
+			case 0x41: return 6;
+			case 0x44: return 7;
+			case 0x53: return 8;
+			case 0x57: return 9;
+			default: return 10;
 		}
 	}
 }
@@ -56,7 +56,7 @@ SHORT WINAPI GetAsyncKeyState_Hook(int vKey)
 
 SHORT WINAPI GetKeyState_Hook(int nVirtKey)
 {
-	if (nVirtKey <= 6 || nVirtKey == 0x41 || nVirtKey == 0x44 || nVirtKey == 0x53 || nVirtKey == 0x57)//Mouse buttons and WASD
+	if (nVirtKey == 0x41 || nVirtKey == 0x44 || nVirtKey == 0x53 || nVirtKey == 0x57)//WASD
 	{
 		return (vkey_state & (1 << getBitShiftForVKey(nVirtKey))) == 0 ? 0 : 0b1000000000000000;
 	}
@@ -204,6 +204,13 @@ void startPipe()
 					{
 						vkey_state |= shift;//Sets to 1
 					}
+					cout << "set " << param1 << " " << (param2 == 0 ? "UP" : "DOWN") << endl;
+					string n = "";
+					for (int i = 1; i <= 0b1000000000000000; i <<= 1)
+					{
+						n += ((vkey_state & i) == 0) ? "0" : "1";
+					}
+					cout << "vkey_state = " << n << endl;
 					break;
 				}
 				default:
@@ -275,7 +282,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		installHook(TEXT("user32"),	"GetCursorPos",				GetCursorPos_Hook);
 		installHook(TEXT("user32"),	"GetForegroundWindow",		GetForegroundWindow_Hook);
 		installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
-		//installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
+		installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
 		//installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
 		installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 		

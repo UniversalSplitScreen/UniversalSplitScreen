@@ -132,5 +132,8 @@ namespace UniversalSplitScreen.SendInput
 
 		[DllImport("user32.dll")]
 		public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+		[DllImport("msvcrt.dll", EntryPoint = "memcpy", CallingConvention = CallingConvention.Cdecl, SetLastError = false)]
+		public static extern IntPtr memcpy(IntPtr dest, IntPtr src, UIntPtr count);
 	}
 }

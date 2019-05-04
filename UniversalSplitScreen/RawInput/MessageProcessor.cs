@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using UniversalSplitScreen.Core;
@@ -58,9 +59,17 @@ namespace UniversalSplitScreen.RawInput
 		}
 		#endregion
 
+
+		AutoResetEvent autoEvent = new AutoResetEvent(false);
+		Queue<(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)> msgs = new Queue<(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)>();
+		Thread thread;
+
 		public MessageProcessor()
 		{
 			endVKey = Options.CurrentOptions.EndVKey;
+
+			thread = new Thread(MessageLoop);
+			thread.Start();
 		}
 
 		public void WndProc(ref Message msg)
@@ -71,6 +80,26 @@ namespace UniversalSplitScreen.RawInput
 
 				Process(hRawInput);
 			}
+		}
+
+		void MessageLoop()
+		{
+			while (true)
+			{
+				if (msgs.Count == 0)
+					autoEvent.WaitOne();
+
+				var (hWnd, Msg, wParam, lParam) = msgs.Dequeue();
+				SendInput.WinApi.PostMessageA(hWnd, Msg, wParam, lParam);
+			}
+		}
+
+		void PostMessageA(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)
+		{
+			msgs.Enqueue((hWnd, Msg, wParam, lParam));
+
+			if (msgs.Count == 0)
+				autoEvent.Set();
 		}
 
 		private void Process(IntPtr hRawInput)
@@ -175,8 +204,8 @@ namespace UniversalSplitScreen.RawInput
 											//	window.HooksCPPNamedPipe?.AddMessage(0x02, VKey, keyDown ? 1 : 0);
 											//}
 											
-											byte shift = (byte)(VKey == 0x41 ? 0x0001 : (VKey == 0x44 ? 0x0010 : (VKey == 0x53 ? 0x0100 : (VKey == 0x57 ? 0x1000 : 0))));
-											if ((window.WASD_State & shift) != 0)
+											byte shift = (byte)(VKey == 0x41 ? 0b0001 : (VKey == 0x44 ? 0b0010 : (VKey == 0x53 ? 0b0100 : (VKey == 0x57 ? 0b1000 : 0))));
+											if (((window.WASD_State & shift) == 0 ? false : true) != keyDown)
 											{
 												if (keyDown)
 													window.WASD_State |= shift;
@@ -193,7 +222,7 @@ namespace UniversalSplitScreen.RawInput
 
 										//Resend raw input to application. Works for some games only
 										if (Options.CurrentOptions.SendRawKeyboardInput)
-											SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)hRawInput);
+											PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)hRawInput);
 									}
 								}
 							}
@@ -225,6 +254,13 @@ namespace UniversalSplitScreen.RawInput
 								//Resend raw input to application. Works for some games only
 								if (Options.CurrentOptions.SendRawMouseInput)
 								{
+									/*IntPtr hptr = Marshal.AllocHGlobal((int)pbDataSize);
+									WinApi.GetRawInputData(hRawInput, DataCommand.RID_INPUT, hptr, ref pbDataSize, Marshal.SizeOf(typeof(RAWINPUTHEADER)));
+									
+									SendInput.WinApi.PostMessageA(window.borderlands2_DIEmWin_hWnd == IntPtr.Zero ? hWnd : window.borderlands2_DIEmWin_hWnd,
+										(uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0000, hptr);*/
+										
+
 									SendInput.WinApi.PostMessageA(window.borderlands2_DIEmWin_hWnd == IntPtr.Zero ? hWnd : window.borderlands2_DIEmWin_hWnd, 
 										(uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0000, hRawInput);
 								}
@@ -250,14 +286,14 @@ namespace UniversalSplitScreen.RawInput
 								{
 									ushort mouseMoveState = 0x0000;
 									var (l, m, r, x1, x2) = window.MouseState;
-									if (l) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_LBUTTON;
-									if (m) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_MBUTTON;
-									if (r) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_RBUTTON;
-									if (x1) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_XBUTTON1;
-									if (x2) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_XBUTTON2;
+									if (l) mouseMoveState	|= (ushort)WM_MOUSEMOVE_wParam.MK_LBUTTON;
+									if (m) mouseMoveState	|= (ushort)WM_MOUSEMOVE_wParam.MK_MBUTTON;
+									if (r) mouseMoveState	|= (ushort)WM_MOUSEMOVE_wParam.MK_RBUTTON;
+									if (x1) mouseMoveState	|= (ushort)WM_MOUSEMOVE_wParam.MK_XBUTTON1;
+									if (x2) mouseMoveState	|= (ushort)WM_MOUSEMOVE_wParam.MK_XBUTTON2;
 									mouseMoveState |= 0b10000000;//Signature for USS 
-									SendInput.WinApi.PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEMOVE, (IntPtr)mouseMoveState, (IntPtr)packedXY);
-									//SendInput.WinApi.PostMessageA(hWnd, (uint)MouseInputNotifications.WM_NCMOUSEMOVE, (IntPtr)0x0000, (IntPtr)packedXY);
+									PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEMOVE, (IntPtr)mouseMoveState, (IntPtr)packedXY);
+									//PostMessageA(hWnd, (uint)MouseInputNotifications.WM_NCMOUSEMOVE, (IntPtr)0x0000, (IntPtr)packedXY);
 								}
 
 								//Mouse buttons.
@@ -300,11 +336,12 @@ namespace UniversalSplitScreen.RawInput
 										}
 									}
 
-									if ((f & (ushort)ButtonFlags.RI_MOUSE_WHEEL) > 0)
+									//TODO: re-enable mouse wheel
+									/*if ((f & (ushort)ButtonFlags.RI_MOUSE_WHEEL) > 0)
 									{
 										ushort delta = mouse.usButtonData;
-										SendInput.WinApi.PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEWHEEL, (IntPtr)((delta * 0x10000) + 0), (IntPtr)packedXY);
-									}
+										PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEWHEEL, (IntPtr)((delta * 0x10000) + 0), (IntPtr)packedXY);
+									}*/
 								}
 							}
 
