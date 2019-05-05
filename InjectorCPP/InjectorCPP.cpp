@@ -7,6 +7,9 @@
 #include <cstring>
 #include <easyhook.h>
 
+#include <iostream>
+#include <fstream>
+
 using namespace std;
 
 struct UserData
@@ -15,7 +18,18 @@ struct UserData
 	char ipcChannelName[256];//Name will be 30 characters
 };
 
-extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath, HWND hWnd, char* ipcChannelName)
+LRESULT CALLBACK MouseProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+	ofstream logging;
+	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\InjectorCPP_Output.txt", std::ios_base::app);
+	logging << "Received code = "<< nCode << endl;
+	logging.close();
+
+
+	return 0;
+}
+
+extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath, HWND hWnd, char* ipcChannelName, HINSTANCE hmod)
 {	
 	UserData* data = new UserData();
 	data->hWnd = hWnd;
@@ -30,6 +44,20 @@ extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath, HW
 		data,
 		sizeof(UserData)
 	);
+
+
+
+	//HMODULE _hModule = GetModuleHandle(currentDllPath);
+	HHOOK hhook = SetWindowsHookEx(WH_MOUSE_LL, (HOOKPROC)MouseProc, hmod, 0);
+	if (hhook == NULL)
+	{
+		return GetLastError();
+	}
+	else
+	{
+		return 0;
+	}
+	//return (hhook == NULL) ? 123 : 0;
 
 	return nt;//NTSTATUS: 32-bit
 }

@@ -14,7 +14,8 @@ namespace UniversalSplitScreen.RawInput
 {
 	class MessageProcessor
 	{
-		
+		private static readonly System.Drawing.Rectangle clipRect = 
+			new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
 
 		/// <summary>
 		/// Only updated when split screen is deactivated
@@ -333,6 +334,9 @@ namespace UniversalSplitScreen.RawInput
 
 											}
 											window.MouseState = state;
+
+											//Cursor.Position = new System.Drawing.Point(0, 0);
+											//Cursor.Clip = clipRect;
 										}
 									}
 

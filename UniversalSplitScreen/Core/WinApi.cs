@@ -46,5 +46,8 @@ namespace UniversalSplitScreen.Core
 		public delegate int EnumWindowsProc(IntPtr hwnd, int lParam);
 		[DllImport("user32.Dll")]
 		public static extern int EnumWindows(EnumWindowsProc x, int y);
+
+		[DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
+		public static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
 	}
 }

@@ -204,13 +204,6 @@ void startPipe()
 					{
 						vkey_state |= shift;//Sets to 1
 					}
-					cout << "set " << param1 << " " << (param2 == 0 ? "UP" : "DOWN") << endl;
-					string n = "";
-					for (int i = 1; i <= 0b1000000000000000; i <<= 1)
-					{
-						n += ((vkey_state & i) == 0) ? "0" : "1";
-					}
-					cout << "vkey_state = " << n << endl;
 					break;
 				}
 				default:
@@ -261,10 +254,10 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 	cout << "Injected by host process ID: " << inRemoteInfo->HostPID << "\n";
 	cout << "Passed in data size:" << inRemoteInfo->UserDataSize << "\n";
 
-	ofstream myfile;
+	/*ofstream myfile;
 	myfile.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt");
 	myfile << "START\n";
-	myfile.close();
+	myfile.close();*/
 
 	if (inRemoteInfo->UserDataSize == sizeof(UserData))
 	{
@@ -312,14 +305,17 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		}*/
 
 		//De-register from Raw Input
-		RAWINPUTDEVICE rid[1];
-		rid[0].usUsagePage = 0x01;
-		rid[0].usUsage = 0x02;
-		rid[0].dwFlags = RIDEV_REMOVE;
-		rid[0].hwndTarget = NULL;
+		if (true)
+		{
+			RAWINPUTDEVICE rid[1];
+			rid[0].usUsagePage = 0x01;
+			rid[0].usUsage = 0x02;
+			rid[0].dwFlags = RIDEV_REMOVE;
+			rid[0].hwndTarget = NULL;
 
-		BOOL unregisterSuccess = RegisterRawInputDevices(rid, 4, sizeof(rid[0]));
-		cout << "Unregister success: " << unregisterSuccess << endl;
+			BOOL unregisterSuccess = RegisterRawInputDevices(rid, 4, sizeof(rid[0]));
+			cout << "Unregister success: " << unregisterSuccess << endl;
+		}
 		
 		//Start named pipe client
 		startPipe();

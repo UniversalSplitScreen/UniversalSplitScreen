@@ -26,11 +26,12 @@ namespace UniversalSplitScreen.Core
 
 		[DllImport("InjectorCPP.dll", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
 		static extern uint Inject(
-			int pid, 
+			int pid,
 			[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath,
 			IntPtr hWnd,
 			string ipcChannelName,
-			int pipeHandle);
+			IntPtr hmod);
+			//[MarshalAs(UnmanagedType.LPStr)] string lpString);
 
 		public bool IsRunningInSplitScreen { get; private set; } = false;
 
@@ -163,7 +164,10 @@ namespace UniversalSplitScreen.Core
 					string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Release\HooksCPP.dll";
 #endif
 
-						uint result = Inject(window.pid, injectionLibrary, window.hWnd, pipe.pipeName, 0);
+						IntPtr hmod = WinApi.LoadLibrary(injectionLibrary);
+						Console.WriteLine($"InjectorCPP hMod = {hmod}");
+
+						uint result = Inject(window.pid, injectionLibrary, window.hWnd, pipe.pipeName, hmod);
 						Console.WriteLine($"InjectorCPP.Inject result = {result:x}");
 
 						//pipe.Start();
