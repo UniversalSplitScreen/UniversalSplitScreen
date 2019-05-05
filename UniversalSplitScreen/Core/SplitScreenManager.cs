@@ -151,21 +151,29 @@ namespace UniversalSplitScreen.Core
 #endif
 
 						bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
-						uint result = 0;
+						//uint result = 0;
 
-						if (is64)
+						/*if (is64)
 						{
 							result = WinApi.InjectorCPP64.Inject(window.pid, "", injectionLibrary64, window.hWnd, pipe.pipeName);
 						}
 						else
 						{
-							result = WinApi.InjectorCPP32.Inject(window.pid, injectionLibrary32, "", window.hWnd, pipe.pipeName);
-						}
+							//result = WinApi.InjectorCPP32.Inject(window.pid, injectionLibrary32, "", window.hWnd, pipe.pipeName);
+							
+						}*/
 
 						//IntPtr hmod = WinApi.LoadLibrary(injectionLibrary);
 						//Console.WriteLine($"InjectorCPP hMod = {hmod}");
-						
-						Console.WriteLine($"InjectorCPP.Inject result = {result:x}. is64={is64}");
+
+						Process proc = new Process();
+						proc.StartInfo.FileName = is64 ? "InjectorLoader64.exe" : "InjectorLoader32.exe";
+						proc.StartInfo.Arguments = $"{window.pid} \"{(is64 ? injectionLibrary64 : injectionLibrary32)}\" {window.hWnd} {pipe.pipeName}";
+						proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+						proc.Start();
+						proc.WaitForExit();
+
+						Console.WriteLine($"InjectorCPP.Inject result = 0x{(uint)proc.ExitCode:x}. is64={is64}");
 					}
 
 
