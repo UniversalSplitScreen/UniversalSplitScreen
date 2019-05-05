@@ -234,7 +234,7 @@ void startPipe()
 		}
 		else
 		{
-			cout << "Failed to read message\n";
+			//cout << "Failed to read message\n";
 		}
 	}
 }
@@ -294,10 +294,10 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		//Install hooks
 		installHook(TEXT("user32"),	"GetCursorPos",				GetCursorPos_Hook);
 		installHook(TEXT("user32"),	"GetForegroundWindow",		GetForegroundWindow_Hook);
-		installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
-		installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
-		//installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
-		installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
+		//installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
+		//installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
+		installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
+		//installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 		
 		//Filter mouse messages
 		/*if (false)
@@ -325,7 +325,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		}*/
 
 		//De-register from Raw Input
-		if (true)
+		if (false)
 		{
 			RAWINPUTDEVICE rid[1];
 			rid[0].usUsagePage = 0x01;

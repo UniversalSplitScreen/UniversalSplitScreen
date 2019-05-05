@@ -97,6 +97,10 @@ namespace UniversalSplitScreen.RawInput
 
 		void PostMessageA(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)
 		{
+			SendInput.WinApi.PostMessageA(hWnd, Msg, wParam, lParam);
+			return;
+			//TODO: Re-enable ? (Broke starbound)
+
 			msgs.Enqueue((hWnd, Msg, wParam, lParam));
 
 			if (msgs.Count == 0)
