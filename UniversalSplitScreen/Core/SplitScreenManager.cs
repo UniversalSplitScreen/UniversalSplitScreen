@@ -17,22 +17,6 @@ namespace UniversalSplitScreen.Core
 {
 	class SplitScreenManager
 	{
-		/*[DllImport("EasyHook32.dll", SetLastError = true)]
-		static extern int RhInjectLibrary(ulong InTargetPID, ulong InWakeUpTID, ulong InInjectionOptions, 
-			[MarshalAsAttribute(UnmanagedType.LPWStr)] string InLibraryPath_x86, 
-			[MarshalAsAttribute(UnmanagedType.LPWStr)] string InLibraryPath_x64,
-			IntPtr InPassThruBuffer,
-			ulong InPassThruSize);*/
-
-		[DllImport("InjectorCPP.dll", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-		static extern uint Inject(
-			int pid,
-			[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath,
-			IntPtr hWnd,
-			string ipcChannelName,
-			IntPtr hmod);
-			//[MarshalAs(UnmanagedType.LPStr)] string lpString);
-
 		public bool IsRunningInSplitScreen { get; private set; } = false;
 
 		Dictionary<Task, CancellationTokenSource> setFocusTasks = new Dictionary<Task, CancellationTokenSource>();
@@ -159,18 +143,29 @@ namespace UniversalSplitScreen.Core
 
 						//TODO: FIX PATH
 #if DEBUG
-						string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP.dll";
+						string injectionLibrary32 = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP32.dll";
+						string injectionLibrary64 = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP64.dll";
 #else
-					string injectionLibrary = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Release\HooksCPP.dll";
+						string injectionLibrary32 = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Release\HooksCPP32.dll";
+						string injectionLibrary64 = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Release\HooksCPP64.dll";
 #endif
 
-						IntPtr hmod = WinApi.LoadLibrary(injectionLibrary);
-						Console.WriteLine($"InjectorCPP hMod = {hmod}");
+						bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
+						uint result = 0;
 
-						uint result = Inject(window.pid, injectionLibrary, window.hWnd, pipe.pipeName, hmod);
-						Console.WriteLine($"InjectorCPP.Inject result = {result:x}");
+						if (is64)
+						{
+							result = WinApi.InjectorCPP64.Inject(window.pid, "", injectionLibrary64, window.hWnd, pipe.pipeName);
+						}
+						else
+						{
+							result = WinApi.InjectorCPP32.Inject(window.pid, injectionLibrary32, "", window.hWnd, pipe.pipeName);
+						}
 
-						//pipe.Start();
+						//IntPtr hmod = WinApi.LoadLibrary(injectionLibrary);
+						//Console.WriteLine($"InjectorCPP hMod = {hmod}");
+						
+						Console.WriteLine($"InjectorCPP.Inject result = {result:x}. is64={is64}");
 					}
 
 

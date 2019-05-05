@@ -2,11 +2,8 @@
 #include <easyhook.h>
 #include <string>
 #include <iostream>
-#include <Windows.h>
-#include <tlhelp32.h>
-#include <iostream>
-#include <fstream>
 using namespace std;
+
 
 HWND hWnd = 0;
 string _ipcChannelName;
@@ -141,8 +138,31 @@ inline int bytesToInt(BYTE* bytes)
 	//return (int)(*p);
 }
 
+/*#if _WIN64//64-bit
+//https://stackoverflow.com/questions/27220/how-to-convert-stdstring-to-lpcwstr-in-c-unicode
+LPCWSTR stringToLPCWSTR(const std::string& s)
+{
+	int len;
+	int slength = (int)s.length() + 1;
+	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+	wchar_t* buf = new wchar_t[len];
+	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+	std::wstring r(buf);
+	delete[] buf;
+	return r.c_str();
+}
+#endif*/
+
 void startPipe()
 {
+/*#if _WIN64//64-bit
+	std::string pipeName = "\\\\.\\pipe\\" + _ipcChannelName;
+	LPCWSTR _pipeNameChars = stringToLPCWSTR(pipeName);
+#elif _WIN32//32bit
+	char _pipeNameChars[256];
+	sprintf_s(_pipeNameChars, "\\\\.\\pipe\\%s", _ipcChannelName.c_str());
+#endif*/
+	
 	char _pipeNameChars[256];
 	sprintf_s(_pipeNameChars, "\\\\.\\pipe\\%s", _ipcChannelName.c_str());
 

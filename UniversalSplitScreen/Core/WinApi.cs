@@ -49,5 +49,27 @@ namespace UniversalSplitScreen.Core
 
 		[DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
 		public static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
+
+		public static class InjectorCPP64
+		{
+			[DllImport("InjectorCPP64.dll", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+			public static extern uint Inject(
+				int pid,
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath32,
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath64,
+				IntPtr hWnd,
+				string ipcChannelName);
+		}
+
+		public static class InjectorCPP32
+		{
+			[DllImport("InjectorCPP32.dll", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+			public static extern uint Inject(
+				int pid,
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath32,
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath64,
+				IntPtr hWnd,
+				string ipcChannelName);
+		}
 	}
 }
