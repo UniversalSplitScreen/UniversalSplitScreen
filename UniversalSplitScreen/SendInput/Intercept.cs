@@ -25,19 +25,19 @@ namespace UniversalSplitScreen.SendInput
 		private static GetMsgProc _proc = HookCallback;
 		private static IntPtr _hookID = IntPtr.Zero;
 
-		public Intercept(uint threadID)
+		public Intercept()
 		{
 			Console.WriteLine("Intercept activated");
 			//SendInput.WinApi.SetCapture(hWnd);
 
-			_hookID = SetHook(_proc, threadID);
+			_hookID = SetHook(_proc);
 			//Application.Run();
 			//UnhookWindowsHookEx(_hookID);
 		}
 
-		private static IntPtr SetHook(GetMsgProc proc, uint threadID)
+		private static IntPtr SetHook(GetMsgProc proc)
 		{
-			return SetWindowsHookEx(2, proc, Marshal.GetHINSTANCE(typeof(Intercept).Module), threadID);
+			return SetWindowsHookEx(WH_MOUSE_LL, proc, Marshal.GetHINSTANCE(typeof(Intercept).Module), 0);
 
 			/*using (Process curProcess = Process.GetCurrentProcess())
 			using (ProcessModule curModule = curProcess.MainModule)

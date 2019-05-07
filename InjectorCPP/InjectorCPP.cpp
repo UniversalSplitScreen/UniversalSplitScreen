@@ -18,18 +18,42 @@ struct UserData
 	char ipcChannelName[256];//Name will be 30 characters
 };
 
-/*LRESULT CALLBACK MouseProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
+static LRESULT CALLBACK MouseProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
 	ofstream logging;
-	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\InjectorCPP_Output.txt", std::ios_base::app);
+	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x64\\Debug\\InjectorCPP_Output.txt", std::ios_base::app);
 	logging << "Received code = "<< nCode << endl;
 	logging.close();
 
+	//return CallNextHookEx(NULL, nCode, wParam, lParam);
+	return 1;
+}
 
+DWORD WINAPI HookStart(LPVOID lpParam)
+{
+	HINSTANCE hmod = *reinterpret_cast<HINSTANCE *>(lpParam);
+
+	ofstream logging;
+	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x64\\Debug\\InjectorCPP_Output.txt", std::ios_base::app);
+	logging << "HookStart, hmod="<<hmod << endl;
+	logging.close();
+
+	
+
+	HHOOK hhook = SetWindowsHookEx(WH_MOUSE, (HOOKPROC)MouseProc, hmod, 0);
+	
+
+	MSG message;
+	while (GetMessage(&message, NULL, 0, 0)) {
+		TranslateMessage(&message);
+		DispatchMessage(&message);
+	}
+
+	UnhookWindowsHookEx(hhook);
 	return 0;
-}*/
+}
 
-extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, WCHAR* injectionDllPath64, HWND hWnd, char* ipcChannelName)
+extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, WCHAR* injectionDllPath64, HWND hWnd, char* ipcChannelName, HINSTANCE hmod)
 {	
 	UserData* data = new UserData();
 	data->hWnd = hWnd;
@@ -45,15 +69,18 @@ extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, 
 		sizeof(UserData)
 	);
 
-	/*HHOOK hhook = SetWindowsHookEx(WH_MOUSE_LL, (HOOKPROC)MouseProc, hmod, 0);
-	if (hhook == NULL)
-	{
-		return GetLastError();
-	}
+	ofstream logging;
+	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x64\\Debug\\InjectorCPP_Output.txt");
+	logging << "START. hmod = " << hmod << "lib32="<< injectionDllPath32 << ",lib64="<< injectionDllPath64 << endl;
+	logging.close();
+
+	HANDLE hThread;
+	DWORD dwThread;
+	hThread = CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)HookStart, (LPVOID)hmod, NULL, &dwThread);
+	if (hThread)
+		return WaitForSingleObject(hThread, INFINITE);
 	else
-	{
-		return 0;
-	}*/
+		return 1;
 
 	return nt;//NTSTATUS: 32-bit
 }
