@@ -71,15 +71,15 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 	logging.close();*/
 
 	//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
-	if (Msg == 0x0200 && ((int)wParam & 0b10000000) > 0)
+	if (Msg == WM_MOUSEMOVE && ((int)wParam & 0b10000000) > 0)
 		return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
 
 	// || Msg == 0x00FF
-	else if ((Msg >= 0x020B && Msg <= 0x020D) || Msg == 0x0200 || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x02A3)//Other mouse events. 
+	else if ((Msg >= WM_XBUTTONDOWN && Msg <= WM_XBUTTONDBLCLK) || Msg == WM_MOUSEMOVE || Msg == WM_MOUSEACTIVATE || Msg == WM_MOUSEHOVER || Msg == WM_MOUSELEAVE || Msg == WM_MOUSEWHEEL || Msg == WM_SETCURSOR)//Other mouse events. 
 		return 0;
 	else
 	{
-		if (Msg == 0x0006) //0x0006 is WM_ACTIVATE, which resets the mouse position for starbound [citation needed]
+		if (Msg == WM_ACTIVATE) //0x0006 is WM_ACTIVATE, which resets the mouse position for starbound [citation needed]
 			return CallWindowProc(lpPrevWndFunc, hWnd, Msg, 1, 0);
 		else
 			return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
@@ -294,10 +294,10 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		//Install hooks
 		installHook(TEXT("user32"),	"GetCursorPos",				GetCursorPos_Hook);
 		installHook(TEXT("user32"),	"GetForegroundWindow",		GetForegroundWindow_Hook);
-		//installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
-		//installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
-		installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
-		//installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
+		installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
+		installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
+		//installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
+		installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 		
 		//Filter mouse messages
 		/*if (false)
@@ -325,7 +325,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		}*/
 
 		//De-register from Raw Input
-		if (false)
+		if (true)
 		{
 			RAWINPUTDEVICE rid[1];
 			rid[0].usUsagePage = 0x01;
