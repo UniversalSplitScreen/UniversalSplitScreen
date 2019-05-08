@@ -53,6 +53,7 @@ namespace UniversalSplitScreen.Core
 			IsRunningInSplitScreen = true;
 			InputDisabler.Lock();
 			Intercept.IsOn = true;
+			Cursor.Position = new System.Drawing.Point(0, 0);
 			deviceToWindows.Clear();
 
 			//Check if windows still exist
@@ -247,6 +248,8 @@ namespace UniversalSplitScreen.Core
 			foreach (var window in windows.Values)
 			{
 				window.GetRawInputData_HookServer?.SetToReleaseHook();
+				window.HooksCPPNamedPipe.AddMessage(0x03, 0, 0);
+				window.HooksCPPNamedPipe.Close();
 			}
 
 			setFocusTasks.Clear();

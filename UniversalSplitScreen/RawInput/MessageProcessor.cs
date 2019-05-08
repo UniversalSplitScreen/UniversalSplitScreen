@@ -146,6 +146,7 @@ namespace UniversalSplitScreen.RawInput
 								if (keyUpOrDown && rawBuffer.data.keyboard.VKey == endVKey)//End key
 								{
 									Console.WriteLine("End key pressed");
+									Intercept.IsOn = false;
 									Program.SplitScreenManager.DeactivateSplitScreen();
 									InputDisabler.Unlock();//Just in case
 								}
@@ -239,8 +240,6 @@ namespace UniversalSplitScreen.RawInput
 						}
 					case HeaderDwType.RIM_TYPEMOUSE:
 						{
-							//Console.WriteLine("raw mouse");
-
 							RAWMOUSE mouse = rawBuffer.data.mouse;
 							IntPtr mouseHandle = rawBuffer.header.hDevice;
 

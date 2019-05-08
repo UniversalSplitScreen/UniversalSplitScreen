@@ -226,6 +226,11 @@ void startPipe()
 					}
 					break;
 				}
+				case 0x03:
+				{
+					cout << "Received pipe closed message. Closing pipe..." << endl;
+					return;
+				}
 				default:
 				{
 					break;
