@@ -58,6 +58,9 @@ namespace UniversalSplitScreen
 			Application.Run(Form);//Not required for RegisterRawInputDevices to work
 
 			SplitScreenManager.DeactivateSplitScreen();
+
+			Console.WriteLine("Exiting application");
+			Environment.Exit(0);
 		}
 
 		static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
