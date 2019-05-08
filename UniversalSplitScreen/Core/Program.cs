@@ -16,7 +16,7 @@ namespace UniversalSplitScreen
 {
 	class Program
 	{
-		//static Intercept i;
+		static Intercept i;
 
 		public static Form1 Form { get; private set; }
 		public static IntPtr Form_hWnd { get; private set; }
@@ -50,7 +50,7 @@ namespace UniversalSplitScreen
 
 			MessageProcessor = new MessageProcessor();
 
-			//i = new Intercept(Form.Handle);
+			i = new Intercept();
 			var x = new RawInputManager(Form_hWnd);
 			
 			InputDisabler.Init();

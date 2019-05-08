@@ -239,6 +239,8 @@ namespace UniversalSplitScreen.RawInput
 						}
 					case HeaderDwType.RIM_TYPEMOUSE:
 						{
+							//Console.WriteLine("raw mouse");
+
 							RAWMOUSE mouse = rawBuffer.data.mouse;
 							IntPtr mouseHandle = rawBuffer.header.hDevice;
 
