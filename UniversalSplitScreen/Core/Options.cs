@@ -40,7 +40,7 @@ namespace UniversalSplitScreen.Core
 		public static void LoadButtonClicked()
 		{
 			CurrentOptions = (OptionsStructure)Program.Form.OptionsComboBox.SelectedItem;
-			Program.Form.SetupOptionsPage();
+			Program.Form.PopulateOptionsRefTypes(CurrentOptions);
 		}
 
 		public static void SaveButtonClicked()
@@ -83,6 +83,7 @@ namespace UniversalSplitScreen.Core
 				using (StreamWriter file = File.CreateText(Path.Combine(directory, options.OptionsName + ".json")))
 				{
 					JsonSerializer serializer = new JsonSerializer();
+					serializer.Formatting = Formatting.Indented;
 					serializer.Serialize(file, options);
 				}
 

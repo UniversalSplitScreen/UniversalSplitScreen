@@ -61,23 +61,24 @@
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.endButtonSetter = new System.Windows.Forms.Button();
 			this.hooksBox = new System.Windows.Forms.GroupBox();
-			this.checkBoxHook_getForegroundWindow = new System.Windows.Forms.CheckBox();
-			this.checkBoxHook_filterCallWndProc = new System.Windows.Forms.CheckBox();
-			this.checkBoxHook_filterWindowsRawInput = new System.Windows.Forms.CheckBox();
 			this.hooksWarningLabel = new System.Windows.Forms.Label();
-			this.drawMouseCheckbox = new System.Windows.Forms.CheckBox();
 			this.drawMouseEveryXmsLabel = new System.Windows.Forms.Label();
 			this.drawMouseEveryXmsField = new System.Windows.Forms.NumericUpDown();
-			this.refreshWindowBoundsOnLMBCheckbox = new System.Windows.Forms.CheckBox();
-			this.send_WM_FOCUS_checkbox = new System.Windows.Forms.CheckBox();
-			this.send_WM_ACTIVATE_checkbox = new System.Windows.Forms.CheckBox();
-			this.sendNormalKeyboardCheckbox = new System.Windows.Forms.CheckBox();
-			this.sendNormalMouseCheckbox = new System.Windows.Forms.CheckBox();
-			this.sendRawKeyboardCheckbox = new System.Windows.Forms.CheckBox();
-			this.sendRawMouseCheckbox = new System.Windows.Forms.CheckBox();
-			this.checkBoxHook_GetCursorPos = new System.Windows.Forms.CheckBox();
-			this.checkBoxHook_GetAsyncKeyState = new System.Windows.Forms.CheckBox();
-			this.checkBoxHook_GetKeyState = new System.Windows.Forms.CheckBox();
+			this.RefCheckbox_DrawMouse = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_RefreshWindowBoundsOnMouseClick = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_SendFakeWindowFocusMessages = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_SendFakeWindowActivateMessages = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_SendNormalKeyboardInput = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_SendNormalMouseInput = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_SendRawKeyboardInput = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_SendRawMouseInput = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_Hook_GetKeyState = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_Hook_GetAsyncKeyState = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_Hook_GetCursorPos = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_Hook_GetForegroundWindow = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_Hook_FilterMouseInputMessages = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_Hook_FilterRawInput = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_Hook_SetCursorPos = new UniversalSplitScreen.UI.RefCheckbox();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -407,18 +408,18 @@
 			// panel1
 			// 
 			this.panel1.AutoScroll = true;
+			this.panel1.Controls.Add(this.RefCheckbox_DrawMouse);
+			this.panel1.Controls.Add(this.RefCheckbox_RefreshWindowBoundsOnMouseClick);
+			this.panel1.Controls.Add(this.RefCheckbox_SendFakeWindowFocusMessages);
+			this.panel1.Controls.Add(this.RefCheckbox_SendFakeWindowActivateMessages);
+			this.panel1.Controls.Add(this.RefCheckbox_SendNormalKeyboardInput);
+			this.panel1.Controls.Add(this.RefCheckbox_SendNormalMouseInput);
+			this.panel1.Controls.Add(this.RefCheckbox_SendRawKeyboardInput);
+			this.panel1.Controls.Add(this.RefCheckbox_SendRawMouseInput);
 			this.panel1.Controls.Add(this.endButtonSetter);
 			this.panel1.Controls.Add(this.hooksBox);
-			this.panel1.Controls.Add(this.drawMouseCheckbox);
 			this.panel1.Controls.Add(this.drawMouseEveryXmsLabel);
 			this.panel1.Controls.Add(this.drawMouseEveryXmsField);
-			this.panel1.Controls.Add(this.refreshWindowBoundsOnLMBCheckbox);
-			this.panel1.Controls.Add(this.send_WM_FOCUS_checkbox);
-			this.panel1.Controls.Add(this.send_WM_ACTIVATE_checkbox);
-			this.panel1.Controls.Add(this.sendNormalKeyboardCheckbox);
-			this.panel1.Controls.Add(this.sendNormalMouseCheckbox);
-			this.panel1.Controls.Add(this.sendRawKeyboardCheckbox);
-			this.panel1.Controls.Add(this.sendRawMouseCheckbox);
 			this.panel1.Location = new System.Drawing.Point(6, 43);
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(755, 351);
@@ -436,52 +437,20 @@
 			// 
 			// hooksBox
 			// 
-			this.hooksBox.Controls.Add(this.checkBoxHook_GetKeyState);
-			this.hooksBox.Controls.Add(this.checkBoxHook_getForegroundWindow);
-			this.hooksBox.Controls.Add(this.checkBoxHook_filterCallWndProc);
-			this.hooksBox.Controls.Add(this.checkBoxHook_GetAsyncKeyState);
-			this.hooksBox.Controls.Add(this.checkBoxHook_filterWindowsRawInput);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_SetCursorPos);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetKeyState);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetAsyncKeyState);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetCursorPos);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetForegroundWindow);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_FilterMouseInputMessages);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_FilterRawInput);
 			this.hooksBox.Controls.Add(this.hooksWarningLabel);
-			this.hooksBox.Controls.Add(this.checkBoxHook_GetCursorPos);
 			this.hooksBox.Location = new System.Drawing.Point(472, 3);
 			this.hooksBox.Name = "hooksBox";
 			this.hooksBox.Size = new System.Drawing.Size(280, 334);
 			this.hooksBox.TabIndex = 10;
 			this.hooksBox.TabStop = false;
 			this.hooksBox.Text = "Hooks";
-			// 
-			// checkBoxHook_getForegroundWindow
-			// 
-			this.checkBoxHook_getForegroundWindow.AutoSize = true;
-			this.checkBoxHook_getForegroundWindow.Location = new System.Drawing.Point(9, 119);
-			this.checkBoxHook_getForegroundWindow.Name = "checkBoxHook_getForegroundWindow";
-			this.checkBoxHook_getForegroundWindow.Size = new System.Drawing.Size(165, 17);
-			this.checkBoxHook_getForegroundWindow.TabIndex = 11;
-			this.checkBoxHook_getForegroundWindow.Text = "Hook GetForegroundWindow";
-			this.checkBoxHook_getForegroundWindow.UseVisualStyleBackColor = true;
-			this.checkBoxHook_getForegroundWindow.CheckedChanged += new System.EventHandler(this.checkBoxHook_getForegroundWindow_CheckedChanged);
-			// 
-			// checkBoxHook_filterCallWndProc
-			// 
-			this.checkBoxHook_filterCallWndProc.AutoSize = true;
-			this.checkBoxHook_filterCallWndProc.Location = new System.Drawing.Point(9, 96);
-			this.checkBoxHook_filterCallWndProc.Name = "checkBoxHook_filterCallWndProc";
-			this.checkBoxHook_filterCallWndProc.Size = new System.Drawing.Size(228, 17);
-			this.checkBoxHook_filterCallWndProc.TabIndex = 10;
-			this.checkBoxHook_filterCallWndProc.Text = "Filter mouse input messages from Windows";
-			this.checkBoxHook_filterCallWndProc.UseVisualStyleBackColor = true;
-			this.checkBoxHook_filterCallWndProc.CheckedChanged += new System.EventHandler(this.checkBoxHook_filterCallWndProc_CheckedChanged);
-			// 
-			// checkBoxHook_filterWindowsRawInput
-			// 
-			this.checkBoxHook_filterWindowsRawInput.AutoSize = true;
-			this.checkBoxHook_filterWindowsRawInput.Location = new System.Drawing.Point(9, 73);
-			this.checkBoxHook_filterWindowsRawInput.Name = "checkBoxHook_filterWindowsRawInput";
-			this.checkBoxHook_filterWindowsRawInput.Size = new System.Drawing.Size(214, 17);
-			this.checkBoxHook_filterWindowsRawInput.TabIndex = 9;
-			this.checkBoxHook_filterWindowsRawInput.Text = "Filter raw input messages from Windows";
-			this.checkBoxHook_filterWindowsRawInput.UseVisualStyleBackColor = true;
-			this.checkBoxHook_filterWindowsRawInput.CheckedChanged += new System.EventHandler(this.checkBoxHook_filterWindowsRawInput_CheckedChanged);
 			// 
 			// hooksWarningLabel
 			// 
@@ -494,17 +463,6 @@
 			this.hooksWarningLabel.TabIndex = 0;
 			this.hooksWarningLabel.Text = "Warning: Hooks inject code into the target game. This may be detected by an anti-" +
     "cheat system or anti-virus software. See the documentation for more info.";
-			// 
-			// drawMouseCheckbox
-			// 
-			this.drawMouseCheckbox.AutoSize = true;
-			this.drawMouseCheckbox.Location = new System.Drawing.Point(4, 171);
-			this.drawMouseCheckbox.Name = "drawMouseCheckbox";
-			this.drawMouseCheckbox.Size = new System.Drawing.Size(85, 17);
-			this.drawMouseCheckbox.TabIndex = 7;
-			this.drawMouseCheckbox.Text = "Draw mouse";
-			this.drawMouseCheckbox.UseVisualStyleBackColor = true;
-			this.drawMouseCheckbox.CheckedChanged += new System.EventHandler(this.drawMouseCheckbox_CheckedChanged);
 			// 
 			// drawMouseEveryXmsLabel
 			// 
@@ -529,115 +487,171 @@
 			this.drawMouseEveryXmsField.Tag = "";
 			this.drawMouseEveryXmsField.ValueChanged += new System.EventHandler(this.drawMouseEveryXmsField_ValueChanged);
 			// 
-			// refreshWindowBoundsOnLMBCheckbox
+			// RefCheckbox_DrawMouse
 			// 
-			this.refreshWindowBoundsOnLMBCheckbox.AutoSize = true;
-			this.refreshWindowBoundsOnLMBCheckbox.Location = new System.Drawing.Point(4, 148);
-			this.refreshWindowBoundsOnLMBCheckbox.Name = "refreshWindowBoundsOnLMBCheckbox";
-			this.refreshWindowBoundsOnLMBCheckbox.Size = new System.Drawing.Size(214, 17);
-			this.refreshWindowBoundsOnLMBCheckbox.TabIndex = 6;
-			this.refreshWindowBoundsOnLMBCheckbox.Text = "Refresh window bounds on mouse click";
-			this.refreshWindowBoundsOnLMBCheckbox.UseVisualStyleBackColor = true;
-			this.refreshWindowBoundsOnLMBCheckbox.CheckedChanged += new System.EventHandler(this.refreshWindowBoundsOnLMBCheckbox_CheckedChanged);
+			this.RefCheckbox_DrawMouse.AutoSize = true;
+			this.RefCheckbox_DrawMouse.Location = new System.Drawing.Point(3, 166);
+			this.RefCheckbox_DrawMouse.Name = "RefCheckbox_DrawMouse";
+			this.RefCheckbox_DrawMouse.RefType = null;
+			this.RefCheckbox_DrawMouse.Size = new System.Drawing.Size(85, 17);
+			this.RefCheckbox_DrawMouse.TabIndex = 19;
+			this.RefCheckbox_DrawMouse.Text = "Draw mouse";
+			this.RefCheckbox_DrawMouse.UseVisualStyleBackColor = true;
 			// 
-			// send_WM_FOCUS_checkbox
+			// RefCheckbox_RefreshWindowBoundsOnMouseClick
 			// 
-			this.send_WM_FOCUS_checkbox.AutoSize = true;
-			this.send_WM_FOCUS_checkbox.Location = new System.Drawing.Point(4, 124);
-			this.send_WM_FOCUS_checkbox.Name = "send_WM_FOCUS_checkbox";
-			this.send_WM_FOCUS_checkbox.Size = new System.Drawing.Size(193, 17);
-			this.send_WM_FOCUS_checkbox.TabIndex = 5;
-			this.send_WM_FOCUS_checkbox.Text = "Send fake window focus messages";
-			this.send_WM_FOCUS_checkbox.UseVisualStyleBackColor = true;
-			this.send_WM_FOCUS_checkbox.CheckedChanged += new System.EventHandler(this.send_WM_FOCUS_checkbox_CheckedChanged);
+			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.AutoSize = true;
+			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.Location = new System.Drawing.Point(3, 143);
+			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.Name = "RefCheckbox_RefreshWindowBoundsOnMouseClick";
+			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.RefType = null;
+			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.Size = new System.Drawing.Size(214, 17);
+			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.TabIndex = 18;
+			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.Text = "Refresh window bounds on mouse click";
+			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.UseVisualStyleBackColor = true;
 			// 
-			// send_WM_ACTIVATE_checkbox
+			// RefCheckbox_SendFakeWindowFocusMessages
 			// 
-			this.send_WM_ACTIVATE_checkbox.AutoSize = true;
-			this.send_WM_ACTIVATE_checkbox.Location = new System.Drawing.Point(4, 100);
-			this.send_WM_ACTIVATE_checkbox.Name = "send_WM_ACTIVATE_checkbox";
-			this.send_WM_ACTIVATE_checkbox.Size = new System.Drawing.Size(205, 17);
-			this.send_WM_ACTIVATE_checkbox.TabIndex = 4;
-			this.send_WM_ACTIVATE_checkbox.Text = "Send fake window activate messages";
-			this.send_WM_ACTIVATE_checkbox.UseVisualStyleBackColor = true;
-			this.send_WM_ACTIVATE_checkbox.CheckedChanged += new System.EventHandler(this.send_WM_ACTIVATE_checkbox_CheckedChanged);
+			this.RefCheckbox_SendFakeWindowFocusMessages.AutoSize = true;
+			this.RefCheckbox_SendFakeWindowFocusMessages.Location = new System.Drawing.Point(3, 120);
+			this.RefCheckbox_SendFakeWindowFocusMessages.Name = "RefCheckbox_SendFakeWindowFocusMessages";
+			this.RefCheckbox_SendFakeWindowFocusMessages.RefType = null;
+			this.RefCheckbox_SendFakeWindowFocusMessages.Size = new System.Drawing.Size(193, 17);
+			this.RefCheckbox_SendFakeWindowFocusMessages.TabIndex = 17;
+			this.RefCheckbox_SendFakeWindowFocusMessages.Text = "Send fake window focus messages";
+			this.RefCheckbox_SendFakeWindowFocusMessages.UseVisualStyleBackColor = true;
 			// 
-			// sendNormalKeyboardCheckbox
+			// RefCheckbox_SendFakeWindowActivateMessages
 			// 
-			this.sendNormalKeyboardCheckbox.AutoSize = true;
-			this.sendNormalKeyboardCheckbox.Location = new System.Drawing.Point(4, 76);
-			this.sendNormalKeyboardCheckbox.Name = "sendNormalKeyboardCheckbox";
-			this.sendNormalKeyboardCheckbox.Size = new System.Drawing.Size(158, 17);
-			this.sendNormalKeyboardCheckbox.TabIndex = 3;
-			this.sendNormalKeyboardCheckbox.Text = "Send normal keyboard input";
-			this.sendNormalKeyboardCheckbox.UseVisualStyleBackColor = true;
-			this.sendNormalKeyboardCheckbox.CheckedChanged += new System.EventHandler(this.sendNormalKeyboardCheckbox_CheckedChanged);
+			this.RefCheckbox_SendFakeWindowActivateMessages.AutoSize = true;
+			this.RefCheckbox_SendFakeWindowActivateMessages.Location = new System.Drawing.Point(3, 97);
+			this.RefCheckbox_SendFakeWindowActivateMessages.Name = "RefCheckbox_SendFakeWindowActivateMessages";
+			this.RefCheckbox_SendFakeWindowActivateMessages.RefType = null;
+			this.RefCheckbox_SendFakeWindowActivateMessages.Size = new System.Drawing.Size(205, 17);
+			this.RefCheckbox_SendFakeWindowActivateMessages.TabIndex = 16;
+			this.RefCheckbox_SendFakeWindowActivateMessages.Text = "Send fake window activate messages";
+			this.RefCheckbox_SendFakeWindowActivateMessages.UseVisualStyleBackColor = true;
 			// 
-			// sendNormalMouseCheckbox
+			// RefCheckbox_SendNormalKeyboardInput
 			// 
-			this.sendNormalMouseCheckbox.AutoSize = true;
-			this.sendNormalMouseCheckbox.Location = new System.Drawing.Point(4, 52);
-			this.sendNormalMouseCheckbox.Name = "sendNormalMouseCheckbox";
-			this.sendNormalMouseCheckbox.Size = new System.Drawing.Size(145, 17);
-			this.sendNormalMouseCheckbox.TabIndex = 2;
-			this.sendNormalMouseCheckbox.Text = "Send normal mouse input";
-			this.sendNormalMouseCheckbox.UseVisualStyleBackColor = true;
-			this.sendNormalMouseCheckbox.CheckedChanged += new System.EventHandler(this.sendNormalMouseCheckbox_CheckedChanged);
+			this.RefCheckbox_SendNormalKeyboardInput.AutoSize = true;
+			this.RefCheckbox_SendNormalKeyboardInput.Location = new System.Drawing.Point(3, 74);
+			this.RefCheckbox_SendNormalKeyboardInput.Name = "RefCheckbox_SendNormalKeyboardInput";
+			this.RefCheckbox_SendNormalKeyboardInput.RefType = null;
+			this.RefCheckbox_SendNormalKeyboardInput.Size = new System.Drawing.Size(158, 17);
+			this.RefCheckbox_SendNormalKeyboardInput.TabIndex = 15;
+			this.RefCheckbox_SendNormalKeyboardInput.Text = "Send normal keyboard input";
+			this.RefCheckbox_SendNormalKeyboardInput.UseVisualStyleBackColor = true;
 			// 
-			// sendRawKeyboardCheckbox
+			// RefCheckbox_SendNormalMouseInput
 			// 
-			this.sendRawKeyboardCheckbox.AutoSize = true;
-			this.sendRawKeyboardCheckbox.Location = new System.Drawing.Point(4, 28);
-			this.sendRawKeyboardCheckbox.Name = "sendRawKeyboardCheckbox";
-			this.sendRawKeyboardCheckbox.Size = new System.Drawing.Size(144, 17);
-			this.sendRawKeyboardCheckbox.TabIndex = 1;
-			this.sendRawKeyboardCheckbox.Text = "Send raw keyboard input";
-			this.sendRawKeyboardCheckbox.UseVisualStyleBackColor = true;
-			this.sendRawKeyboardCheckbox.CheckedChanged += new System.EventHandler(this.sendRawKeyboardCheckbox_CheckedChanged);
+			this.RefCheckbox_SendNormalMouseInput.AutoSize = true;
+			this.RefCheckbox_SendNormalMouseInput.Location = new System.Drawing.Point(3, 51);
+			this.RefCheckbox_SendNormalMouseInput.Name = "RefCheckbox_SendNormalMouseInput";
+			this.RefCheckbox_SendNormalMouseInput.RefType = null;
+			this.RefCheckbox_SendNormalMouseInput.Size = new System.Drawing.Size(145, 17);
+			this.RefCheckbox_SendNormalMouseInput.TabIndex = 14;
+			this.RefCheckbox_SendNormalMouseInput.Text = "Send normal mouse input";
+			this.RefCheckbox_SendNormalMouseInput.UseVisualStyleBackColor = true;
 			// 
-			// sendRawMouseCheckbox
+			// RefCheckbox_SendRawKeyboardInput
 			// 
-			this.sendRawMouseCheckbox.AutoSize = true;
-			this.sendRawMouseCheckbox.Location = new System.Drawing.Point(4, 4);
-			this.sendRawMouseCheckbox.Name = "sendRawMouseCheckbox";
-			this.sendRawMouseCheckbox.Size = new System.Drawing.Size(131, 17);
-			this.sendRawMouseCheckbox.TabIndex = 0;
-			this.sendRawMouseCheckbox.Text = "Send raw mouse input";
-			this.sendRawMouseCheckbox.UseVisualStyleBackColor = true;
-			this.sendRawMouseCheckbox.CheckedChanged += new System.EventHandler(this.sendRawMouseCheckbox_CheckedChanged);
+			this.RefCheckbox_SendRawKeyboardInput.AutoSize = true;
+			this.RefCheckbox_SendRawKeyboardInput.Location = new System.Drawing.Point(3, 28);
+			this.RefCheckbox_SendRawKeyboardInput.Name = "RefCheckbox_SendRawKeyboardInput";
+			this.RefCheckbox_SendRawKeyboardInput.RefType = null;
+			this.RefCheckbox_SendRawKeyboardInput.Size = new System.Drawing.Size(144, 17);
+			this.RefCheckbox_SendRawKeyboardInput.TabIndex = 13;
+			this.RefCheckbox_SendRawKeyboardInput.Text = "Send raw keyboard input";
+			this.RefCheckbox_SendRawKeyboardInput.UseVisualStyleBackColor = true;
 			// 
-			// checkBoxHook_GetCursorPos
+			// RefCheckbox_SendRawMouseInput
 			// 
-			this.checkBoxHook_GetCursorPos.AutoSize = true;
-			this.checkBoxHook_GetCursorPos.Location = new System.Drawing.Point(9, 142);
-			this.checkBoxHook_GetCursorPos.Name = "checkBoxHook_GetCursorPos";
-			this.checkBoxHook_GetCursorPos.Size = new System.Drawing.Size(120, 17);
-			this.checkBoxHook_GetCursorPos.TabIndex = 12;
-			this.checkBoxHook_GetCursorPos.Text = "Hook GetCursorPos";
-			this.checkBoxHook_GetCursorPos.UseVisualStyleBackColor = true;
-			this.checkBoxHook_GetCursorPos.CheckedChanged += new System.EventHandler(this.checkBoxHook_GetCursorPos_CheckedChanged);
+			this.RefCheckbox_SendRawMouseInput.AutoSize = true;
+			this.RefCheckbox_SendRawMouseInput.Location = new System.Drawing.Point(3, 5);
+			this.RefCheckbox_SendRawMouseInput.Name = "RefCheckbox_SendRawMouseInput";
+			this.RefCheckbox_SendRawMouseInput.RefType = null;
+			this.RefCheckbox_SendRawMouseInput.Size = new System.Drawing.Size(131, 17);
+			this.RefCheckbox_SendRawMouseInput.TabIndex = 12;
+			this.RefCheckbox_SendRawMouseInput.Text = "Send raw mouse input";
+			this.RefCheckbox_SendRawMouseInput.UseVisualStyleBackColor = true;
 			// 
-			// checkBoxHook_GetAsyncKeyState
+			// RefCheckbox_Hook_GetKeyState
 			// 
-			this.checkBoxHook_GetAsyncKeyState.AutoSize = true;
-			this.checkBoxHook_GetAsyncKeyState.Location = new System.Drawing.Point(9, 165);
-			this.checkBoxHook_GetAsyncKeyState.Name = "checkBoxHook_GetAsyncKeyState";
-			this.checkBoxHook_GetAsyncKeyState.Size = new System.Drawing.Size(231, 17);
-			this.checkBoxHook_GetAsyncKeyState.TabIndex = 13;
-			this.checkBoxHook_GetAsyncKeyState.Text = "Hook GetAsyncKeyState for mouse buttons";
-			this.checkBoxHook_GetAsyncKeyState.UseVisualStyleBackColor = true;
-			this.checkBoxHook_GetAsyncKeyState.CheckedChanged += new System.EventHandler(this.checkBoxHook_GetAsyncKeyState_CheckedChanged);
+			this.RefCheckbox_Hook_GetKeyState.AutoSize = true;
+			this.RefCheckbox_Hook_GetKeyState.Location = new System.Drawing.Point(9, 186);
+			this.RefCheckbox_Hook_GetKeyState.Name = "RefCheckbox_Hook_GetKeyState";
+			this.RefCheckbox_Hook_GetKeyState.RefType = null;
+			this.RefCheckbox_Hook_GetKeyState.Size = new System.Drawing.Size(191, 17);
+			this.RefCheckbox_Hook_GetKeyState.TabIndex = 20;
+			this.RefCheckbox_Hook_GetKeyState.Text = "Hook GetKeyState for WASD keys";
+			this.RefCheckbox_Hook_GetKeyState.UseVisualStyleBackColor = true;
 			// 
-			// checkBoxHook_GetKeyState
+			// RefCheckbox_Hook_GetAsyncKeyState
 			// 
-			this.checkBoxHook_GetKeyState.AutoSize = true;
-			this.checkBoxHook_GetKeyState.Location = new System.Drawing.Point(9, 188);
-			this.checkBoxHook_GetKeyState.Name = "checkBoxHook_GetKeyState";
-			this.checkBoxHook_GetKeyState.Size = new System.Drawing.Size(191, 17);
-			this.checkBoxHook_GetKeyState.TabIndex = 14;
-			this.checkBoxHook_GetKeyState.Text = "Hook GetKeyState for WASD keys";
-			this.checkBoxHook_GetKeyState.UseVisualStyleBackColor = true;
-			this.checkBoxHook_GetKeyState.CheckedChanged += new System.EventHandler(this.checkBoxHook_GetKeyState_CheckedChanged);
+			this.RefCheckbox_Hook_GetAsyncKeyState.AutoSize = true;
+			this.RefCheckbox_Hook_GetAsyncKeyState.Location = new System.Drawing.Point(9, 209);
+			this.RefCheckbox_Hook_GetAsyncKeyState.Name = "RefCheckbox_Hook_GetAsyncKeyState";
+			this.RefCheckbox_Hook_GetAsyncKeyState.RefType = null;
+			this.RefCheckbox_Hook_GetAsyncKeyState.Size = new System.Drawing.Size(144, 17);
+			this.RefCheckbox_Hook_GetAsyncKeyState.TabIndex = 20;
+			this.RefCheckbox_Hook_GetAsyncKeyState.Text = "Hook GetAsyncKeyState";
+			this.RefCheckbox_Hook_GetAsyncKeyState.UseVisualStyleBackColor = true;
+			this.RefCheckbox_Hook_GetAsyncKeyState.CheckedChanged += new System.EventHandler(this.RefCheckbox_Hook_GetAsyncKeyState_CheckedChanged);
+			// 
+			// RefCheckbox_Hook_GetCursorPos
+			// 
+			this.RefCheckbox_Hook_GetCursorPos.AutoSize = true;
+			this.RefCheckbox_Hook_GetCursorPos.Location = new System.Drawing.Point(9, 140);
+			this.RefCheckbox_Hook_GetCursorPos.Name = "RefCheckbox_Hook_GetCursorPos";
+			this.RefCheckbox_Hook_GetCursorPos.RefType = null;
+			this.RefCheckbox_Hook_GetCursorPos.Size = new System.Drawing.Size(120, 17);
+			this.RefCheckbox_Hook_GetCursorPos.TabIndex = 20;
+			this.RefCheckbox_Hook_GetCursorPos.Text = "Hook GetCursorPos";
+			this.RefCheckbox_Hook_GetCursorPos.UseVisualStyleBackColor = true;
+			// 
+			// RefCheckbox_Hook_GetForegroundWindow
+			// 
+			this.RefCheckbox_Hook_GetForegroundWindow.AutoSize = true;
+			this.RefCheckbox_Hook_GetForegroundWindow.Location = new System.Drawing.Point(9, 117);
+			this.RefCheckbox_Hook_GetForegroundWindow.Name = "RefCheckbox_Hook_GetForegroundWindow";
+			this.RefCheckbox_Hook_GetForegroundWindow.RefType = null;
+			this.RefCheckbox_Hook_GetForegroundWindow.Size = new System.Drawing.Size(165, 17);
+			this.RefCheckbox_Hook_GetForegroundWindow.TabIndex = 20;
+			this.RefCheckbox_Hook_GetForegroundWindow.Text = "Hook GetForegroundWindow";
+			this.RefCheckbox_Hook_GetForegroundWindow.UseVisualStyleBackColor = true;
+			// 
+			// RefCheckbox_Hook_FilterMouseInputMessages
+			// 
+			this.RefCheckbox_Hook_FilterMouseInputMessages.AutoSize = true;
+			this.RefCheckbox_Hook_FilterMouseInputMessages.Location = new System.Drawing.Point(9, 94);
+			this.RefCheckbox_Hook_FilterMouseInputMessages.Name = "RefCheckbox_Hook_FilterMouseInputMessages";
+			this.RefCheckbox_Hook_FilterMouseInputMessages.RefType = null;
+			this.RefCheckbox_Hook_FilterMouseInputMessages.Size = new System.Drawing.Size(228, 17);
+			this.RefCheckbox_Hook_FilterMouseInputMessages.TabIndex = 20;
+			this.RefCheckbox_Hook_FilterMouseInputMessages.Text = "Filter mouse input messages from Windows";
+			this.RefCheckbox_Hook_FilterMouseInputMessages.UseVisualStyleBackColor = true;
+			// 
+			// RefCheckbox_Hook_FilterRawInput
+			// 
+			this.RefCheckbox_Hook_FilterRawInput.AutoSize = true;
+			this.RefCheckbox_Hook_FilterRawInput.Location = new System.Drawing.Point(9, 71);
+			this.RefCheckbox_Hook_FilterRawInput.Name = "RefCheckbox_Hook_FilterRawInput";
+			this.RefCheckbox_Hook_FilterRawInput.RefType = null;
+			this.RefCheckbox_Hook_FilterRawInput.Size = new System.Drawing.Size(214, 17);
+			this.RefCheckbox_Hook_FilterRawInput.TabIndex = 20;
+			this.RefCheckbox_Hook_FilterRawInput.Text = "Filter raw input messages from Windows";
+			this.RefCheckbox_Hook_FilterRawInput.UseVisualStyleBackColor = true;
+			// 
+			// RefCheckbox_Hook_SetCursorPos
+			// 
+			this.RefCheckbox_Hook_SetCursorPos.AutoSize = true;
+			this.RefCheckbox_Hook_SetCursorPos.Location = new System.Drawing.Point(9, 163);
+			this.RefCheckbox_Hook_SetCursorPos.Name = "RefCheckbox_Hook_SetCursorPos";
+			this.RefCheckbox_Hook_SetCursorPos.RefType = null;
+			this.RefCheckbox_Hook_SetCursorPos.Size = new System.Drawing.Size(119, 17);
+			this.RefCheckbox_Hook_SetCursorPos.TabIndex = 20;
+			this.RefCheckbox_Hook_SetCursorPos.Text = "Hook SetCursorPos";
+			this.RefCheckbox_Hook_SetCursorPos.UseVisualStyleBackColor = true;
 			// 
 			// Form1
 			// 
@@ -703,20 +717,9 @@
 		private System.Windows.Forms.Button resetAllButton;
 		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.NumericUpDown drawMouseEveryXmsField;
-		private System.Windows.Forms.CheckBox refreshWindowBoundsOnLMBCheckbox;
-		private System.Windows.Forms.CheckBox send_WM_FOCUS_checkbox;
-		private System.Windows.Forms.CheckBox send_WM_ACTIVATE_checkbox;
-		private System.Windows.Forms.CheckBox sendNormalKeyboardCheckbox;
-		private System.Windows.Forms.CheckBox sendNormalMouseCheckbox;
-		private System.Windows.Forms.CheckBox sendRawKeyboardCheckbox;
-		private System.Windows.Forms.CheckBox sendRawMouseCheckbox;
 		private System.Windows.Forms.Label drawMouseEveryXmsLabel;
-		private System.Windows.Forms.CheckBox drawMouseCheckbox;
 		private System.Windows.Forms.GroupBox hooksBox;
 		private System.Windows.Forms.Label hooksWarningLabel;
-		private System.Windows.Forms.CheckBox checkBoxHook_filterWindowsRawInput;
-		private System.Windows.Forms.CheckBox checkBoxHook_filterCallWndProc;
-		private System.Windows.Forms.CheckBox checkBoxHook_getForegroundWindow;
 		private System.Windows.Forms.Button endButtonSetter;
 		private System.Windows.Forms.Panel panel2;
 		private System.Windows.Forms.Button buttonOptions_load;
@@ -724,8 +727,20 @@
 		private System.Windows.Forms.Button buttonOptions_delete;
 		private System.Windows.Forms.ComboBox optionsComboBox;
 		private System.Windows.Forms.Button buttonOptions_New;
-		private System.Windows.Forms.CheckBox checkBoxHook_GetKeyState;
-		private System.Windows.Forms.CheckBox checkBoxHook_GetAsyncKeyState;
-		private System.Windows.Forms.CheckBox checkBoxHook_GetCursorPos;
+		private RefCheckbox RefCheckbox_SendRawMouseInput;
+		private RefCheckbox RefCheckbox_DrawMouse;
+		private RefCheckbox RefCheckbox_RefreshWindowBoundsOnMouseClick;
+		private RefCheckbox RefCheckbox_SendFakeWindowFocusMessages;
+		private RefCheckbox RefCheckbox_SendFakeWindowActivateMessages;
+		private RefCheckbox RefCheckbox_SendNormalKeyboardInput;
+		private RefCheckbox RefCheckbox_SendNormalMouseInput;
+		private RefCheckbox RefCheckbox_SendRawKeyboardInput;
+		private RefCheckbox RefCheckbox_Hook_GetKeyState;
+		private RefCheckbox RefCheckbox_Hook_GetAsyncKeyState;
+		private RefCheckbox RefCheckbox_Hook_GetCursorPos;
+		private RefCheckbox RefCheckbox_Hook_GetForegroundWindow;
+		private RefCheckbox RefCheckbox_Hook_FilterMouseInputMessages;
+		private RefCheckbox RefCheckbox_Hook_FilterRawInput;
+		private RefCheckbox RefCheckbox_Hook_SetCursorPos;
 	}
 }

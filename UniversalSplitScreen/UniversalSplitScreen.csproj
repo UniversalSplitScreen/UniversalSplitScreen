@@ -151,6 +151,10 @@
     <Compile Include="Core\SplitScreenManager.cs" />
     <Compile Include="SendInput\WM_MOUSEMOVE_wParam.cs" />
     <Compile Include="UI\Prompt.cs" />
+    <Compile Include="Core\RefType.cs" />
+    <Compile Include="UI\RefCheckbox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="WindowManagement\RECT.cs" />
     <Compile Include="WindowManagement\WinApi.cs" />
   </ItemGroup>

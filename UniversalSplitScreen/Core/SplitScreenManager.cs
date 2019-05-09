@@ -290,8 +290,8 @@ namespace UniversalSplitScreen.Core
 			Program.Form.KeyboardHandleText = "0";
 		}
 
-#endregion
-
+		#endregion
+		
 		private void SetFocus(IntPtr hWnd, CancellationToken token)
 		{
 			while(true)

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using UniversalSplitScreen.Core;
 using UniversalSplitScreen.RawInput;
 using UniversalSplitScreen.SendInput;
 
@@ -30,34 +31,37 @@ namespace UniversalSplitScreen.UI
 			startButton.Enabled = true;
 			stopButton.Enabled = false;
 
-			SetupOptionsPage();
+			PopulateOptionsRefTypes(Options.CurrentOptions);
 		}
 
-		public void SetupOptionsPage()
+		public void PopulateOptionsRefTypes(OptionsStructure options)
 		{
-			sendRawMouseCheckbox.Checked				=	Core.Options.CurrentOptions.SendRawMouseInput;
-			sendRawKeyboardCheckbox.Checked				=	Core.Options.CurrentOptions.SendRawKeyboardInput;
-			sendNormalMouseCheckbox.Checked				=	Core.Options.CurrentOptions.SendNormalMouseInput;
-			sendNormalKeyboardCheckbox.Checked			=	Core.Options.CurrentOptions.SendNormalKeyboardInput;
-			send_WM_ACTIVATE_checkbox.Checked			=	Core.Options.CurrentOptions.SendWM_ACTIVATE;
-			send_WM_FOCUS_checkbox.Checked				=	Core.Options.CurrentOptions.SendWM_SETFOCUS;
-			refreshWindowBoundsOnLMBCheckbox.Checked	=	Core.Options.CurrentOptions.RefreshWindowBoundsOnMouseClick;
-			drawMouseCheckbox.Checked					=	Core.Options.CurrentOptions.DrawMouse;
-			drawMouseEveryXmsField.Value				=	Core.Options.CurrentOptions.DrawMouseEveryXMilliseconds;
+			RefCheckbox_SendRawMouseInput.RefType				= new RefType<bool>("SendRawMouseInput");
 
-			checkBoxHook_filterCallWndProc.Checked		=	Core.Options.CurrentOptions.Hook_FilterWindowsMouseInput;
-			checkBoxHook_filterWindowsRawInput.Checked	=	Core.Options.CurrentOptions.Hook_FilterRawInput;
-			checkBoxHook_getForegroundWindow.Checked	=	Core.Options.CurrentOptions.Hook_GetForegroundWindow;
+			RefCheckbox_SendRawKeyboardInput.RefType			= new RefType<bool>("SendRawKeyboardInput");
+			RefCheckbox_SendNormalMouseInput.RefType			= new RefType<bool>("SendNormalMouseInput");
+			RefCheckbox_SendNormalKeyboardInput.RefType			= new RefType<bool>("SendNormalKeyboardInput");
+			RefCheckbox_SendFakeWindowActivateMessages.RefType	= new RefType<bool>("SendWM_ACTIVATE");
+			RefCheckbox_SendFakeWindowFocusMessages.RefType		= new RefType<bool>("SendWM_SETFOCUS");
 
-			checkBoxHook_GetCursorPos.Checked			=	Core.Options.CurrentOptions.Hook_GetCursorPos;
-			checkBoxHook_GetAsyncKeyState.Checked		=	Core.Options.CurrentOptions.Hook_GetAsyncKeyState;
-			checkBoxHook_GetKeyState.Checked			=	Core.Options.CurrentOptions.Hook_GetKeyState;
+			RefCheckbox_RefreshWindowBoundsOnMouseClick.RefType	= new RefType<bool>("RefreshWindowBoundsOnMouseClick");
+			RefCheckbox_DrawMouse.RefType						= new RefType<bool>("DrawMouse");
+			
+			RefCheckbox_Hook_FilterRawInput.RefType				= new RefType<bool>("Hook_FilterRawInput");
+			RefCheckbox_Hook_FilterMouseInputMessages.RefType	= new RefType<bool>("Hook_FilterWindowsMouseInput");
+			RefCheckbox_Hook_GetForegroundWindow.RefType		= new RefType<bool>("Hook_GetForegroundWindow");
+			RefCheckbox_Hook_GetCursorPos.RefType				= new RefType<bool>("Hook_GetCursorPos");
+			RefCheckbox_Hook_SetCursorPos.RefType				= new RefType<bool>("Hook_SetCursorPos");
+			RefCheckbox_Hook_GetAsyncKeyState.RefType			= new RefType<bool>("Hook_GetAsyncKeyState");
+			RefCheckbox_Hook_GetKeyState.RefType				= new RefType<bool>("Hook_GetKeyState");
+			
+			drawMouseEveryXmsField.Value						= Core.Options.CurrentOptions.DrawMouseEveryXMilliseconds;
 		}
 		
 
 		protected override void WndProc(ref Message msg)
 		{
-			if (msg.Msg == 0x00FF)
+			if (msg.Msg == 0x00FF)//WM_INPUT
 			{
 				Program.MessageProcessor?.WndProc(ref msg);
 			}
@@ -106,93 +110,19 @@ namespace UniversalSplitScreen.UI
 			Program.SplitScreenManager.DeactivateSplitScreen();
 		}
 		#endregion
-
-		#region Options page value change events
-		private void sendRawMouseCheckbox_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.SendRawMouseInput = sendRawMouseCheckbox.Checked;
-		}
-
-		private void sendRawKeyboardCheckbox_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.SendRawKeyboardInput = sendRawKeyboardCheckbox.Checked;
-		}
-
-		private void sendNormalMouseCheckbox_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.SendNormalMouseInput = sendNormalMouseCheckbox.Checked;
-		}
-
-		private void sendNormalKeyboardCheckbox_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.SendNormalKeyboardInput = sendNormalKeyboardCheckbox.Checked;
-		}
-
-		private void send_WM_ACTIVATE_checkbox_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.SendWM_ACTIVATE = send_WM_ACTIVATE_checkbox.Checked;
-		}
-
-		private void send_WM_FOCUS_checkbox_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.SendWM_SETFOCUS = send_WM_FOCUS_checkbox.Checked;
-		}
-
-		private void refreshWindowBoundsOnLMBCheckbox_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.RefreshWindowBoundsOnMouseClick = refreshWindowBoundsOnLMBCheckbox.Checked;
-		}
-
+		
 		private void drawMouseEveryXmsField_ValueChanged(object sender, EventArgs e)
 		{
 			Core.Options.CurrentOptions.DrawMouseEveryXMilliseconds = (int)drawMouseEveryXmsField.Value;
 		}
 
-		private void drawMouseCheckbox_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.DrawMouse = drawMouseCheckbox.Checked;
-		}
-
-		private void checkBoxHook_filterWindowsRawInput_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.Hook_FilterRawInput = checkBoxHook_filterWindowsRawInput.Checked;
-		}
-
-		private void checkBoxHook_filterCallWndProc_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.Hook_FilterWindowsMouseInput = checkBoxHook_filterCallWndProc.Checked;
-		}
-
-		private void checkBoxHook_getForegroundWindow_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.Hook_GetForegroundWindow = checkBoxHook_getForegroundWindow.Checked;
-		}
-
-		private void checkBoxHook_GetCursorPos_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.Hook_GetCursorPos = checkBoxHook_GetCursorPos.Checked;
-		}
-
-		private void checkBoxHook_GetAsyncKeyState_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.Hook_GetAsyncKeyState = checkBoxHook_GetAsyncKeyState.Checked;
-		}
-
-		private void checkBoxHook_GetKeyState_CheckedChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.Hook_GetKeyState = checkBoxHook_GetKeyState.Checked;
-		}
-		#endregion
-
-		#region Public methods
+		
+		
 		public void SetEndButtonText(string text)
 		{
 			endButtonSetter.Text = text;
 		}
-		#endregion
-
-		//TODO: when ss starts, disable the start button (and vice cersa
-
+		
 		public void OnSplitScreenStart()
 		{
 			startButton.Enabled = false;
@@ -249,6 +179,9 @@ namespace UniversalSplitScreen.UI
 			}
 		}
 
-		
+		private void RefCheckbox_Hook_GetAsyncKeyState_CheckedChanged(object sender, EventArgs e)
+		{
+
+		}
 	}
 }

@@ -8,7 +8,7 @@ namespace UniversalSplitScreen.Core
 	public class OptionsStructure
 	{
 		public string OptionsName { get; set; } = "Default";
-
+		
 		public bool SendRawMouseInput { get; set; } = true;
 		public bool SendRawKeyboardInput { get; set; } = false;
 		public bool SendNormalMouseInput { get; set; } = true;
@@ -26,6 +26,7 @@ namespace UniversalSplitScreen.Core
 		public bool Hook_FilterWindowsMouseInput { get; set; } = false;
 		public bool Hook_GetForegroundWindow { get; set; } = false;
 		public bool Hook_GetCursorPos { get; set; } = false;
+		public bool Hook_SetCursorPos { get; set; } = false;
 		public bool Hook_GetAsyncKeyState { get; set; } = false;
 		public bool Hook_GetKeyState { get; set; } = false;
 
