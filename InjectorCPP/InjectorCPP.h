@@ -2,4 +2,5 @@
 
 #include "stdafx.h"
 
-extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, WCHAR* injectionDllPath64, HWND hWnd, char* ipcChannelName);
+extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, WCHAR* injectionDllPath64, HWND hWnd, char* ipcChannelName,
+	bool HookGetCursorPos, bool HookGetForegroundWindow, bool HookGetAsyncKeyState, bool HookGetKeyState, bool HookCallWindowProcW, bool HookRegisterRawInputDevices, bool HookSetCursorPos);

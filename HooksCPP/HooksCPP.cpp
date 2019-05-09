@@ -274,7 +274,14 @@ void installHook(LPCSTR moduleHandle, LPCSTR lpProcName, void* InCallback)
 struct UserData
 {
 	HWND hWnd;
-	char ipcChannelName[256];
+	char ipcChannelName[256];//Name will be 30 characters
+	bool HookGetCursorPos;
+	bool HookGetForegroundWindow;
+	bool HookGetAsyncKeyState;
+	bool HookGetKeyState;
+	bool HookCallWindowProcW;
+	bool HookRegisterRawInputDevices;
+	bool HookSetCursorPos;
 };
 
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
@@ -302,41 +309,16 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		cout << "Received IPC channel: " << ipcChannelName << "\n";
 		
 		//Install hooks
-		installHook(TEXT("user32"),	"GetCursorPos",				GetCursorPos_Hook);
-		installHook(TEXT("user32"),	"GetForegroundWindow",		GetForegroundWindow_Hook);
-		installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
-		installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
-		//installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
-		installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
-		installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
+		if (userData.HookGetCursorPos)				installHook(TEXT("user32"),	"GetCursorPos",				GetCursorPos_Hook);
+		if (userData.HookGetForegroundWindow)		installHook(TEXT("user32"),	"GetForegroundWindow",		GetForegroundWindow_Hook);
+		if (userData.HookGetAsyncKeyState)			installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
+		if (userData.HookGetKeyState)				installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
+		if (userData.HookCallWindowProcW)			installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
+		if (userData.HookRegisterRawInputDevices)	installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
+		if (userData.HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
 		
-		//Filter mouse messages
-		/*if (false)
-		{
-			HANDLE hThreadSnap = INVALID_HANDLE_VALUE;
-			THREADENTRY32 te32;
-			hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-			if (hThreadSnap != INVALID_HANDLE_VALUE)
-			{
-				te32.dwSize = sizeof(THREADENTRY32);
-				if (Thread32First(hThreadSnap, &te32))
-				{
-					cout << "Installed mouse message filter for all threads\n";
-					do
-					{
-						SetWindowsHookEx(WH_GETMESSAGE, GetMsgProc, NULL, te32.th32ThreadID);
-					} while (Thread32Next(hThreadSnap, &te32));
-				}
-				else
-				{
-					cout << "Failed Thread32First\n";
-				}
-				//CloseHandle(hThreadSnap);
-			}
-		}*/
-
 		//De-register from Raw Input
-		if (true)
+		if (userData.HookRegisterRawInputDevices)
 		{
 			RAWINPUTDEVICE rid[1];
 			rid[0].usUsagePage = 0x01;
@@ -345,7 +327,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			rid[0].hwndTarget = NULL;
 
 			BOOL unregisterSuccess = RegisterRawInputDevices(rid, 4, sizeof(rid[0]));
-			cout << "Unregister success: " << unregisterSuccess << endl;
+			cout << "Raw mouse input unregister success: " << unregisterSuccess << endl;
 		}
 		
 		//Start named pipe client

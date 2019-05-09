@@ -169,7 +169,33 @@ namespace UniversalSplitScreen.Core
 
 						Process proc = new Process();
 						proc.StartInfo.FileName = is64 ? "InjectorLoader64.exe" : "InjectorLoader32.exe";
-						proc.StartInfo.Arguments = $"{window.pid} \"{(is64 ? injectionLibrary64 : injectionLibrary32)}\" {window.hWnd} {pipe.pipeName}";
+
+						//Arguments
+						{
+							object[] args = new object[]
+							{
+								window.pid,
+								$"\"{(is64 ? injectionLibrary64 : injectionLibrary32)}\"",
+								window.hWnd,
+								pipe.pipeName,
+								Options.CurrentOptions.Hook_GetCursorPos,
+								Options.CurrentOptions.Hook_GetForegroundWindow,
+								Options.CurrentOptions.Hook_GetAsyncKeyState,
+								Options.CurrentOptions.Hook_GetKeyState,
+								Options.CurrentOptions.Hook_FilterWindowsMouseInput,
+								Options.CurrentOptions.Hook_FilterRawInput,
+								Options.CurrentOptions.Hook_SetCursorPos
+							};
+
+							StringBuilder sb = new StringBuilder();
+							foreach (var arg in args)
+							{
+								sb.Append(" " + arg);
+							}
+
+							proc.StartInfo.Arguments = sb.ToString();
+						}
+
 						proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 						proc.Start();
 						proc.WaitForExit();

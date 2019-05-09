@@ -55,7 +55,7 @@ namespace UniversalSplitScreen.UI
 			RefCheckbox_Hook_GetAsyncKeyState.RefType			= new RefType<bool>("Hook_GetAsyncKeyState");
 			RefCheckbox_Hook_GetKeyState.RefType				= new RefType<bool>("Hook_GetKeyState");
 			
-			drawMouseEveryXmsField.Value						= Core.Options.CurrentOptions.DrawMouseEveryXMilliseconds;
+			drawMouseEveryXmsField.Value						= Options.CurrentOptions.DrawMouseEveryXMilliseconds;
 		}
 		
 
