@@ -86,6 +86,11 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 	}
 }
 
+BOOL WINAPI SetCursorPos_Hook(int X, int Y)
+{
+	return TRUE;
+}
+
 /*
 LRESULT CALLBACK GetMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
@@ -303,6 +308,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
 		//installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
 		installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
+		installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
 		
 		//Filter mouse messages
 		/*if (false)
