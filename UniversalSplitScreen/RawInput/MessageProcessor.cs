@@ -146,6 +146,7 @@ namespace UniversalSplitScreen.RawInput
 								if (keyUpOrDown && rawBuffer.data.keyboard.VKey == endVKey)//End key
 								{
 									Console.WriteLine("End key pressed");
+									Intercept.IsOn = false;
 									Program.SplitScreenManager.DeactivateSplitScreen();
 									InputDisabler.Unlock();//Just in case
 								}
@@ -218,7 +219,10 @@ namespace UniversalSplitScreen.RawInput
 													window.WASD_State &= (byte)~shift;
 
 												window.GetRawInputData_HookServer?.SetVKey(VKey, keyDown);
-												window.HooksCPPNamedPipe?.AddMessage(0x02, VKey, keyDown ? 1 : 0);
+
+												ThreadPool.QueueUserWorkItem(
+													delegate { window.HooksCPPNamedPipe?.AddMessage(0x02, VKey, keyDown ? 1 : 0); });
+												
 											}
 
 											//This also makes GetKeyboardState work, as windows uses the message queue for GetKeyboardState

@@ -53,6 +53,7 @@ namespace UniversalSplitScreen.Core
 			IsRunningInSplitScreen = true;
 			InputDisabler.Lock();
 			Intercept.IsOn = true;
+			Cursor.Position = new System.Drawing.Point(0, 0);
 			deviceToWindows.Clear();
 
 			//Check if windows still exist
@@ -121,12 +122,13 @@ namespace UniversalSplitScreen.Core
 
 				//EasyHook
 				//TODO: REMOVE TRUE
-				if (true ||Options.CurrentOptions.Hook_FilterRawInput || 
+				if (Options.CurrentOptions.Hook_FilterRawInput || 
 					Options.CurrentOptions.Hook_FilterWindowsMouseInput || 
 					Options.CurrentOptions.Hook_GetForegroundWindow || 
 					Options.CurrentOptions.Hook_GetCursorPos || 
 					Options.CurrentOptions.Hook_GetKeyState || 
-					Options.CurrentOptions.Hook_GetAsyncKeyState)
+					Options.CurrentOptions.Hook_GetAsyncKeyState ||
+					Options.CurrentOptions.Hook_SetCursorPos)
 				{
 
 					{
@@ -151,24 +153,39 @@ namespace UniversalSplitScreen.Core
 #endif
 
 						bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
-						//uint result = 0;
-
-						/*if (is64)
-						{
-							result = WinApi.InjectorCPP64.Inject(window.pid, "", injectionLibrary64, window.hWnd, pipe.pipeName);
-						}
-						else
-						{
-							//result = WinApi.InjectorCPP32.Inject(window.pid, injectionLibrary32, "", window.hWnd, pipe.pipeName);
-							
-						}*/
-
+						
 						//IntPtr hmod = WinApi.LoadLibrary(injectionLibrary);
 						//Console.WriteLine($"InjectorCPP hMod = {hmod}");
 
 						Process proc = new Process();
 						proc.StartInfo.FileName = is64 ? "InjectorLoader64.exe" : "InjectorLoader32.exe";
-						proc.StartInfo.Arguments = $"{window.pid} \"{(is64 ? injectionLibrary64 : injectionLibrary32)}\" {window.hWnd} {pipe.pipeName}";
+
+						//Arguments
+						{
+							object[] args = new object[]
+							{
+								window.pid,
+								$"\"{(is64 ? injectionLibrary64 : injectionLibrary32)}\"",
+								window.hWnd,
+								pipe.pipeName,
+								Options.CurrentOptions.Hook_GetCursorPos,
+								Options.CurrentOptions.Hook_GetForegroundWindow,
+								Options.CurrentOptions.Hook_GetAsyncKeyState,
+								Options.CurrentOptions.Hook_GetKeyState,
+								Options.CurrentOptions.Hook_FilterWindowsMouseInput,
+								Options.CurrentOptions.Hook_FilterRawInput,
+								Options.CurrentOptions.Hook_SetCursorPos
+							};
+
+							StringBuilder sb = new StringBuilder();
+							foreach (var arg in args)
+							{
+								sb.Append(" " + arg);
+							}
+
+							proc.StartInfo.Arguments = sb.ToString();
+						}
+
 						proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 						proc.Start();
 						proc.WaitForExit();
@@ -247,6 +264,8 @@ namespace UniversalSplitScreen.Core
 			foreach (var window in windows.Values)
 			{
 				window.GetRawInputData_HookServer?.SetToReleaseHook();
+				window.HooksCPPNamedPipe.AddMessage(0x03, 0, 0);
+				window.HooksCPPNamedPipe.Close();
 			}
 
 			setFocusTasks.Clear();
@@ -287,8 +306,8 @@ namespace UniversalSplitScreen.Core
 			Program.Form.KeyboardHandleText = "0";
 		}
 
-#endregion
-
+		#endregion
+		
 		private void SetFocus(IntPtr hWnd, CancellationToken token)
 		{
 			while(true)

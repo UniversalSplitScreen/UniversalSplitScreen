@@ -46,8 +46,15 @@ namespace UniversalSplitScreen.Piping
 						(byte)(param2 >> 24), (byte)(param2 >> 16), (byte)(param2 >> 8), (byte)param2
 					};
 
-				pipeServer.Write(bytes, 0, 9);
+				pipeServer?.Write(bytes, 0, 9);
 			}
+		}
+
+		public void Close()
+		{
+			Console.WriteLine($"Closing pipe {pipeName}");
+			pipeServer?.Dispose();
+			pipeServer = null;
 		}
 
 		//https://github.com/EasyHook/EasyHook/blob/master/EasyHook/RemoteHook.cs
