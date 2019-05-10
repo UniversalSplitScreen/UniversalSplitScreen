@@ -122,12 +122,13 @@ namespace UniversalSplitScreen.Core
 
 				//EasyHook
 				//TODO: REMOVE TRUE
-				if (true ||Options.CurrentOptions.Hook_FilterRawInput || 
+				if (Options.CurrentOptions.Hook_FilterRawInput || 
 					Options.CurrentOptions.Hook_FilterWindowsMouseInput || 
 					Options.CurrentOptions.Hook_GetForegroundWindow || 
 					Options.CurrentOptions.Hook_GetCursorPos || 
 					Options.CurrentOptions.Hook_GetKeyState || 
-					Options.CurrentOptions.Hook_GetAsyncKeyState)
+					Options.CurrentOptions.Hook_GetAsyncKeyState ||
+					Options.CurrentOptions.Hook_SetCursorPos)
 				{
 
 					{
@@ -152,18 +153,7 @@ namespace UniversalSplitScreen.Core
 #endif
 
 						bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
-						//uint result = 0;
-
-						/*if (is64)
-						{
-							result = WinApi.InjectorCPP64.Inject(window.pid, "", injectionLibrary64, window.hWnd, pipe.pipeName);
-						}
-						else
-						{
-							//result = WinApi.InjectorCPP32.Inject(window.pid, injectionLibrary32, "", window.hWnd, pipe.pipeName);
-							
-						}*/
-
+						
 						//IntPtr hmod = WinApi.LoadLibrary(injectionLibrary);
 						//Console.WriteLine($"InjectorCPP hMod = {hmod}");
 
