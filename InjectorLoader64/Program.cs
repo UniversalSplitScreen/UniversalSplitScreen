@@ -11,11 +11,7 @@ namespace InjectorLoader64
 				[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath32,
 				[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath64,
 				IntPtr hWnd,
-				string ipcChannelName,
-				IntPtr hmod);
-
-		[DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
-		public static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
+				string ipcChannelName);
 
 		public static void Main(string[] args)
 		{
@@ -34,11 +30,8 @@ namespace InjectorLoader64
 
 			string ipcChannelName = args[3];
 
-			IntPtr hmod = LoadLibrary(injectionDllPath);
-			Console.WriteLine($"InjectorCPP hMod = {hmod}");
-
 			//InjectorCPP64 function
-			uint nt = Inject(pid, "", injectionDllPath, hWnd, ipcChannelName, hmod);
+			uint nt = Inject(pid, "", injectionDllPath, hWnd, ipcChannelName);
 
 			//Set exit code
 			Environment.Exit((int)nt);
