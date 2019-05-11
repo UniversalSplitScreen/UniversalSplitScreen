@@ -159,7 +159,7 @@ namespace UniversalSplitScreen.Core
 						//Console.WriteLine($"InjectorCPP hMod = {hmod}");
 
 						Process proc = new Process();
-						proc.StartInfo.FileName = is64 ? "InjectorLoader64.exe" : "InjectorLoader32.exe";
+						proc.StartInfo.FileName = is64 ? "InjectorLoaderx64.exe" : "InjectorLoaderx86.exe";
 
 						//Arguments
 						{
