@@ -17,8 +17,7 @@ namespace UniversalSplitScreen.UI
 			if (refType != null)
 			{
 				base.OnCheckedChanged(e);
-
-				Console.WriteLine($"RefCheckbox checked changed, old={refType}, new={base.Checked}");
+				
 				refType.Set(base.Checked);
 			}
 			else

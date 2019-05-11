@@ -248,7 +248,7 @@ namespace UniversalSplitScreen.RawInput
 								if ((mouse.usButtonFlags & (ushort)ButtonFlags.RI_MOUSE_LEFT_BUTTON_UP) > 0 && Program.Form.ButtonPressed)
 								{
 									Console.WriteLine($"Set mouse, pointer = {rawBuffer.header.hDevice}");
-									Program.SplitScreenManager.SetMousePointer(rawBuffer.header.hDevice);
+									Program.SplitScreenManager.SetMouseHandle(rawBuffer.header.hDevice);
 								}
 								break; 
 							}

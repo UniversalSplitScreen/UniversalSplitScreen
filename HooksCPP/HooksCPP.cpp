@@ -2,6 +2,7 @@
 #include <easyhook.h>
 #include <string>
 #include <iostream>
+#include <Xinput.h>
 using namespace std;
 
 
@@ -10,6 +11,7 @@ string _ipcChannelName;
 static int x;
 static int y;
 UINT16 vkey_state;
+int controllerIndex = 0;
 
 BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 {
@@ -114,6 +116,14 @@ LRESULT CALLBACK GetMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPara
 BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize)
 {
 	return true;
+}
+
+DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE *pState)
+{
+	if (controllerIndex == 0)
+		return ERROR_SUCCESS;
+	else
+		return XInputGetState(controllerIndex - 1, pState);
 }
 
 inline int bytesToInt(BYTE* bytes)
@@ -249,7 +259,7 @@ void startPipe()
 	}
 }
 
-void installHook(LPCSTR moduleHandle, LPCSTR lpProcName, void* InCallback)
+NTSTATUS installHook(LPCSTR moduleHandle, LPCSTR lpProcName, void* InCallback)
 {
 	HOOK_TRACE_INFO hHook = { NULL };
 
@@ -263,18 +273,21 @@ void installHook(LPCSTR moduleHandle, LPCSTR lpProcName, void* InCallback)
 	{
 		ULONG ACLEntries[1] = { 0 };
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
-		cout << "Successfully installed hook " << lpProcName << "\n";
+		cout << "Successfully installed hook " << lpProcName << " in module '" << moduleHandle << "'\n";
 	}
 	else
 	{
-		cout << "Failed to install hook " << lpProcName << ". NSTATUS: " << hookResult << "\n";
+		cout << "Failed to install hook " << lpProcName << " in module '"<< moduleHandle << "', NTSTATUS: " << hookResult << "\n";
 	}
+
+	return hookResult;
 }
 
 struct UserData
 {
 	HWND hWnd;
 	char ipcChannelName[256];//Name will be 30 characters
+	int controllerIndex;
 	bool HookGetCursorPos;
 	bool HookGetForegroundWindow;
 	bool HookGetAsyncKeyState;
@@ -282,6 +295,7 @@ struct UserData
 	bool HookCallWindowProcW;
 	bool HookRegisterRawInputDevices;
 	bool HookSetCursorPos;
+	bool HookXInput;
 };
 
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
@@ -302,11 +316,14 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		UserData userData = *reinterpret_cast<UserData *>(inRemoteInfo->UserData);
 
 		hWnd = userData.hWnd;
-		cout << "Received hWnd: " << hWnd << "\n";
+		cout << "Received hWnd: " << hWnd << endl;
 
 		string ipcChannelName(userData.ipcChannelName);
 		_ipcChannelName = ipcChannelName;
-		cout << "Received IPC channel: " << ipcChannelName << "\n";
+		cout << "Received IPC channel: " << ipcChannelName << endl;
+
+		controllerIndex = userData.controllerIndex;
+		cout << "Received controller index: " << controllerIndex << endl;
 		
 		//Install hooks
 		if (userData.HookGetCursorPos)				installHook(TEXT("user32"),	"GetCursorPos",				GetCursorPos_Hook);
@@ -316,7 +333,18 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (userData.HookCallWindowProcW)			installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
 		if (userData.HookRegisterRawInputDevices)	installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 		if (userData.HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
-		
+
+		if (userData.HookXInput)
+		{
+			LPCSTR xinputNames[] = { "xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll" };//todo: switch 1_3/1_4?
+			NTSTATUS ntResult = 1;//0 = success
+			int xi = 0;
+			while (ntResult != 0)
+			{
+				ntResult = installHook(xinputNames[xi++], "XInputGetState", XInputGetState_Hook);
+			}
+		}
+
 		//De-register from Raw Input
 		if (userData.HookRegisterRawInputDevices)
 		{

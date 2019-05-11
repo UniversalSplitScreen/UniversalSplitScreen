@@ -78,7 +78,7 @@ namespace UniversalSplitScreen.Core
 				if (!deviceToWindows.ContainsKey(window.KeyboardAttached))
 					deviceToWindows[window.KeyboardAttached] = windows.Values.Where(x => x.KeyboardAttached == window.KeyboardAttached).ToArray();
 
-				//Borderlands 2 requriest WM_INPUT to be sent to a window named DIEmWin, not the main hWnd.
+				//Borderlands 2 requires WM_INPUT to be sent to a window named DIEmWin, not the main hWnd.
 				foreach (ProcessThread thread in Process.GetProcessById(window.pid).Threads)
 				{
 
@@ -121,14 +121,14 @@ namespace UniversalSplitScreen.Core
 				}
 
 				//EasyHook
-				//TODO: REMOVE TRUE
 				if (Options.CurrentOptions.Hook_FilterRawInput || 
 					Options.CurrentOptions.Hook_FilterWindowsMouseInput || 
 					Options.CurrentOptions.Hook_GetForegroundWindow || 
 					Options.CurrentOptions.Hook_GetCursorPos || 
 					Options.CurrentOptions.Hook_GetKeyState || 
 					Options.CurrentOptions.Hook_GetAsyncKeyState ||
-					Options.CurrentOptions.Hook_SetCursorPos)
+					Options.CurrentOptions.Hook_SetCursorPos ||
+					Options.CurrentOptions.Hook_XInput)
 				{
 
 					{
@@ -140,6 +140,7 @@ namespace UniversalSplitScreen.Core
 						//	"HooksCPP.dll");
 
 
+						//TODO: only start if using a hook that needs a pipe
 						var pipe = new NamedPipe();
 						window.HooksCPPNamedPipe = pipe;
 
@@ -168,13 +169,15 @@ namespace UniversalSplitScreen.Core
 								$"\"{(is64 ? injectionLibrary64 : injectionLibrary32)}\"",
 								window.hWnd,
 								pipe.pipeName,
+								window.ControllerIndex,
 								Options.CurrentOptions.Hook_GetCursorPos,
 								Options.CurrentOptions.Hook_GetForegroundWindow,
 								Options.CurrentOptions.Hook_GetAsyncKeyState,
 								Options.CurrentOptions.Hook_GetKeyState,
 								Options.CurrentOptions.Hook_FilterWindowsMouseInput,
 								Options.CurrentOptions.Hook_FilterRawInput,
-								Options.CurrentOptions.Hook_SetCursorPos
+								Options.CurrentOptions.Hook_SetCursorPos,
+								Options.CurrentOptions.Hook_XInput
 							};
 
 							StringBuilder sb = new StringBuilder();
@@ -264,8 +267,8 @@ namespace UniversalSplitScreen.Core
 			foreach (var window in windows.Values)
 			{
 				window.GetRawInputData_HookServer?.SetToReleaseHook();
-				window.HooksCPPNamedPipe.AddMessage(0x03, 0, 0);
-				window.HooksCPPNamedPipe.Close();
+				window.HooksCPPNamedPipe?.AddMessage(0x03, 0, 0);
+				window.HooksCPPNamedPipe?.Close();
 			}
 
 			setFocusTasks.Clear();
@@ -275,27 +278,41 @@ namespace UniversalSplitScreen.Core
 			Program.Form.WindowState = FormWindowState.Normal;
 		}
 
-		public void SetMousePointer(IntPtr mouse)
+		public void SetMouseHandle(IntPtr mouse)
 		{
 			if (!windows.ContainsKey(active_hWnd))
 				windows[active_hWnd] = new Window(active_hWnd);
 
-			windows[active_hWnd].MouseAttached = mouse;
+			Window window = windows[active_hWnd];
+			window.MouseAttached = mouse;
 
 			Program.Form.MouseHandleText = mouse.ToString();
 
-			if ((int)mouse == 0 && (int)windows[active_hWnd].KeyboardAttached == 0)
+			if ((int)mouse == 0 && (int)window.KeyboardAttached == 0 && window.ControllerIndex == 0)
 				windows.Remove(active_hWnd);
 		}
 
-		public void SetKeyboardPointer(IntPtr keyboard)
+		public void SetKeyboardHandle(IntPtr keyboard)
 		{
 			if (!windows.ContainsKey(active_hWnd)) windows[active_hWnd] = new Window(active_hWnd);
-			windows[active_hWnd].KeyboardAttached = keyboard;
+
+			Window window = windows[active_hWnd];
+			window.KeyboardAttached = keyboard;
 
 			Program.Form.KeyboardHandleText = keyboard.ToString();
 
-			if ((int)keyboard == 0 && (int)windows[active_hWnd].MouseAttached == 0)
+			if ((int)keyboard == 0 && (int)window.MouseAttached == 0 && window.ControllerIndex == 0)
+				windows.Remove(active_hWnd);
+		}
+
+		public void SetControllerIndex(int index)
+		{
+			if (!windows.ContainsKey(active_hWnd)) windows[active_hWnd] = new Window(active_hWnd);
+
+			Window window = windows[active_hWnd];
+			window.ControllerIndex = index;
+
+			if ((int)window.KeyboardAttached == 0 && (int)window.MouseAttached == 0 && window.ControllerIndex == 0)
 				windows.Remove(active_hWnd);
 		}
 
@@ -304,6 +321,7 @@ namespace UniversalSplitScreen.Core
 			windows.Clear();
 			Program.Form.MouseHandleText = "0";
 			Program.Form.KeyboardHandleText = "0";
+			Program.Form.ControllerSelectedIndex = 0;
 		}
 
 		#endregion
@@ -380,11 +398,13 @@ namespace UniversalSplitScreen.Core
 				{
 					Program.Form.MouseHandleText = x.MouseAttached.ToString();
 					Program.Form.KeyboardHandleText = x.KeyboardAttached.ToString();
+					Program.Form.ControllerSelectedIndex = x.ControllerIndex;
 				}
 				else
 				{
 					Program.Form.MouseHandleText = "0";
 					Program.Form.KeyboardHandleText = "0";
+					Program.Form.ControllerSelectedIndex = 0;
 				}
 			}
 

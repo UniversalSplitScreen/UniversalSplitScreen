@@ -22,6 +22,8 @@ namespace UniversalSplitScreen.Core
 		public IntPtr KeyboardAttached { get; set; } = new IntPtr(0);
 		public readonly Dictionary<ushort, bool> keysDown = new Dictionary<ushort, bool>();
 
+		public int ControllerIndex { get; set; } = 0;//0 = none, 1234 = 1234
+
 		public WindowManagement.RECT Bounds { get; private set; }
 		public int Width => Bounds.Right - Bounds.Left;
 		public int Height => Bounds.Bottom - Bounds.Top;

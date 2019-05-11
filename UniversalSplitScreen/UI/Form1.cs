@@ -21,6 +21,7 @@ namespace UniversalSplitScreen.UI
 		public string WindowHandleText { get => hWndLabel.Text; set => hWndLabel.Text = value; }
 		public string MouseHandleText { get => mouseHandleLabel.Text; set => mouseHandleLabel.Text = value; }
 		public string KeyboardHandleText { get => keyboardHandleLabel.Text; set => keyboardHandleLabel.Text = value; }
+		public int ControllerSelectedIndex { get => ControllerIndexComboBox.SelectedIndex; set => ControllerIndexComboBox.SelectedIndex = value; }
 
 		public ComboBox OptionsComboBox => optionsComboBox;
 
@@ -30,6 +31,8 @@ namespace UniversalSplitScreen.UI
 
 			startButton.Enabled = true;
 			stopButton.Enabled = false;
+
+			ControllerIndexComboBox.SelectedIndex = 0;
 
 			PopulateOptionsRefTypes(Options.CurrentOptions);
 		}
@@ -54,7 +57,8 @@ namespace UniversalSplitScreen.UI
 			RefCheckbox_Hook_SetCursorPos.RefType				= new RefType<bool>("Hook_SetCursorPos");
 			RefCheckbox_Hook_GetAsyncKeyState.RefType			= new RefType<bool>("Hook_GetAsyncKeyState");
 			RefCheckbox_Hook_GetKeyState.RefType				= new RefType<bool>("Hook_GetKeyState");
-			
+			RefCheckbox_Hook_XInput.RefType						= new RefType<bool>("Hook_XInput");
+
 			drawMouseEveryXmsField.Value						= Options.CurrentOptions.DrawMouseEveryXMilliseconds;
 		}
 		
@@ -80,19 +84,19 @@ namespace UniversalSplitScreen.UI
 		{
 			keyboardSetTextbox.Clear();
 			Console.WriteLine($"Set keyboard, pointer = {Program.MessageProcessor.LastKeyboardPressed}");
-			Program.SplitScreenManager.SetKeyboardPointer(Program.MessageProcessor.LastKeyboardPressed);
+			Program.SplitScreenManager.SetKeyboardHandle(Program.MessageProcessor.LastKeyboardPressed);
 		}
 
 		private void mouseResetButton_Click(object sender, EventArgs e)
 		{
 			Console.WriteLine("Resetting mouse pointer");
-			Program.SplitScreenManager.SetMousePointer(new IntPtr(0));
+			Program.SplitScreenManager.SetMouseHandle(new IntPtr(0));
 		}
 
 		private void keyboardResetButton_Click(object sender, EventArgs e)
 		{
 			Console.WriteLine("Resetting keyboard pointer");
-			Program.SplitScreenManager.SetKeyboardPointer(new IntPtr(0));
+			Program.SplitScreenManager.SetKeyboardHandle(new IntPtr(0));
 		}
 
 		private void resetAllButton_Click(object sender, EventArgs e)
@@ -109,14 +113,20 @@ namespace UniversalSplitScreen.UI
 		{
 			Program.SplitScreenManager.DeactivateSplitScreen();
 		}
+
+		private void ControllerIndexComboBox_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			int index = ControllerIndexComboBox.SelectedIndex;
+			Console.WriteLine($"Set controller index = {index}");
+			Program.SplitScreenManager?.SetControllerIndex(index);
+		}
 		#endregion
-		
+
+		#region Option page events
 		private void drawMouseEveryXmsField_ValueChanged(object sender, EventArgs e)
 		{
 			Core.Options.CurrentOptions.DrawMouseEveryXMilliseconds = (int)drawMouseEveryXmsField.Value;
 		}
-
-		
 		
 		public void SetEndButtonText(string text)
 		{
@@ -129,11 +139,6 @@ namespace UniversalSplitScreen.UI
 			stopButton.Enabled = true;
 		}
 
-		public void OnSplitScreenEnd()
-		{
-			startButton.Enabled = true;
-			stopButton.Enabled = false;
-		}
 
 		private void endButtonSetter_Click(object sender, EventArgs e)
 		{
@@ -178,10 +183,17 @@ namespace UniversalSplitScreen.UI
 				Core.Options.NewButtonClicked(name);
 			}
 		}
+		#endregion
 
+		public void OnSplitScreenEnd()
+		{
+			startButton.Enabled = true;
+			stopButton.Enabled = false;
+		}
+		
 		private void RefCheckbox_Hook_GetAsyncKeyState_CheckedChanged(object sender, EventArgs e)
 		{
 
-		}
+		}		
 	}
 }

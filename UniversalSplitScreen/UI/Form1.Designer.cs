@@ -64,6 +64,10 @@
 			this.hooksWarningLabel = new System.Windows.Forms.Label();
 			this.drawMouseEveryXmsLabel = new System.Windows.Forms.Label();
 			this.drawMouseEveryXmsField = new System.Windows.Forms.NumericUpDown();
+			this.GamePadGroupBox = new System.Windows.Forms.GroupBox();
+			this.ControllerIndexComboBox = new System.Windows.Forms.ComboBox();
+			this.ControllerIndexLabel = new System.Windows.Forms.Label();
+			this.ControllerHookNote = new System.Windows.Forms.Label();
 			this.RefCheckbox_DrawMouse = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_RefreshWindowBoundsOnMouseClick = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_SendFakeWindowFocusMessages = new UniversalSplitScreen.UI.RefCheckbox();
@@ -72,13 +76,14 @@
 			this.RefCheckbox_SendNormalMouseInput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_SendRawKeyboardInput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_SendRawMouseInput = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_Hook_SetCursorPos = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_GetKeyState = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_GetAsyncKeyState = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_GetCursorPos = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_GetForegroundWindow = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_FilterMouseInputMessages = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_FilterRawInput = new UniversalSplitScreen.UI.RefCheckbox();
-			this.RefCheckbox_Hook_SetCursorPos = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_Hook_XInput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -93,6 +98,7 @@
 			this.panel1.SuspendLayout();
 			this.hooksBox.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.drawMouseEveryXmsField)).BeginInit();
+			this.GamePadGroupBox.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -153,6 +159,7 @@
 			// activeWindowPanel
 			// 
 			this.activeWindowPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.activeWindowPanel.Controls.Add(this.GamePadGroupBox);
 			this.activeWindowPanel.Controls.Add(this.windowTitleBox);
 			this.activeWindowPanel.Controls.Add(this.keyboardBox);
 			this.activeWindowPanel.Controls.Add(this.mouseBox);
@@ -437,6 +444,7 @@
 			// 
 			// hooksBox
 			// 
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_XInput);
 			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_SetCursorPos);
 			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetKeyState);
 			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetAsyncKeyState);
@@ -486,6 +494,52 @@
 			this.drawMouseEveryXmsField.TabIndex = 8;
 			this.drawMouseEveryXmsField.Tag = "";
 			this.drawMouseEveryXmsField.ValueChanged += new System.EventHandler(this.drawMouseEveryXmsField_ValueChanged);
+			// 
+			// GamePadGroupBox
+			// 
+			this.GamePadGroupBox.Controls.Add(this.ControllerHookNote);
+			this.GamePadGroupBox.Controls.Add(this.ControllerIndexLabel);
+			this.GamePadGroupBox.Controls.Add(this.ControllerIndexComboBox);
+			this.GamePadGroupBox.Location = new System.Drawing.Point(415, 48);
+			this.GamePadGroupBox.Name = "GamePadGroupBox";
+			this.GamePadGroupBox.Size = new System.Drawing.Size(210, 126);
+			this.GamePadGroupBox.TabIndex = 7;
+			this.GamePadGroupBox.TabStop = false;
+			this.GamePadGroupBox.Text = "Gamepad/Controller/Joystick";
+			// 
+			// ControllerIndexComboBox
+			// 
+			this.ControllerIndexComboBox.FormattingEnabled = true;
+			this.ControllerIndexComboBox.Items.AddRange(new object[] {
+            "No controller",
+            "1",
+            "2",
+            "3",
+            "4"});
+			this.ControllerIndexComboBox.Location = new System.Drawing.Point(6, 36);
+			this.ControllerIndexComboBox.Name = "ControllerIndexComboBox";
+			this.ControllerIndexComboBox.Size = new System.Drawing.Size(197, 21);
+			this.ControllerIndexComboBox.TabIndex = 0;
+			this.ControllerIndexComboBox.SelectedIndexChanged += new System.EventHandler(this.ControllerIndexComboBox_SelectedIndexChanged);
+			// 
+			// ControllerIndexLabel
+			// 
+			this.ControllerIndexLabel.AutoSize = true;
+			this.ControllerIndexLabel.Location = new System.Drawing.Point(7, 20);
+			this.ControllerIndexLabel.Name = "ControllerIndexLabel";
+			this.ControllerIndexLabel.Size = new System.Drawing.Size(82, 13);
+			this.ControllerIndexLabel.TabIndex = 1;
+			this.ControllerIndexLabel.Text = "Controller index:";
+			// 
+			// ControllerHookNote
+			// 
+			this.ControllerHookNote.AutoSize = true;
+			this.ControllerHookNote.Location = new System.Drawing.Point(6, 88);
+			this.ControllerHookNote.MaximumSize = new System.Drawing.Size(205, 0);
+			this.ControllerHookNote.Name = "ControllerHookNote";
+			this.ControllerHookNote.Size = new System.Drawing.Size(195, 26);
+			this.ControllerHookNote.TabIndex = 2;
+			this.ControllerHookNote.Text = "Note: You need to enable XInput Hook for gamepads to work";
 			// 
 			// RefCheckbox_DrawMouse
 			// 
@@ -575,6 +629,17 @@
 			this.RefCheckbox_SendRawMouseInput.Text = "Send raw mouse input";
 			this.RefCheckbox_SendRawMouseInput.UseVisualStyleBackColor = true;
 			// 
+			// RefCheckbox_Hook_SetCursorPos
+			// 
+			this.RefCheckbox_Hook_SetCursorPos.AutoSize = true;
+			this.RefCheckbox_Hook_SetCursorPos.Location = new System.Drawing.Point(9, 163);
+			this.RefCheckbox_Hook_SetCursorPos.Name = "RefCheckbox_Hook_SetCursorPos";
+			this.RefCheckbox_Hook_SetCursorPos.RefType = null;
+			this.RefCheckbox_Hook_SetCursorPos.Size = new System.Drawing.Size(119, 17);
+			this.RefCheckbox_Hook_SetCursorPos.TabIndex = 20;
+			this.RefCheckbox_Hook_SetCursorPos.Text = "Hook SetCursorPos";
+			this.RefCheckbox_Hook_SetCursorPos.UseVisualStyleBackColor = true;
+			// 
 			// RefCheckbox_Hook_GetKeyState
 			// 
 			this.RefCheckbox_Hook_GetKeyState.AutoSize = true;
@@ -642,16 +707,16 @@
 			this.RefCheckbox_Hook_FilterRawInput.Text = "Filter raw input messages from Windows";
 			this.RefCheckbox_Hook_FilterRawInput.UseVisualStyleBackColor = true;
 			// 
-			// RefCheckbox_Hook_SetCursorPos
+			// RefCheckbox_Hook_XInput
 			// 
-			this.RefCheckbox_Hook_SetCursorPos.AutoSize = true;
-			this.RefCheckbox_Hook_SetCursorPos.Location = new System.Drawing.Point(9, 163);
-			this.RefCheckbox_Hook_SetCursorPos.Name = "RefCheckbox_Hook_SetCursorPos";
-			this.RefCheckbox_Hook_SetCursorPos.RefType = null;
-			this.RefCheckbox_Hook_SetCursorPos.Size = new System.Drawing.Size(119, 17);
-			this.RefCheckbox_Hook_SetCursorPos.TabIndex = 20;
-			this.RefCheckbox_Hook_SetCursorPos.Text = "Hook SetCursorPos";
-			this.RefCheckbox_Hook_SetCursorPos.UseVisualStyleBackColor = true;
+			this.RefCheckbox_Hook_XInput.AutoSize = true;
+			this.RefCheckbox_Hook_XInput.Location = new System.Drawing.Point(9, 232);
+			this.RefCheckbox_Hook_XInput.Name = "RefCheckbox_Hook_XInput";
+			this.RefCheckbox_Hook_XInput.RefType = null;
+			this.RefCheckbox_Hook_XInput.Size = new System.Drawing.Size(153, 17);
+			this.RefCheckbox_Hook_XInput.TabIndex = 21;
+			this.RefCheckbox_Hook_XInput.Text = "Hook XInput for gamepads";
+			this.RefCheckbox_Hook_XInput.UseVisualStyleBackColor = true;
 			// 
 			// Form1
 			// 
@@ -686,6 +751,8 @@
 			this.hooksBox.ResumeLayout(false);
 			this.hooksBox.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.drawMouseEveryXmsField)).EndInit();
+			this.GamePadGroupBox.ResumeLayout(false);
+			this.GamePadGroupBox.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -742,5 +809,10 @@
 		private RefCheckbox RefCheckbox_Hook_FilterMouseInputMessages;
 		private RefCheckbox RefCheckbox_Hook_FilterRawInput;
 		private RefCheckbox RefCheckbox_Hook_SetCursorPos;
+		private System.Windows.Forms.GroupBox GamePadGroupBox;
+		private System.Windows.Forms.ComboBox ControllerIndexComboBox;
+		private System.Windows.Forms.Label ControllerHookNote;
+		private System.Windows.Forms.Label ControllerIndexLabel;
+		private RefCheckbox RefCheckbox_Hook_XInput;
 	}
 }

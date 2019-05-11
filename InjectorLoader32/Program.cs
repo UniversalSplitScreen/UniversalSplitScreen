@@ -12,19 +12,21 @@ namespace InjectorLoader32
 				[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath64,
 				IntPtr hWnd,
 				string ipcChannelName,
-				bool HookGetCursorPos, 
+				int controllerIndex,
+				bool HookGetCursorPos,
 				bool HookGetForegroundWindow,
-				bool HookGetAsyncKeyState, 
-				bool HookGetKeyState, 
-				bool HookCallWindowProcW, 
+				bool HookGetAsyncKeyState,
+				bool HookGetKeyState,
+				bool HookCallWindowProcW,
 				bool HookRegisterRawInputDevices,
-				bool HookSetCursorPos);
-		
+				bool HookSetCursorPos,
+				bool HookXInput);
+
 		public static void Main(string[] args)
 		{
-			if (args.Length != 11)
+			if (args.Length != 13)
 			{
-				throw new ArgumentException("Need exactly 11 arguments");
+				throw new ArgumentException("Need exactly 13 arguments");
 			}
 
 			//Arguments
@@ -37,7 +39,9 @@ namespace InjectorLoader32
 
 			string ipcChannelName = args[3];
 
-			int i = 4;
+			int.TryParse(args[4], out int controllerIndex);
+
+			int i = 5;
 			bool nextBool() => args[i++].ToLower().Equals("true");
 
 			bool HookGetCursorPos = nextBool();
@@ -47,20 +51,23 @@ namespace InjectorLoader32
 			bool HookCallWindowProcW = nextBool();
 			bool HookRegisterRawInputDevices = nextBool();
 			bool HookSetCursorPos = nextBool();
+			bool HookXInput = nextBool();
 
-			//InjectorCPP32 function
-			uint nt = Inject(pid, 
-				injectionDllPath, 
-				"", 
-				hWnd, 
-				ipcChannelName, 
+			//InjectorCPP function
+			uint nt = Inject(pid,
+				injectionDllPath,
+				"",
+				hWnd,
+				ipcChannelName,
+				controllerIndex,
 				HookGetCursorPos,
 				HookGetForegroundWindow,
 				HookGetAsyncKeyState,
 				HookGetKeyState,
 				HookCallWindowProcW,
 				HookRegisterRawInputDevices,
-				HookSetCursorPos);
+				HookSetCursorPos,
+				HookXInput);
 
 			//Set exit code
 			Environment.Exit((int)nt);
