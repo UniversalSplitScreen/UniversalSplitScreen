@@ -132,32 +132,21 @@ namespace UniversalSplitScreen.Core
 				{
 
 					{
-
-						//C++
-						//string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(
-						//	System.Reflection.Assembly.GetExecutingAssembly().Location), 
-						//	"HookCPP32",
-						//	"HooksCPP.dll");
-
-
 						//TODO: only start if using a hook that needs a pipe
 						var pipe = new NamedPipe();
 						window.HooksCPPNamedPipe = pipe;
+						
+						string hooksLibrary32 = Path.Combine(Path.GetDirectoryName(
+							System.Reflection.Assembly.GetExecutingAssembly().Location),
+							"HooksCPP32.dll");
 
-						//TODO: FIX PATH
-#if DEBUG
-						string injectionLibrary32 = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP32.dll";
-						string injectionLibrary64 = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Debug\HooksCPP64.dll";
-#else
-						string injectionLibrary32 = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Release\HooksCPP32.dll";
-						string injectionLibrary64 = @"C:\Projects\UniversalSplitScreen\UniversalSplitScreen\bin\x86\Release\HooksCPP64.dll";
-#endif
+						string hooksLibrary64 = Path.Combine(Path.GetDirectoryName(
+							System.Reflection.Assembly.GetExecutingAssembly().Location),
+							"HooksCPP64.dll");
+
 
 						bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
 						
-						//IntPtr hmod = WinApi.LoadLibrary(injectionLibrary);
-						//Console.WriteLine($"InjectorCPP hMod = {hmod}");
-
 						Process proc = new Process();
 						proc.StartInfo.FileName = is64 ? "InjectorLoaderx64.exe" : "InjectorLoaderx86.exe";
 
@@ -166,7 +155,7 @@ namespace UniversalSplitScreen.Core
 							object[] args = new object[]
 							{
 								window.pid,
-								$"\"{(is64 ? injectionLibrary64 : injectionLibrary32)}\"",
+								$"\"{(is64 ? hooksLibrary64 : hooksLibrary32)}\"",
 								window.hWnd,
 								pipe.pipeName,
 								window.ControllerIndex,
