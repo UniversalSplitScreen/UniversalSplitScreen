@@ -56,6 +56,8 @@ namespace UniversalSplitScreen.Core
 			Cursor.Position = new System.Drawing.Point(0, 0);
 			deviceToWindows.Clear();
 
+			var options = Options.CurrentOptions;
+
 			//Check if windows still exist
 			for (int i = 0; i < windows.Count; i++)
 			{
@@ -103,7 +105,7 @@ namespace UniversalSplitScreen.Core
 				}
 
 				//WM_ACTIVATE/WM_SETFOCUS tasks
-				if (Options.CurrentOptions.SendWM_ACTIVATE || Options.CurrentOptions.SendWM_SETFOCUS)
+				if (options.SendWM_ACTIVATE || options.SendWM_SETFOCUS)
 				{
 					CancellationTokenSource c = new CancellationTokenSource();
 					Task task = new Task(() => SetFocus(pair.Key, c.Token), c.Token);
@@ -112,7 +114,7 @@ namespace UniversalSplitScreen.Core
 				}
 
 				//Draw mouse tasks
-				if (Options.CurrentOptions.DrawMouse)
+				if (options.DrawMouse)
 				{
 					CancellationTokenSource c = new CancellationTokenSource();
 					Task task = new Task(() => DrawMouse(hWnd, c.Token), c.Token);
@@ -121,14 +123,14 @@ namespace UniversalSplitScreen.Core
 				}
 
 				//EasyHook
-				if (Options.CurrentOptions.Hook_FilterRawInput || 
-					Options.CurrentOptions.Hook_FilterWindowsMouseInput || 
-					Options.CurrentOptions.Hook_GetForegroundWindow || 
-					Options.CurrentOptions.Hook_GetCursorPos || 
-					Options.CurrentOptions.Hook_GetKeyState || 
-					Options.CurrentOptions.Hook_GetAsyncKeyState ||
-					Options.CurrentOptions.Hook_SetCursorPos ||
-					Options.CurrentOptions.Hook_XInput)
+				if (options.Hook_FilterRawInput || 
+					options.Hook_FilterWindowsMouseInput || 
+					options.Hook_GetForegroundWindow || 
+					options.Hook_GetCursorPos || 
+					options.Hook_GetKeyState || 
+					options.Hook_GetAsyncKeyState ||
+					options.Hook_SetCursorPos ||
+					options.Hook_XInput)
 				{
 
 					{
@@ -159,14 +161,14 @@ namespace UniversalSplitScreen.Core
 								window.hWnd,
 								pipe.pipeName,
 								window.ControllerIndex,
-								Options.CurrentOptions.Hook_GetCursorPos,
-								Options.CurrentOptions.Hook_GetForegroundWindow,
-								Options.CurrentOptions.Hook_GetAsyncKeyState,
-								Options.CurrentOptions.Hook_GetKeyState,
-								Options.CurrentOptions.Hook_FilterWindowsMouseInput,
-								Options.CurrentOptions.Hook_FilterRawInput,
-								Options.CurrentOptions.Hook_SetCursorPos,
-								Options.CurrentOptions.Hook_XInput
+								options.Hook_GetCursorPos,
+								options.Hook_GetForegroundWindow,
+								options.Hook_GetAsyncKeyState,
+								options.Hook_GetKeyState,
+								options.Hook_FilterWindowsMouseInput,
+								options.Hook_FilterRawInput,
+								options.Hook_SetCursorPos,
+								options.Hook_XInput
 							};
 
 							StringBuilder sb = new StringBuilder();
@@ -216,12 +218,12 @@ namespace UniversalSplitScreen.Core
 																	//TODO: switch 32/64???
 								injectionLibrary_getRawInputData,   // 64-bit library to inject (if target is 64-bit)
 								channelName,                        // the parameters to pass into injected library
-								Options.CurrentOptions.Hook_FilterRawInput,
-								Options.CurrentOptions.Hook_FilterWindowsMouseInput,
-								Options.CurrentOptions.Hook_GetForegroundWindow,
-								Options.CurrentOptions.Hook_GetCursorPos,
-								Options.CurrentOptions.Hook_GetAsyncKeyState,
-								Options.CurrentOptions.Hook_GetKeyState
+								options.Hook_FilterRawInput,
+								options.Hook_FilterWindowsMouseInput,
+								options.Hook_GetForegroundWindow,
+								options.Hook_GetCursorPos,
+								options.Hook_GetAsyncKeyState,
+								options.Hook_GetKeyState
 							);
 
 							window.GetRawInputData_HookIPCServerChannel = serverChannel_getRawInputData;

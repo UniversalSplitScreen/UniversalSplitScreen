@@ -3,6 +3,9 @@
 #include <string>
 #include <iostream>
 #include <Xinput.h>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 using namespace std;
 
 
@@ -90,6 +93,15 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 
 BOOL WINAPI SetCursorPos_Hook(int X, int Y)
 {
+	POINT p;
+	p.x = X;
+	p.y = Y;
+
+	ScreenToClient(hWnd, &p);
+
+	x = p.x;
+	y = p.y;
+
 	return TRUE;
 }
 
@@ -153,31 +165,8 @@ inline int bytesToInt(BYTE* bytes)
 	//return (int)(*p);
 }
 
-/*#if _WIN64//64-bit
-//https://stackoverflow.com/questions/27220/how-to-convert-stdstring-to-lpcwstr-in-c-unicode
-LPCWSTR stringToLPCWSTR(const std::string& s)
-{
-	int len;
-	int slength = (int)s.length() + 1;
-	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
-	wchar_t* buf = new wchar_t[len];
-	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
-	std::wstring r(buf);
-	delete[] buf;
-	return r.c_str();
-}
-#endif*/
-
-void startPipe()
-{
-/*#if _WIN64//64-bit
-	std::string pipeName = "\\\\.\\pipe\\" + _ipcChannelName;
-	LPCWSTR _pipeNameChars = stringToLPCWSTR(pipeName);
-#elif _WIN32//32bit
-	char _pipeNameChars[256];
-	sprintf_s(_pipeNameChars, "\\\\.\\pipe\\%s", _ipcChannelName.c_str());
-#endif*/
-	
+void startPipeListen()
+{	
 	char _pipeNameChars[256];
 	sprintf_s(_pipeNameChars, "\\\\.\\pipe\\%s", _ipcChannelName.c_str());
 
@@ -304,12 +293,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 	cout << "Injected CPP\n";
 	cout << "Injected by host process ID: " << inRemoteInfo->HostPID << "\n";
 	cout << "Passed in data size:" << inRemoteInfo->UserDataSize << "\n";
-
-	/*ofstream myfile;
-	myfile.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt");
-	myfile << "START\n";
-	myfile.close();*/
-
+	
 	if (inRemoteInfo->UserDataSize == sizeof(UserData))
 	{
 		//Get UserData
@@ -334,6 +318,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (userData.HookRegisterRawInputDevices)	installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 		if (userData.HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
 
+		//Hook XInput dll
 		if (userData.HookXInput)
 		{
 			LPCSTR xinputNames[] = { "xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll" };//todo: switch 1_3/1_4?
@@ -359,7 +344,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		}
 		
 		//Start named pipe client
-		startPipe();
+		startPipeListen();
 	}
 	else
 	{

@@ -111,7 +111,6 @@
     <Compile Include="Core\WinApi.cs" />
     <Compile Include="Core\Window.cs" />
     <Compile Include="Piping\NamedPipe.cs" />
-    <Compile Include="Piping\WinApi.cs" />
     <Compile Include="UI\Form1.cs">
       <SubType>Form</SubType>
     </Compile>

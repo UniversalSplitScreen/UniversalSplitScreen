@@ -28,7 +28,7 @@ namespace UniversalSplitScreen.Piping
 		private void Start()
 		{
 			Console.WriteLine($"Starting pipe {pipeName}");
-			pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+			pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
 			Console.WriteLine($"Created pipe {pipeName}");
 
 			pipeServer.WaitForConnection();
