@@ -39,9 +39,5 @@ namespace UniversalSplitScreen.RawInput
 		/// <returns></returns>
 		[DllImport("User32.dll")]
 		public static extern uint GetRawInputDeviceInfo(IntPtr hDevice, uint uiCommand, IntPtr pData, ref uint pcbSize);
-
-		//https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-findwindowa
-		[DllImport("User32.dll", SetLastError = true)]
-		public static extern IntPtr FindWindowA(string lpClassName, string lpWindowName);
 	}
 }
