@@ -146,7 +146,7 @@ namespace UniversalSplitScreen.RawInput
 								if (keyUpOrDown && rawBuffer.data.keyboard.VKey == endVKey)//End key
 								{
 									Console.WriteLine("End key pressed");
-									Intercept.IsOn = false;
+									Intercept.InterceptEnabled = false;
 									Program.SplitScreenManager.DeactivateSplitScreen();
 									InputDisabler.Unlock();//Just in case
 								}

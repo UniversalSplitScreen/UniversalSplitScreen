@@ -52,7 +52,7 @@ namespace UniversalSplitScreen.Core
 
 			IsRunningInSplitScreen = true;
 			InputDisabler.Lock();
-			Intercept.IsOn = true;
+			Intercept.InterceptEnabled = true;
 			Cursor.Position = new System.Drawing.Point(0, 0);
 			deviceToWindows.Clear();
 
@@ -247,7 +247,7 @@ namespace UniversalSplitScreen.Core
 		{
 			IsRunningInSplitScreen = false;
 			InputDisabler.Unlock();
-			Intercept.IsOn = false;
+			Intercept.InterceptEnabled = false;
 
 			foreach (var thread in setFocusTasks)
 				thread.Value.Cancel();

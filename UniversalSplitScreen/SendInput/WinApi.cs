@@ -109,31 +109,6 @@ namespace UniversalSplitScreen.SendInput
 		public static extern bool SetForegroundWindow(IntPtr hWnd);
 
 		[DllImport("user32.dll")]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		public static extern bool IsWindowEnabled(IntPtr hWnd);
-
-		[DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
-		public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
-		
-		[DllImport("user32.dll", CharSet = CharSet.Auto)]
-		public static extern uint MapVirtualKey(uint uCode, uint uMapType);
-
-		[DllImport("user32.dll")]
 		public static extern bool BlockInput(bool fBlockIt);
-
-
-
-		[return: MarshalAs(UnmanagedType.Bool)]
-		[DllImport("user32.dll", SetLastError = true)]
-		public static extern bool PostThreadMessage(uint idThread, uint Msg, UIntPtr wParam, IntPtr lParam);
-
-		[DllImport("user32.dll", SetLastError = true)]
-		public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
-
-		[DllImport("user32.dll")]
-		public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
-
-		[DllImport("msvcrt.dll", EntryPoint = "memcpy", CallingConvention = CallingConvention.Cdecl, SetLastError = false)]
-		public static extern IntPtr memcpy(IntPtr dest, IntPtr src, UIntPtr count);
 	}
 }
