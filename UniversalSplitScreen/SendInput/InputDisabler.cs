@@ -39,9 +39,7 @@ namespace UniversalSplitScreen.SendInput
 					Console.WriteLine("Initialising InputDisabler");
 					ahk = AutoHotkeyEngine.Instance;
 					ahk.Suspend();
-
-					//TODO: this delays the UI from responding
-
+					
 					//The star means it will disable even with modifier keys e.g. Shift
 					
 					ahk.ExecRaw("*MButton:: return");

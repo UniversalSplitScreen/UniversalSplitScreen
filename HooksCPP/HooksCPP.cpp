@@ -279,7 +279,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		//Hook XInput dll
 		if (userData.HookXInput)
 		{
-			LPCSTR xinputNames[] = { "xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll" };//todo: switch 1_3/1_4?
+			LPCSTR xinputNames[] = { "xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll" };
 			NTSTATUS ntResult = 1;//0 = success
 			int xi = 0;
 			while (ntResult != 0)

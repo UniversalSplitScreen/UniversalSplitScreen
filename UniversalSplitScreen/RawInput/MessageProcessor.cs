@@ -344,8 +344,7 @@ namespace UniversalSplitScreen.RawInput
 											//Cursor.Clip = clipRect;
 										}
 									}
-
-									//TODO: re-enable mouse wheel
+									
 									if (Options.CurrentOptions.SendScrollwheel && (f & (ushort)ButtonFlags.RI_MOUSE_WHEEL) > 0)
 									{
 										ushort delta = mouse.usButtonData;
