@@ -312,7 +312,7 @@ namespace UniversalSplitScreen.RawInput
 											SendInput.WinApi.PostMessageA(hWnd, (uint)msg, (IntPtr)wParam, (IntPtr)packedXY);
 
 											//TODO: MAKE CONFIGURABLE FOR GetAsyncKeyState hook checkbox
-											window.HooksCPPNamedPipe.WriteMessage(0x02, VKey, isButtonDown ? 1 : 0);
+											window.HooksCPPNamedPipe?.WriteMessage(0x02, VKey, isButtonDown ? 1 : 0);
 
 											var state = window.MouseState;
 											switch (leftMiddleRight)
@@ -342,11 +342,11 @@ namespace UniversalSplitScreen.RawInput
 									}
 
 									//TODO: re-enable mouse wheel
-									/*if ((f & (ushort)ButtonFlags.RI_MOUSE_WHEEL) > 0)
+									if (Options.CurrentOptions.SendScrollwheel && (f & (ushort)ButtonFlags.RI_MOUSE_WHEEL) > 0)
 									{
 										ushort delta = mouse.usButtonData;
 										PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEWHEEL, (IntPtr)((delta * 0x10000) + 0), (IntPtr)packedXY);
-									}*/
+									}
 								}
 							}
 

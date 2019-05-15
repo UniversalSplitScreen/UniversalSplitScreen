@@ -44,6 +44,7 @@ namespace UniversalSplitScreen.UI
 			RefCheckbox_SendRawKeyboardInput.RefType			= new RefType<bool>("SendRawKeyboardInput");
 			RefCheckbox_SendNormalMouseInput.RefType			= new RefType<bool>("SendNormalMouseInput");
 			RefCheckbox_SendNormalKeyboardInput.RefType			= new RefType<bool>("SendNormalKeyboardInput");
+			RefCheckbox_SendScrollwheel.RefType					= new RefType<bool>("SendScrollwheel");
 			RefCheckbox_SendFakeWindowActivateMessages.RefType	= new RefType<bool>("SendWM_ACTIVATE");
 			RefCheckbox_SendFakeWindowFocusMessages.RefType		= new RefType<bool>("SendWM_SETFOCUS");
 

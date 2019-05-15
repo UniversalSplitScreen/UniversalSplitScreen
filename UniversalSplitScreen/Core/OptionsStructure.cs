@@ -10,6 +10,7 @@ namespace UniversalSplitScreen.Core
 		public bool SendRawKeyboardInput			{ get; set; } = false;
 		public bool SendNormalMouseInput			{ get; set; } = true;
 		public bool SendNormalKeyboardInput			{ get; set; } = true;
+		public bool SendScrollwheel					{ get; set; } = false;
 
 		public bool SendWM_ACTIVATE					{ get; set; } = true;
 		public bool SendWM_SETFOCUS					{ get; set; } = false;

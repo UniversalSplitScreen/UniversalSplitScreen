@@ -34,6 +34,10 @@
 			this.stopButton = new System.Windows.Forms.Button();
 			this.resetAllButton = new System.Windows.Forms.Button();
 			this.activeWindowPanel = new System.Windows.Forms.Panel();
+			this.GamePadGroupBox = new System.Windows.Forms.GroupBox();
+			this.ControllerHookNote = new System.Windows.Forms.Label();
+			this.ControllerIndexLabel = new System.Windows.Forms.Label();
+			this.ControllerIndexComboBox = new System.Windows.Forms.ComboBox();
 			this.windowTitleBox = new System.Windows.Forms.GroupBox();
 			this.windowTitleLabel = new System.Windows.Forms.Label();
 			this.keyboardBox = new System.Windows.Forms.GroupBox();
@@ -59,15 +63,6 @@
 			this.buttonOptions_delete = new System.Windows.Forms.Button();
 			this.optionsComboBox = new System.Windows.Forms.ComboBox();
 			this.panel1 = new System.Windows.Forms.Panel();
-			this.endButtonSetter = new System.Windows.Forms.Button();
-			this.hooksBox = new System.Windows.Forms.GroupBox();
-			this.hooksWarningLabel = new System.Windows.Forms.Label();
-			this.drawMouseEveryXmsLabel = new System.Windows.Forms.Label();
-			this.drawMouseEveryXmsField = new System.Windows.Forms.NumericUpDown();
-			this.GamePadGroupBox = new System.Windows.Forms.GroupBox();
-			this.ControllerIndexComboBox = new System.Windows.Forms.ComboBox();
-			this.ControllerIndexLabel = new System.Windows.Forms.Label();
-			this.ControllerHookNote = new System.Windows.Forms.Label();
 			this.RefCheckbox_DrawMouse = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_RefreshWindowBoundsOnMouseClick = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_SendFakeWindowFocusMessages = new UniversalSplitScreen.UI.RefCheckbox();
@@ -76,6 +71,9 @@
 			this.RefCheckbox_SendNormalMouseInput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_SendRawKeyboardInput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_SendRawMouseInput = new UniversalSplitScreen.UI.RefCheckbox();
+			this.endButtonSetter = new System.Windows.Forms.Button();
+			this.hooksBox = new System.Windows.Forms.GroupBox();
+			this.RefCheckbox_Hook_XInput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_SetCursorPos = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_GetKeyState = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_GetAsyncKeyState = new UniversalSplitScreen.UI.RefCheckbox();
@@ -83,10 +81,14 @@
 			this.RefCheckbox_Hook_GetForegroundWindow = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_FilterMouseInputMessages = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_FilterRawInput = new UniversalSplitScreen.UI.RefCheckbox();
-			this.RefCheckbox_Hook_XInput = new UniversalSplitScreen.UI.RefCheckbox();
+			this.hooksWarningLabel = new System.Windows.Forms.Label();
+			this.drawMouseEveryXmsLabel = new System.Windows.Forms.Label();
+			this.drawMouseEveryXmsField = new System.Windows.Forms.NumericUpDown();
+			this.RefCheckbox_SendScrollwheel = new UniversalSplitScreen.UI.RefCheckbox();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
+			this.GamePadGroupBox.SuspendLayout();
 			this.windowTitleBox.SuspendLayout();
 			this.keyboardBox.SuspendLayout();
 			this.flowLayoutPanel2.SuspendLayout();
@@ -98,7 +100,6 @@
 			this.panel1.SuspendLayout();
 			this.hooksBox.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.drawMouseEveryXmsField)).BeginInit();
-			this.GamePadGroupBox.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -168,6 +169,52 @@
 			this.activeWindowPanel.Name = "activeWindowPanel";
 			this.activeWindowPanel.Size = new System.Drawing.Size(759, 359);
 			this.activeWindowPanel.TabIndex = 7;
+			// 
+			// GamePadGroupBox
+			// 
+			this.GamePadGroupBox.Controls.Add(this.ControllerHookNote);
+			this.GamePadGroupBox.Controls.Add(this.ControllerIndexLabel);
+			this.GamePadGroupBox.Controls.Add(this.ControllerIndexComboBox);
+			this.GamePadGroupBox.Location = new System.Drawing.Point(415, 48);
+			this.GamePadGroupBox.Name = "GamePadGroupBox";
+			this.GamePadGroupBox.Size = new System.Drawing.Size(210, 126);
+			this.GamePadGroupBox.TabIndex = 7;
+			this.GamePadGroupBox.TabStop = false;
+			this.GamePadGroupBox.Text = "Gamepad/Controller/Joystick";
+			// 
+			// ControllerHookNote
+			// 
+			this.ControllerHookNote.AutoSize = true;
+			this.ControllerHookNote.Location = new System.Drawing.Point(6, 88);
+			this.ControllerHookNote.MaximumSize = new System.Drawing.Size(205, 0);
+			this.ControllerHookNote.Name = "ControllerHookNote";
+			this.ControllerHookNote.Size = new System.Drawing.Size(195, 26);
+			this.ControllerHookNote.TabIndex = 2;
+			this.ControllerHookNote.Text = "Note: You need to enable XInput Hook for gamepads to work";
+			// 
+			// ControllerIndexLabel
+			// 
+			this.ControllerIndexLabel.AutoSize = true;
+			this.ControllerIndexLabel.Location = new System.Drawing.Point(7, 20);
+			this.ControllerIndexLabel.Name = "ControllerIndexLabel";
+			this.ControllerIndexLabel.Size = new System.Drawing.Size(82, 13);
+			this.ControllerIndexLabel.TabIndex = 1;
+			this.ControllerIndexLabel.Text = "Controller index:";
+			// 
+			// ControllerIndexComboBox
+			// 
+			this.ControllerIndexComboBox.FormattingEnabled = true;
+			this.ControllerIndexComboBox.Items.AddRange(new object[] {
+            "No controller",
+            "1",
+            "2",
+            "3",
+            "4"});
+			this.ControllerIndexComboBox.Location = new System.Drawing.Point(6, 36);
+			this.ControllerIndexComboBox.Name = "ControllerIndexComboBox";
+			this.ControllerIndexComboBox.Size = new System.Drawing.Size(197, 21);
+			this.ControllerIndexComboBox.TabIndex = 0;
+			this.ControllerIndexComboBox.SelectedIndexChanged += new System.EventHandler(this.ControllerIndexComboBox_SelectedIndexChanged);
 			// 
 			// windowTitleBox
 			// 
@@ -415,6 +462,7 @@
 			// panel1
 			// 
 			this.panel1.AutoScroll = true;
+			this.panel1.Controls.Add(this.RefCheckbox_SendScrollwheel);
 			this.panel1.Controls.Add(this.RefCheckbox_DrawMouse);
 			this.panel1.Controls.Add(this.RefCheckbox_RefreshWindowBoundsOnMouseClick);
 			this.panel1.Controls.Add(this.RefCheckbox_SendFakeWindowFocusMessages);
@@ -432,119 +480,10 @@
 			this.panel1.Size = new System.Drawing.Size(755, 351);
 			this.panel1.TabIndex = 0;
 			// 
-			// endButtonSetter
-			// 
-			this.endButtonSetter.Location = new System.Drawing.Point(4, 314);
-			this.endButtonSetter.Name = "endButtonSetter";
-			this.endButtonSetter.Size = new System.Drawing.Size(175, 23);
-			this.endButtonSetter.TabIndex = 11;
-			this.endButtonSetter.Text = "Stop button = End";
-			this.endButtonSetter.UseVisualStyleBackColor = true;
-			this.endButtonSetter.Click += new System.EventHandler(this.endButtonSetter_Click);
-			// 
-			// hooksBox
-			// 
-			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_XInput);
-			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_SetCursorPos);
-			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetKeyState);
-			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetAsyncKeyState);
-			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetCursorPos);
-			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetForegroundWindow);
-			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_FilterMouseInputMessages);
-			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_FilterRawInput);
-			this.hooksBox.Controls.Add(this.hooksWarningLabel);
-			this.hooksBox.Location = new System.Drawing.Point(472, 3);
-			this.hooksBox.Name = "hooksBox";
-			this.hooksBox.Size = new System.Drawing.Size(280, 334);
-			this.hooksBox.TabIndex = 10;
-			this.hooksBox.TabStop = false;
-			this.hooksBox.Text = "Hooks";
-			// 
-			// hooksWarningLabel
-			// 
-			this.hooksWarningLabel.AutoSize = true;
-			this.hooksWarningLabel.ForeColor = System.Drawing.Color.Red;
-			this.hooksWarningLabel.Location = new System.Drawing.Point(6, 16);
-			this.hooksWarningLabel.MaximumSize = new System.Drawing.Size(280, 0);
-			this.hooksWarningLabel.Name = "hooksWarningLabel";
-			this.hooksWarningLabel.Size = new System.Drawing.Size(265, 39);
-			this.hooksWarningLabel.TabIndex = 0;
-			this.hooksWarningLabel.Text = "Warning: Hooks inject code into the target game. This may be detected by an anti-" +
-    "cheat system or anti-virus software. See the documentation for more info.";
-			// 
-			// drawMouseEveryXmsLabel
-			// 
-			this.drawMouseEveryXmsLabel.AutoSize = true;
-			this.drawMouseEveryXmsLabel.Location = new System.Drawing.Point(3, 193);
-			this.drawMouseEveryXmsLabel.Name = "drawMouseEveryXmsLabel";
-			this.drawMouseEveryXmsLabel.Size = new System.Drawing.Size(164, 13);
-			this.drawMouseEveryXmsLabel.TabIndex = 8;
-			this.drawMouseEveryXmsLabel.Text = "Draw mouse every X milliseconds";
-			// 
-			// drawMouseEveryXmsField
-			// 
-			this.drawMouseEveryXmsField.Location = new System.Drawing.Point(173, 191);
-			this.drawMouseEveryXmsField.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-			this.drawMouseEveryXmsField.Name = "drawMouseEveryXmsField";
-			this.drawMouseEveryXmsField.Size = new System.Drawing.Size(120, 20);
-			this.drawMouseEveryXmsField.TabIndex = 8;
-			this.drawMouseEveryXmsField.Tag = "";
-			this.drawMouseEveryXmsField.ValueChanged += new System.EventHandler(this.drawMouseEveryXmsField_ValueChanged);
-			// 
-			// GamePadGroupBox
-			// 
-			this.GamePadGroupBox.Controls.Add(this.ControllerHookNote);
-			this.GamePadGroupBox.Controls.Add(this.ControllerIndexLabel);
-			this.GamePadGroupBox.Controls.Add(this.ControllerIndexComboBox);
-			this.GamePadGroupBox.Location = new System.Drawing.Point(415, 48);
-			this.GamePadGroupBox.Name = "GamePadGroupBox";
-			this.GamePadGroupBox.Size = new System.Drawing.Size(210, 126);
-			this.GamePadGroupBox.TabIndex = 7;
-			this.GamePadGroupBox.TabStop = false;
-			this.GamePadGroupBox.Text = "Gamepad/Controller/Joystick";
-			// 
-			// ControllerIndexComboBox
-			// 
-			this.ControllerIndexComboBox.FormattingEnabled = true;
-			this.ControllerIndexComboBox.Items.AddRange(new object[] {
-            "No controller",
-            "1",
-            "2",
-            "3",
-            "4"});
-			this.ControllerIndexComboBox.Location = new System.Drawing.Point(6, 36);
-			this.ControllerIndexComboBox.Name = "ControllerIndexComboBox";
-			this.ControllerIndexComboBox.Size = new System.Drawing.Size(197, 21);
-			this.ControllerIndexComboBox.TabIndex = 0;
-			this.ControllerIndexComboBox.SelectedIndexChanged += new System.EventHandler(this.ControllerIndexComboBox_SelectedIndexChanged);
-			// 
-			// ControllerIndexLabel
-			// 
-			this.ControllerIndexLabel.AutoSize = true;
-			this.ControllerIndexLabel.Location = new System.Drawing.Point(7, 20);
-			this.ControllerIndexLabel.Name = "ControllerIndexLabel";
-			this.ControllerIndexLabel.Size = new System.Drawing.Size(82, 13);
-			this.ControllerIndexLabel.TabIndex = 1;
-			this.ControllerIndexLabel.Text = "Controller index:";
-			// 
-			// ControllerHookNote
-			// 
-			this.ControllerHookNote.AutoSize = true;
-			this.ControllerHookNote.Location = new System.Drawing.Point(6, 88);
-			this.ControllerHookNote.MaximumSize = new System.Drawing.Size(205, 0);
-			this.ControllerHookNote.Name = "ControllerHookNote";
-			this.ControllerHookNote.Size = new System.Drawing.Size(195, 26);
-			this.ControllerHookNote.TabIndex = 2;
-			this.ControllerHookNote.Text = "Note: You need to enable XInput Hook for gamepads to work";
-			// 
 			// RefCheckbox_DrawMouse
 			// 
 			this.RefCheckbox_DrawMouse.AutoSize = true;
-			this.RefCheckbox_DrawMouse.Location = new System.Drawing.Point(3, 166);
+			this.RefCheckbox_DrawMouse.Location = new System.Drawing.Point(3, 189);
 			this.RefCheckbox_DrawMouse.Name = "RefCheckbox_DrawMouse";
 			this.RefCheckbox_DrawMouse.RefType = null;
 			this.RefCheckbox_DrawMouse.Size = new System.Drawing.Size(85, 17);
@@ -629,6 +568,45 @@
 			this.RefCheckbox_SendRawMouseInput.Text = "Send raw mouse input";
 			this.RefCheckbox_SendRawMouseInput.UseVisualStyleBackColor = true;
 			// 
+			// endButtonSetter
+			// 
+			this.endButtonSetter.Location = new System.Drawing.Point(4, 314);
+			this.endButtonSetter.Name = "endButtonSetter";
+			this.endButtonSetter.Size = new System.Drawing.Size(175, 23);
+			this.endButtonSetter.TabIndex = 11;
+			this.endButtonSetter.Text = "Stop button = End";
+			this.endButtonSetter.UseVisualStyleBackColor = true;
+			this.endButtonSetter.Click += new System.EventHandler(this.endButtonSetter_Click);
+			// 
+			// hooksBox
+			// 
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_XInput);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_SetCursorPos);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetKeyState);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetAsyncKeyState);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetCursorPos);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_GetForegroundWindow);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_FilterMouseInputMessages);
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_FilterRawInput);
+			this.hooksBox.Controls.Add(this.hooksWarningLabel);
+			this.hooksBox.Location = new System.Drawing.Point(472, 3);
+			this.hooksBox.Name = "hooksBox";
+			this.hooksBox.Size = new System.Drawing.Size(280, 334);
+			this.hooksBox.TabIndex = 10;
+			this.hooksBox.TabStop = false;
+			this.hooksBox.Text = "Hooks";
+			// 
+			// RefCheckbox_Hook_XInput
+			// 
+			this.RefCheckbox_Hook_XInput.AutoSize = true;
+			this.RefCheckbox_Hook_XInput.Location = new System.Drawing.Point(9, 232);
+			this.RefCheckbox_Hook_XInput.Name = "RefCheckbox_Hook_XInput";
+			this.RefCheckbox_Hook_XInput.RefType = null;
+			this.RefCheckbox_Hook_XInput.Size = new System.Drawing.Size(153, 17);
+			this.RefCheckbox_Hook_XInput.TabIndex = 21;
+			this.RefCheckbox_Hook_XInput.Text = "Hook XInput for gamepads";
+			this.RefCheckbox_Hook_XInput.UseVisualStyleBackColor = true;
+			// 
 			// RefCheckbox_Hook_SetCursorPos
 			// 
 			this.RefCheckbox_Hook_SetCursorPos.AutoSize = true;
@@ -707,16 +685,51 @@
 			this.RefCheckbox_Hook_FilterRawInput.Text = "Filter raw input messages from Windows";
 			this.RefCheckbox_Hook_FilterRawInput.UseVisualStyleBackColor = true;
 			// 
-			// RefCheckbox_Hook_XInput
+			// hooksWarningLabel
 			// 
-			this.RefCheckbox_Hook_XInput.AutoSize = true;
-			this.RefCheckbox_Hook_XInput.Location = new System.Drawing.Point(9, 232);
-			this.RefCheckbox_Hook_XInput.Name = "RefCheckbox_Hook_XInput";
-			this.RefCheckbox_Hook_XInput.RefType = null;
-			this.RefCheckbox_Hook_XInput.Size = new System.Drawing.Size(153, 17);
-			this.RefCheckbox_Hook_XInput.TabIndex = 21;
-			this.RefCheckbox_Hook_XInput.Text = "Hook XInput for gamepads";
-			this.RefCheckbox_Hook_XInput.UseVisualStyleBackColor = true;
+			this.hooksWarningLabel.AutoSize = true;
+			this.hooksWarningLabel.ForeColor = System.Drawing.Color.Red;
+			this.hooksWarningLabel.Location = new System.Drawing.Point(6, 16);
+			this.hooksWarningLabel.MaximumSize = new System.Drawing.Size(280, 0);
+			this.hooksWarningLabel.Name = "hooksWarningLabel";
+			this.hooksWarningLabel.Size = new System.Drawing.Size(265, 39);
+			this.hooksWarningLabel.TabIndex = 0;
+			this.hooksWarningLabel.Text = "Warning: Hooks inject code into the target game. This may be detected by an anti-" +
+    "cheat system or anti-virus software. See the documentation for more info.";
+			// 
+			// drawMouseEveryXmsLabel
+			// 
+			this.drawMouseEveryXmsLabel.AutoSize = true;
+			this.drawMouseEveryXmsLabel.Location = new System.Drawing.Point(3, 216);
+			this.drawMouseEveryXmsLabel.Name = "drawMouseEveryXmsLabel";
+			this.drawMouseEveryXmsLabel.Size = new System.Drawing.Size(164, 13);
+			this.drawMouseEveryXmsLabel.TabIndex = 8;
+			this.drawMouseEveryXmsLabel.Text = "Draw mouse every X milliseconds";
+			// 
+			// drawMouseEveryXmsField
+			// 
+			this.drawMouseEveryXmsField.Location = new System.Drawing.Point(173, 214);
+			this.drawMouseEveryXmsField.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+			this.drawMouseEveryXmsField.Name = "drawMouseEveryXmsField";
+			this.drawMouseEveryXmsField.Size = new System.Drawing.Size(120, 20);
+			this.drawMouseEveryXmsField.TabIndex = 8;
+			this.drawMouseEveryXmsField.Tag = "";
+			this.drawMouseEveryXmsField.ValueChanged += new System.EventHandler(this.drawMouseEveryXmsField_ValueChanged);
+			// 
+			// RefCheckbox_SendScrollwheel
+			// 
+			this.RefCheckbox_SendScrollwheel.AutoSize = true;
+			this.RefCheckbox_SendScrollwheel.Location = new System.Drawing.Point(3, 166);
+			this.RefCheckbox_SendScrollwheel.Name = "RefCheckbox_SendScrollwheel";
+			this.RefCheckbox_SendScrollwheel.RefType = null;
+			this.RefCheckbox_SendScrollwheel.Size = new System.Drawing.Size(109, 17);
+			this.RefCheckbox_SendScrollwheel.TabIndex = 20;
+			this.RefCheckbox_SendScrollwheel.Text = "Send scroll wheel";
+			this.RefCheckbox_SendScrollwheel.UseVisualStyleBackColor = true;
 			// 
 			// Form1
 			// 
@@ -733,6 +746,8 @@
 			this.tabControl1.ResumeLayout(false);
 			this.tabPage1.ResumeLayout(false);
 			this.activeWindowPanel.ResumeLayout(false);
+			this.GamePadGroupBox.ResumeLayout(false);
+			this.GamePadGroupBox.PerformLayout();
 			this.windowTitleBox.ResumeLayout(false);
 			this.windowTitleBox.PerformLayout();
 			this.keyboardBox.ResumeLayout(false);
@@ -751,8 +766,6 @@
 			this.hooksBox.ResumeLayout(false);
 			this.hooksBox.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.drawMouseEveryXmsField)).EndInit();
-			this.GamePadGroupBox.ResumeLayout(false);
-			this.GamePadGroupBox.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -814,5 +827,6 @@
 		private System.Windows.Forms.Label ControllerHookNote;
 		private System.Windows.Forms.Label ControllerIndexLabel;
 		private RefCheckbox RefCheckbox_Hook_XInput;
+		private RefCheckbox RefCheckbox_SendScrollwheel;
 	}
 }
