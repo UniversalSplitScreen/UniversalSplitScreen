@@ -142,110 +142,58 @@ namespace UniversalSplitScreen.Core
 					options.Hook_XInput)
 				{
 
+					
+					bool needPipe = options.Hook_GetCursorPos || options.Hook_GetAsyncKeyState || options.Hook_GetKeyState;
+					NamedPipe pipe = needPipe ? new NamedPipe(hWnd) : null;
+					window.HooksCPPNamedPipe = pipe;
+						
+					string hooksLibrary32 = Path.Combine(Path.GetDirectoryName(
+						System.Reflection.Assembly.GetExecutingAssembly().Location),
+						"HooksCPP32.dll");
+
+					string hooksLibrary64 = Path.Combine(Path.GetDirectoryName(
+						System.Reflection.Assembly.GetExecutingAssembly().Location),
+						"HooksCPP64.dll");
+
+
+					bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
+						
+					Process proc = new Process();
+					proc.StartInfo.FileName = is64 ? "InjectorLoaderx64.exe" : "InjectorLoaderx86.exe";
+
+					//Arguments
 					{
-						//TODO: only start if using a hook that needs a pipe
-						var pipe = new NamedPipe(hWnd);
-						window.HooksCPPNamedPipe = pipe;
-						
-						string hooksLibrary32 = Path.Combine(Path.GetDirectoryName(
-							System.Reflection.Assembly.GetExecutingAssembly().Location),
-							"HooksCPP32.dll");
-
-						string hooksLibrary64 = Path.Combine(Path.GetDirectoryName(
-							System.Reflection.Assembly.GetExecutingAssembly().Location),
-							"HooksCPP64.dll");
-
-
-						bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
-						
-						Process proc = new Process();
-						proc.StartInfo.FileName = is64 ? "InjectorLoaderx64.exe" : "InjectorLoaderx86.exe";
-
-						//Arguments
+						object[] args = new object[]
 						{
-							object[] args = new object[]
-							{
-								window.pid,
-								$"\"{(is64 ? hooksLibrary64 : hooksLibrary32)}\"",
-								window.hWnd,
-								pipe.pipeName,
-								window.ControllerIndex,
-								options.Hook_GetCursorPos,
-								options.Hook_GetForegroundWindow,
-								options.Hook_GetAsyncKeyState,
-								options.Hook_GetKeyState,
-								options.Hook_FilterWindowsMouseInput,
-								options.Hook_FilterRawInput,
-								options.Hook_SetCursorPos,
-								options.Hook_XInput
-							};
+							window.pid,
+							$"\"{(is64 ? hooksLibrary64 : hooksLibrary32)}\"",
+							window.hWnd,
+							needPipe ? pipe.pipeName : "USS_NO_PIPE_NEEDED",
+							window.ControllerIndex,
+							options.Hook_GetCursorPos,
+							options.Hook_GetForegroundWindow,
+							options.Hook_GetAsyncKeyState,
+							options.Hook_GetKeyState,
+							options.Hook_FilterWindowsMouseInput,
+							options.Hook_FilterRawInput,
+							options.Hook_SetCursorPos,
+							options.Hook_XInput
+						};
 
-							StringBuilder sb = new StringBuilder();
-							foreach (var arg in args)
-							{
-								sb.Append(" " + arg);
-							}
-
-							proc.StartInfo.Arguments = sb.ToString();
+						StringBuilder sb = new StringBuilder();
+						foreach (var arg in args)
+						{
+							sb.Append(" " + arg);
 						}
 
-						proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-						proc.Start();
-						proc.WaitForExit();
-
-						Console.WriteLine($"InjectorCPP.Inject result = 0x{(uint)proc.ExitCode:x}. is64={is64}");
+						proc.StartInfo.Arguments = sb.ToString();
 					}
 
+					proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+					proc.Start();
+					proc.WaitForExit();
 
-
-					{
-						//C#
-						/*string channelName = null;
-						var serverChannel_getRawInputData = EasyHook.RemoteHooking.IpcCreateServer<GetRawInputDataHook.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
-						Console.WriteLine($"Channel name = {channelName}");
-
-
-						var server_getRawInputData = EasyHook.RemoteHooking.IpcConnectClient<GetRawInputDataHook.ServerInterface>(channelName);
-						server_getRawInputData.Ping();
-						server_getRawInputData.SetGame_hWnd(hWnd);
-						server_getRawInputData.SetAllowed_hDevice(window.MouseAttached);
-
-
-						string injectionLibrary_getRawInputData = Path.Combine(Path.GetDirectoryName(
-							System.Reflection.Assembly.GetExecutingAssembly().Location),
-							"GetRawInputDataHook.dll");
-
-						try
-						{
-							// Injecting into existing process by Id
-							Console.WriteLine("Attempting to inject (GetRawInputData) into process {0}", window.pid);
-
-							// inject into existing process
-							EasyHook.RemoteHooking.Inject(
-								window.pid,// ID of process to inject into
-								injectionLibrary_getRawInputData,   // 32-bit library to inject (if target is 32-bit)
-																	//TODO: switch 32/64???
-								injectionLibrary_getRawInputData,   // 64-bit library to inject (if target is 64-bit)
-								channelName,                        // the parameters to pass into injected library
-								options.Hook_FilterRawInput,
-								options.Hook_FilterWindowsMouseInput,
-								options.Hook_GetForegroundWindow,
-								options.Hook_GetCursorPos,
-								options.Hook_GetAsyncKeyState,
-								options.Hook_GetKeyState
-							);
-
-							window.GetRawInputData_HookIPCServerChannel = serverChannel_getRawInputData;
-							window.GetRawInputData_HookServer = server_getRawInputData;
-						}
-						catch (Exception e)
-						{
-							Console.ForegroundColor = ConsoleColor.Red;
-							Console.WriteLine("There was an error while injecting hook into target:");
-							Console.ResetColor();
-							Console.WriteLine(e.ToString());
-						}*/
-					}
+					Console.WriteLine($"InjectorCPP.Inject result = 0x{(uint)proc.ExitCode:x}. is64={is64}, needPipe={needPipe}");
 				}
 			}
 
