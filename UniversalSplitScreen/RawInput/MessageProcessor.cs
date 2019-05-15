@@ -209,17 +209,20 @@ namespace UniversalSplitScreen.RawInput
 											//	window.GetRawInputData_HookServer?.SetVKey(VKey, keyDown);
 											//	window.HooksCPPNamedPipe?.AddMessage(0x02, VKey, keyDown ? 1 : 0);
 											//}
-											
-											byte shift = (byte)(VKey == 0x41 ? 0b0001 : (VKey == 0x44 ? 0b0010 : (VKey == 0x53 ? 0b0100 : (VKey == 0x57 ? 0b1000 : 0))));
-											if (((window.WASD_State & shift) == 0 ? false : true) != keyDown)
+
+											if (Options.CurrentOptions.Hook_GetKeyState)
 											{
-												if (keyDown)
-													window.WASD_State |= shift;
-												else
-													window.WASD_State &= (byte)~shift;
-												
-												window.HooksCPPNamedPipe?.WriteMessage(0x02, VKey, keyDown ? 1 : 0);
-												
+												byte shift = (byte)(VKey == 0x41 ? 0b0001 : (VKey == 0x44 ? 0b0010 : (VKey == 0x53 ? 0b0100 : (VKey == 0x57 ? 0b1000 : 0))));
+												if (((window.WASD_State & shift) == 0 ? false : true) != keyDown)
+												{
+													if (keyDown)
+														window.WASD_State |= shift;
+													else
+														window.WASD_State &= (byte)~shift;
+
+													window.HooksCPPNamedPipe?.WriteMessage(0x02, VKey, keyDown ? 1 : 0);
+
+												}
 											}
 
 											//This also makes GetKeyboardState work, as windows uses the message queue for GetKeyboardState
@@ -275,7 +278,8 @@ namespace UniversalSplitScreen.RawInput
 								mouseVec.x = Math.Min(window.Width, Math.Max(mouseVec.x + mouse.lLastX, 0));
 								mouseVec.y = Math.Min(window.Height, Math.Max(mouseVec.y + mouse.lLastY, 0));
 								
-								window.HooksCPPNamedPipe?.WriteMessage(0x01, mouseVec.x, mouseVec.y);
+								if (Options.CurrentOptions.Hook_GetCursorPos)
+									window.HooksCPPNamedPipe?.WriteMessage(0x01, mouseVec.x, mouseVec.y);
 								
 								//Console.WriteLine($"MOUSE. flags={mouse.usFlags}, X={mouseVec.x}, y={mouseVec.y}, buttonFlags={mouse.usButtonFlags} device pointer = {rawBuffer.header.hDevice}");
 
@@ -310,9 +314,9 @@ namespace UniversalSplitScreen.RawInput
 											var (msg, wParam, leftMiddleRight, isButtonDown, VKey) = pair.Value;
 											//Console.WriteLine(pair.Key);
 											SendInput.WinApi.PostMessageA(hWnd, (uint)msg, (IntPtr)wParam, (IntPtr)packedXY);
-
-											//TODO: MAKE CONFIGURABLE FOR GetAsyncKeyState hook checkbox
-											window.HooksCPPNamedPipe?.WriteMessage(0x02, VKey, isButtonDown ? 1 : 0);
+											
+											if (Options.CurrentOptions.Hook_GetAsyncKeyState || Options.CurrentOptions.Hook_GetKeyState)
+												window.HooksCPPNamedPipe?.WriteMessage(0x02, VKey, isButtonDown ? 1 : 0);
 
 											var state = window.MouseState;
 											switch (leftMiddleRight)
