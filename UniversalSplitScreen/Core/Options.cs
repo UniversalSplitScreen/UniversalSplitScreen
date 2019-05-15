@@ -61,15 +61,17 @@ namespace UniversalSplitScreen.Core
 
 		public static void DeleteButtonClicked()
 		{
-			//TODO: add ok/cancel
-			var cb = Program.Form.OptionsComboBox;
-			var toDelete = (OptionsStructure)cb.SelectedItem;
-			DeleteFile(toDelete);
-			
-			if (cb.Items.Count > 1 && cb.Items.Contains(toDelete))
+			if (UI.Prompt.ShowOkCancelDialog("Delete?") == System.Windows.Forms.DialogResult.OK)
 			{
-				cb.Items.Remove(toDelete);
-				cb.SelectedItem = cb.Items[0];
+				var cb = Program.Form.OptionsComboBox;
+				var toDelete = (OptionsStructure)cb.SelectedItem;
+				DeleteFile(toDelete);
+
+				if (cb.Items.Count > 1 && cb.Items.Contains(toDelete))
+				{
+					cb.Items.Remove(toDelete);
+					cb.SelectedItem = cb.Items[0];
+				}
 			}
 		}
 		
