@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using UniversalSplitScreen.Core;
 
 namespace UniversalSplitScreen.SendInput
 {
@@ -57,7 +58,7 @@ namespace UniversalSplitScreen.SendInput
 
 			mouseHookID = SetHook(mouseProc, WH_MOUSE_LL);
 			keyboardHookID = SetHook(keyboardProc, WH_KEYBOARD_LL);
-			Console.WriteLine("Intercept keyboard and mouse activated");
+			Logger.WriteLine("Intercept keyboard and mouse activated");
 		}
 
 		private delegate IntPtr GetMsgProc(int nCode, IntPtr wParam, IntPtr lParam);

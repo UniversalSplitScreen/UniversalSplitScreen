@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using UniversalSplitScreen.Core;
 
 namespace UniversalSplitScreen.Piping
 {
@@ -30,13 +31,13 @@ namespace UniversalSplitScreen.Piping
 
 		private void Start()
 		{
-			Console.WriteLine($"Starting pipe {pipeName}");
+			Logger.WriteLine($"Starting pipe {pipeName}");
 			pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
-			Console.WriteLine($"Created pipe {pipeName}");
+			Logger.WriteLine($"Created pipe {pipeName}");
 
 			pipeServer.WaitForConnection();
 			clientConnected = true;
-			Console.WriteLine($"Client connected to pipe {pipeName}");
+			Logger.WriteLine($"Client connected to pipe {pipeName}");
 		}
 
 		public void WriteMessage(byte message, int param1, int param2)
@@ -64,7 +65,7 @@ namespace UniversalSplitScreen.Piping
 
 		public void Close()
 		{
-			Console.WriteLine($"Closing pipe {pipeName}");
+			Logger.WriteLine($"Closing pipe {pipeName}");
 			pipeServer?.Dispose();
 			pipeServer = null;
 			clientConnected = false;

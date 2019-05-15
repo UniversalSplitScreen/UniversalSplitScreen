@@ -31,7 +31,7 @@ namespace UniversalSplitScreen
 			TaskScheduler.UnobservedTaskException +=
 			(object sender, UnobservedTaskExceptionEventArgs excArgs) =>
 			{
-				Console.WriteLine("Exception occured. Task terminated! + " + excArgs.Exception);
+				Logger.WriteLine("Exception occured. Task terminated! + " + excArgs.Exception);
 				excArgs.SetObserved();
 			};
 
@@ -59,17 +59,17 @@ namespace UniversalSplitScreen
 
 			SplitScreenManager.DeactivateSplitScreen();
 
-			Console.WriteLine("Exiting application");
+			Logger.WriteLine("Exiting application");
 			Environment.Exit(0);
 		}
 
 		static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
-			Console.WriteLine("Error: CurrentDomain_UnhandledException entered.");
+			Logger.WriteLine("Error: CurrentDomain_UnhandledException entered.");
 			string message = (e.ExceptionObject as Exception).Message;
-			Console.WriteLine(message);
+			Logger.WriteLine(message);
 			System.Diagnostics.Trace.WriteLine(message, "Unhandled UI Exception");
-			Console.WriteLine(message);
+			Logger.WriteLine(message);
 		}
 	}
 }

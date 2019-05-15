@@ -25,7 +25,7 @@ namespace UniversalSplitScreen.Core
 				if (ReadFromFile(file.FullName, out OptionsStructure o))
 				{
 					options.Add(o);
-					Console.WriteLine($"Loaded {file.Name} : {o.OptionsName}");
+					Logger.WriteLine($"Loaded {file.Name} : {o.OptionsName}");
 				}
 			}
 
@@ -84,8 +84,10 @@ namespace UniversalSplitScreen.Core
 
 				using (StreamWriter file = File.CreateText(Path.Combine(directory, options.OptionsName + ".json")))
 				{
-					JsonSerializer serializer = new JsonSerializer();
-					serializer.Formatting = Formatting.Indented;
+					JsonSerializer serializer = new JsonSerializer
+					{
+						Formatting = Formatting.Indented
+					};
 					serializer.Serialize(file, options);
 				}
 
@@ -93,7 +95,7 @@ namespace UniversalSplitScreen.Core
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine($"Error writing options to file: {e}");
+				Logger.WriteLine($"Error writing options to file: {e}");
 				return false;
 			}
 		}
@@ -111,7 +113,7 @@ namespace UniversalSplitScreen.Core
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine($"Error reading options from a file: {e}");
+				Logger.WriteLine($"Error reading options from a file: {e}");
 				options = null;
 				return false;
 			}
@@ -122,13 +124,13 @@ namespace UniversalSplitScreen.Core
 			try
 			{
 				string path = Path.Combine(GetConfigFolder(), options.OptionsName + ".json");
-				Console.WriteLine($"Deleting {path}");
+				Logger.WriteLine($"Deleting {path}");
 				File.Delete(path);
 				return true;
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine($"Error deleting options file: {e}");
+				Logger.WriteLine($"Error deleting options file: {e}");
 				return false;
 			}
 		}

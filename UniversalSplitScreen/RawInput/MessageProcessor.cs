@@ -101,10 +101,10 @@ namespace UniversalSplitScreen.RawInput
 			return;
 			//TODO: Re-enable ? (Broke starbound)
 
-			msgs.Enqueue((hWnd, Msg, wParam, lParam));
+			//msgs.Enqueue((hWnd, Msg, wParam, lParam));
 
-			if (msgs.Count == 0)
-				autoEvent.Set();
+			//if (msgs.Count == 0)
+			//	autoEvent.Set();
 		}
 
 		private void Process(IntPtr hRawInput)
@@ -125,7 +125,7 @@ namespace UniversalSplitScreen.RawInput
 							uint keyboardMessage = rawBuffer.data.keyboard.Message;
 							bool keyUpOrDown = keyboardMessage == (uint)KeyboardMessages.WM_KEYDOWN || keyboardMessage == (uint)KeyboardMessages.WM_KEYUP;
 							
-							//Console.WriteLine($"KEYBOARD. key={rawBuffer.data.keyboard.VKey:x}, message = {rawBuffer.data.keyboard.Message:x}, device pointer = {rawBuffer.header.hDevice}");
+							//Logger.WriteLine($"KEYBOARD. key={rawBuffer.data.keyboard.VKey:x}, message = {rawBuffer.data.keyboard.Message:x}, device pointer = {rawBuffer.header.hDevice}");
 
 							if (!Program.SplitScreenManager.IsRunningInSplitScreen)
 							{
@@ -145,7 +145,7 @@ namespace UniversalSplitScreen.RawInput
 							{ 
 								if (keyUpOrDown && rawBuffer.data.keyboard.VKey == endVKey)//End key
 								{
-									Console.WriteLine("End key pressed");
+									Logger.WriteLine("End key pressed");
 									Intercept.InterceptEnabled = false;
 									Program.SplitScreenManager.DeactivateSplitScreen();
 									InputDisabler.Unlock();//Just in case
@@ -154,7 +154,7 @@ namespace UniversalSplitScreen.RawInput
 								if (keyUpOrDown)
 								{
 									/**string cmd = string.Format("ControlSend, , {{vk{0:x} {1}}}, ahk_id {2:x}", VKey, keyboardMessage == (uint)KeyboardMessages.WM_KEYDOWN ? "down" : "up", hWnd);
-									//Console.WriteLine(cmd);
+									//Logger.WriteLine(cmd);
 
 									if (0x73 != rawBuffer.data.keyboard.VKey)//f4
 									{
@@ -247,7 +247,7 @@ namespace UniversalSplitScreen.RawInput
 							{
 								if ((mouse.usButtonFlags & (ushort)ButtonFlags.RI_MOUSE_LEFT_BUTTON_UP) > 0 && Program.Form.ButtonPressed)
 								{
-									Console.WriteLine($"Set mouse, pointer = {rawBuffer.header.hDevice}");
+									Logger.WriteLine($"Set mouse, pointer = {rawBuffer.header.hDevice}");
 									Program.SplitScreenManager.SetMouseHandle(rawBuffer.header.hDevice);
 								}
 								break; 
@@ -281,7 +281,7 @@ namespace UniversalSplitScreen.RawInput
 								if (Options.CurrentOptions.Hook_GetCursorPos)
 									window.HooksCPPNamedPipe?.WriteMessage(0x01, mouseVec.x, mouseVec.y);
 								
-								//Console.WriteLine($"MOUSE. flags={mouse.usFlags}, X={mouseVec.x}, y={mouseVec.y}, buttonFlags={mouse.usButtonFlags} device pointer = {rawBuffer.header.hDevice}");
+								//Logger.WriteLine($"MOUSE. flags={mouse.usFlags}, X={mouseVec.x}, y={mouseVec.y}, buttonFlags={mouse.usButtonFlags} device pointer = {rawBuffer.header.hDevice}");
 
 								long packedXY = (mouseVec.y * 0x10000) + mouseVec.x;
 
@@ -312,7 +312,7 @@ namespace UniversalSplitScreen.RawInput
 										if ((f & (ushort)pair.Key) > 0)
 										{
 											var (msg, wParam, leftMiddleRight, isButtonDown, VKey) = pair.Value;
-											//Console.WriteLine(pair.Key);
+											//Logger.WriteLine(pair.Key);
 											SendInput.WinApi.PostMessageA(hWnd, (uint)msg, (IntPtr)wParam, (IntPtr)packedXY);
 											
 											if (Options.CurrentOptions.Hook_GetAsyncKeyState || Options.CurrentOptions.Hook_GetKeyState)

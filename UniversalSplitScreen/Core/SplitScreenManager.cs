@@ -41,7 +41,7 @@ namespace UniversalSplitScreen.Core
 
 		public void Init()
 		{
-			Console.WriteLine("Registering EVENT_SYSTEM_FOREGROUND hook");
+			Logger.WriteLine("Registering EVENT_SYSTEM_FOREGROUND hook");
 			EVENT_SYSTEM_FOREGROUND_delegate = new WinApi.WinEventDelegate(EVENT_SYSTEM_FOREGROUND_Proc);
 			IntPtr m_hhook = WinApi.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, EVENT_SYSTEM_FOREGROUND_delegate, 0, 0, WINEVENT_OUTOFCONTEXT);
 		}
@@ -87,7 +87,7 @@ namespace UniversalSplitScreen.Core
 				IntPtr hWnd = pair.Key;
 				Window window = pair.Value;
 
-				Console.WriteLine($"hWnd={hWnd}, mouse={window.MouseAttached}, kb={window.KeyboardAttached}");
+				Logger.WriteLine($"hWnd={hWnd}, mouse={window.MouseAttached}, kb={window.KeyboardAttached}");
 				
 				//Borderlands 2 requires WM_INPUT to be sent to a window named DIEmWin, not the main hWnd.
 				foreach (ProcessThread thread in Process.GetProcessById(window.pid).Threads)
@@ -99,7 +99,7 @@ namespace UniversalSplitScreen.Core
 						if (threadID == lParam)
 						{
 							string windowText = WinApi.GetWindowText(_hWnd);
-							Console.WriteLine($" - thread id=0x{threadID:x}, _hWnd=0x{_hWnd:x}, window text={windowText}");
+							Logger.WriteLine($" - thread id=0x{threadID:x}, _hWnd=0x{_hWnd:x}, window text={windowText}");
 
 							if (windowText != null && windowText.ToLower().Contains("DIEmWin".ToLower()))//TODO: make configurable
 							{
@@ -193,7 +193,7 @@ namespace UniversalSplitScreen.Core
 					proc.Start();
 					proc.WaitForExit();
 
-					Console.WriteLine($"InjectorCPP.Inject result = 0x{(uint)proc.ExitCode:x}. is64={is64}, needPipe={needPipe}");
+					Logger.WriteLine($"InjectorCPP.Inject result = 0x{(uint)proc.ExitCode:x}. is64={is64}, needPipe={needPipe}");
 				}
 			}
 
@@ -295,7 +295,7 @@ namespace UniversalSplitScreen.Core
 		{
 			if (!WinApi.IsWindow(hWnd))
 			{
-				Console.WriteLine($"Removing hWnd {hWnd}");
+				Logger.WriteLine($"Removing hWnd {hWnd}");
 
 				windows.Remove(hWnd);
 
@@ -325,7 +325,7 @@ namespace UniversalSplitScreen.Core
 						}
 						catch (Exception e)
 						{
-							Console.WriteLine($"Exception while drawing mouse. (Checking if window still exists): {e}");
+							Logger.WriteLine($"Exception while drawing mouse. (Checking if window still exists): {e}");
 							CheckIfWindowExists(hWnd);
 						}
 					}
@@ -344,7 +344,7 @@ namespace UniversalSplitScreen.Core
 			IntPtr our_hWnd = Program.Form_hWnd;
 			desktop_hWnd = WinApi.GetDesktopWindow();
 			string title = WinApi.GetWindowText(hWnd);
-			Console.WriteLine($"Activated hWnd {hWnd}, self = {our_hWnd == hWnd}, Title = {title}");
+			Logger.WriteLine($"Activated hWnd {hWnd}, self = {our_hWnd == hWnd}, Title = {title}");
 
 			if (our_hWnd != hWnd && desktop_hWnd != hWnd && !string.IsNullOrWhiteSpace(title) && title != "Task Switching" && title != "Cortana")
 			{

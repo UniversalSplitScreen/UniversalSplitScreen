@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using UniversalSplitScreen.Core;
 
 namespace UniversalSplitScreen.SendInput
 {
@@ -36,7 +37,7 @@ namespace UniversalSplitScreen.SendInput
 			{
 				try
 				{
-					Console.WriteLine("Initialising InputDisabler");
+					Logger.WriteLine("Initialising InputDisabler");
 					ahk = AutoHotkeyEngine.Instance;
 					ahk.Suspend();
 					
@@ -58,11 +59,11 @@ namespace UniversalSplitScreen.SendInput
 
 					IsInitialised = true;
 
-					Console.WriteLine("Initialised InputDisabler");
+					Logger.WriteLine("Initialised InputDisabler");
 				}
 				catch
 				{
-					Console.WriteLine("Could not load InputDisabler");
+					Logger.WriteLine("Could not load InputDisabler");
 				}
 			});
 		}

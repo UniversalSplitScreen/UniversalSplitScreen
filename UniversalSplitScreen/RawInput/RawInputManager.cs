@@ -4,6 +4,7 @@ using System.Linq;
 using AutoHotkey.Interop;
 using System.Windows.Forms;
 using UniversalSplitScreen.SendInput;
+using UniversalSplitScreen.Core;
 
 namespace UniversalSplitScreen.RawInput
 {
@@ -14,7 +15,7 @@ namespace UniversalSplitScreen.RawInput
 		public RawInputManager(IntPtr windowHandle)
 		{
 			//GetDeviceList();
-			Console.WriteLine($"Attempting to RegisterRawInputDevices for window handle {windowHandle}");
+			Logger.WriteLine($"Attempting to RegisterRawInputDevices for window handle {windowHandle}");
 
 			//https://docs.microsoft.com/en-us/windows-hardware/drivers/hid/hidclass-hardware-ids-for-top-level-collections
 			RAWINPUTDEVICE[] rid = new RAWINPUTDEVICE[2];
@@ -32,21 +33,21 @@ namespace UniversalSplitScreen.RawInput
 			rid[1].hwndTarget = windowHandle;
 
 			bool success = WinApi.RegisterRawInputDevices(rid, (uint)rid.Length, (uint)Marshal.SizeOf(rid[0]));
-			Console.WriteLine($"Succeeded RegisterRawInputDevices Keyboard = {success}");
+			Logger.WriteLine($"Succeeded RegisterRawInputDevices Keyboard = {success}");
 
 			if (!success)
 			{
 				int error = Marshal.GetLastWin32Error();
-				Console.WriteLine($"Error code = {error}");
+				Logger.WriteLine($"Error code = {error}");
 			}
 
 			success = WinApi.RegisterRawInputDevices(rid, (uint)rid.Length, (uint)Marshal.SizeOf(rid[1]));
-			Console.WriteLine($"Succeeded RegisterRawInputDevices Mouse = {success}");
+			Logger.WriteLine($"Succeeded RegisterRawInputDevices Mouse = {success}");
 
 			if (!success)
 			{
 				int error = Marshal.GetLastWin32Error();
-				Console.WriteLine($"Error code = {error}");
+				Logger.WriteLine($"Error code = {error}");
 			}
 		}
 
@@ -69,7 +70,7 @@ namespace UniversalSplitScreen.RawInput
 					IntPtr pData = Marshal.AllocHGlobal((int)pcbSize);
 					WinApi.GetRawInputDeviceInfo(rid.hDevice, 0x2000000b, pData, ref pcbSize);
 					var device = (RID_DEVICE_INFO)Marshal.PtrToStructure(pData, typeof(RID_DEVICE_INFO));
-					Console.WriteLine($"Found device, {device.dwType}, {device.keyboard.dwNumberOfKeysTotal}");
+					Logger.WriteLine($"Found device, {device.dwType}, {device.keyboard.dwNumberOfKeysTotal}");
 				}
 
 				Marshal.FreeHGlobal(pRawInputDeviceList);

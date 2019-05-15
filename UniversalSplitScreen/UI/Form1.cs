@@ -84,19 +84,19 @@ namespace UniversalSplitScreen.UI
 		private void keyboardSetTextbox_KeyPress(object sender, KeyPressEventArgs e)
 		{
 			keyboardSetTextbox.Clear();
-			Console.WriteLine($"Set keyboard, pointer = {Program.MessageProcessor.LastKeyboardPressed}");
+			Logger.WriteLine($"Set keyboard, pointer = {Program.MessageProcessor.LastKeyboardPressed}");
 			Program.SplitScreenManager.SetKeyboardHandle(Program.MessageProcessor.LastKeyboardPressed);
 		}
 
 		private void mouseResetButton_Click(object sender, EventArgs e)
 		{
-			Console.WriteLine("Resetting mouse pointer");
+			Logger.WriteLine("Resetting mouse pointer");
 			Program.SplitScreenManager.SetMouseHandle(new IntPtr(0));
 		}
 
 		private void keyboardResetButton_Click(object sender, EventArgs e)
 		{
-			Console.WriteLine("Resetting keyboard pointer");
+			Logger.WriteLine("Resetting keyboard pointer");
 			Program.SplitScreenManager.SetKeyboardHandle(new IntPtr(0));
 		}
 
@@ -118,7 +118,7 @@ namespace UniversalSplitScreen.UI
 		private void ControllerIndexComboBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			int index = ControllerIndexComboBox.SelectedIndex;
-			Console.WriteLine($"Set controller index = {index}");
+			Logger.WriteLine($"Set controller index = {index}");
 			Program.SplitScreenManager?.SetControllerIndex(index);
 		}
 		#endregion
