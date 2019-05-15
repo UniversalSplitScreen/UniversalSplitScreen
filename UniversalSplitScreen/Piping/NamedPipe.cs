@@ -16,10 +16,13 @@ namespace UniversalSplitScreen.Piping
 		Thread serverThread;
 		NamedPipeServerStream pipeServer;
 		bool clientConnected = false;
+		IntPtr hWnd;
 
-		public NamedPipe()
+		public NamedPipe(IntPtr hWnd)
 		{
 			pipeName = GenerateName();
+
+			this.hWnd = hWnd;
 
 			serverThread = new Thread(Start);
 			serverThread.Start();
@@ -36,17 +39,26 @@ namespace UniversalSplitScreen.Piping
 			Console.WriteLine($"Client connected to pipe {pipeName}");
 		}
 
-		public void AddMessage(byte message, int param1, int param2)
+		public void WriteMessage(byte message, int param1, int param2)
 		{
 			if (clientConnected)
 			{
-				byte[] bytes = {
+				ThreadPool.QueueUserWorkItem( delegate {
+					byte[] bytes = {
 						message,
 						(byte)(param1 >> 24), (byte)(param1 >> 16), (byte)(param1 >> 8), (byte)param1,
 						(byte)(param2 >> 24), (byte)(param2 >> 16), (byte)(param2 >> 8), (byte)param2
 					};
 
-				pipeServer?.Write(bytes, 0, 9);
+					try
+					{
+						pipeServer?.Write(bytes, 0, 9);
+					}
+					catch (Exception)
+					{
+						Program.SplitScreenManager.CheckIfWindowExists(hWnd);
+					}
+				});
 			}
 		}
 
@@ -55,6 +67,7 @@ namespace UniversalSplitScreen.Piping
 			Console.WriteLine($"Closing pipe {pipeName}");
 			pipeServer?.Dispose();
 			pipeServer = null;
+			clientConnected = false;
 		}
 
 		//https://github.com/EasyHook/EasyHook/blob/master/EasyHook/RemoteHook.cs

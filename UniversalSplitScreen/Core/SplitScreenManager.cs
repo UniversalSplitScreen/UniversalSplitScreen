@@ -45,7 +45,22 @@ namespace UniversalSplitScreen.Core
 			EVENT_SYSTEM_FOREGROUND_delegate = new WinApi.WinEventDelegate(EVENT_SYSTEM_FOREGROUND_Proc);
 			IntPtr m_hhook = WinApi.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, EVENT_SYSTEM_FOREGROUND_delegate, 0, 0, WINEVENT_OUTOFCONTEXT);
 		}
-		
+
+		void InitDeviceToWindows()
+		{
+			deviceToWindows.Clear();
+			foreach (var pair in windows)
+			{
+				Window window = pair.Value;
+				
+				if (!deviceToWindows.ContainsKey(window.MouseAttached))
+					deviceToWindows[window.MouseAttached] = windows.Values.Where(x => x.MouseAttached == window.MouseAttached).ToArray();
+
+				if (!deviceToWindows.ContainsKey(window.KeyboardAttached))
+					deviceToWindows[window.KeyboardAttached] = windows.Values.Where(x => x.KeyboardAttached == window.KeyboardAttached).ToArray();
+			}
+		}
+
 		public void ActivateSplitScreen()
 		{
 			Program.Form.WindowState = FormWindowState.Minimized;
@@ -53,8 +68,9 @@ namespace UniversalSplitScreen.Core
 			IsRunningInSplitScreen = true;
 			InputDisabler.Lock();
 			Intercept.InterceptEnabled = true;
-			Cursor.Position = new System.Drawing.Point(0, 0);
 			deviceToWindows.Clear();
+			InitDeviceToWindows();
+			Cursor.Position = new System.Drawing.Point(0, 0);
 
 			var options = Options.CurrentOptions;
 
@@ -72,14 +88,7 @@ namespace UniversalSplitScreen.Core
 				Window window = pair.Value;
 
 				Console.WriteLine($"hWnd={hWnd}, mouse={window.MouseAttached}, kb={window.KeyboardAttached}");
-
-				//Initialise deviceToWindows
-				if (!deviceToWindows.ContainsKey(window.MouseAttached))
-					deviceToWindows[window.MouseAttached] = windows.Values.Where(x => x.MouseAttached == window.MouseAttached).ToArray();
-
-				if (!deviceToWindows.ContainsKey(window.KeyboardAttached))
-					deviceToWindows[window.KeyboardAttached] = windows.Values.Where(x => x.KeyboardAttached == window.KeyboardAttached).ToArray();
-
+				
 				//Borderlands 2 requires WM_INPUT to be sent to a window named DIEmWin, not the main hWnd.
 				foreach (ProcessThread thread in Process.GetProcessById(window.pid).Threads)
 				{
@@ -135,7 +144,7 @@ namespace UniversalSplitScreen.Core
 
 					{
 						//TODO: only start if using a hook that needs a pipe
-						var pipe = new NamedPipe();
+						var pipe = new NamedPipe(hWnd);
 						window.HooksCPPNamedPipe = pipe;
 						
 						string hooksLibrary32 = Path.Combine(Path.GetDirectoryName(
@@ -258,7 +267,7 @@ namespace UniversalSplitScreen.Core
 			foreach (var window in windows.Values)
 			{
 				window.GetRawInputData_HookServer?.SetToReleaseHook();
-				window.HooksCPPNamedPipe?.AddMessage(0x03, 0, 0);
+				window.HooksCPPNamedPipe?.WriteMessage(0x03, 0, 0);
 				window.HooksCPPNamedPipe?.Close();
 			}
 
@@ -334,6 +343,18 @@ namespace UniversalSplitScreen.Core
 
 			}
 		}
+		
+		public void CheckIfWindowExists(IntPtr hWnd)
+		{
+			if (!WinApi.IsWindow(hWnd))
+			{
+				Console.WriteLine($"Removing hWnd {hWnd}");
+
+				windows.Remove(hWnd);
+
+				InitDeviceToWindows();
+			}
+		}
 
 		private void DrawMouse(IntPtr hWnd, CancellationToken token)
 		{
@@ -358,8 +379,7 @@ namespace UniversalSplitScreen.Core
 						catch (Exception e)
 						{
 							Console.WriteLine($"Exception while drawing mouse. (Checking if window still exists): {e}");
-							if (!WinApi.IsWindow(hWnd))
-								windows.Remove(hWnd);
+							CheckIfWindowExists(hWnd);
 						}
 					}
 				}
