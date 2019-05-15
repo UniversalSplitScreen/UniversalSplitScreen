@@ -192,12 +192,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GetRawInputDataHook\GetRawInputDataHook.csproj">
-      <Project>{fec5583b-9f5b-4ad5-b4dc-30ab3f19ed13}</Project>
-      <Name>GetRawInputDataHook</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -266,7 +266,6 @@ namespace UniversalSplitScreen.Core
 
 			foreach (var window in windows.Values)
 			{
-				window.GetRawInputData_HookServer?.SetToReleaseHook();
 				window.HooksCPPNamedPipe?.WriteMessage(0x03, 0, 0);
 				window.HooksCPPNamedPipe?.Close();
 			}

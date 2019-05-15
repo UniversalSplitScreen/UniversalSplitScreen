@@ -217,9 +217,7 @@ namespace UniversalSplitScreen.RawInput
 													window.WASD_State |= shift;
 												else
 													window.WASD_State &= (byte)~shift;
-
-												window.GetRawInputData_HookServer?.SetVKey(VKey, keyDown);
-
+												
 												window.HooksCPPNamedPipe?.WriteMessage(0x02, VKey, keyDown ? 1 : 0);
 												
 											}
@@ -257,7 +255,6 @@ namespace UniversalSplitScreen.RawInput
 							{
 								Window window = windows[windowI];
 								IntPtr hWnd = window.hWnd;
-								GetRawInputDataHook.ServerInterface server = window.GetRawInputData_HookServer;
 
 								//Resend raw input to application. Works for some games only
 								if (Options.CurrentOptions.SendRawMouseInput)
@@ -279,9 +276,7 @@ namespace UniversalSplitScreen.RawInput
 								mouseVec.y = Math.Min(window.Height, Math.Max(mouseVec.y + mouse.lLastY, 0));
 								
 								window.HooksCPPNamedPipe?.WriteMessage(0x01, mouseVec.x, mouseVec.y);
-
-								server?.SetCursorPosition(mouseVec.x, mouseVec.y);//TODO: make configurable with GetCursorPos checkbox
-
+								
 								//Console.WriteLine($"MOUSE. flags={mouse.usFlags}, X={mouseVec.x}, y={mouseVec.y}, buttonFlags={mouse.usButtonFlags} device pointer = {rawBuffer.header.hDevice}");
 
 								long packedXY = (mouseVec.y * 0x10000) + mouseVec.x;
@@ -317,7 +312,6 @@ namespace UniversalSplitScreen.RawInput
 											SendInput.WinApi.PostMessageA(hWnd, (uint)msg, (IntPtr)wParam, (IntPtr)packedXY);
 
 											//TODO: MAKE CONFIGURABLE FOR GetAsyncKeyState hook checkbox
-											server?.SetVKey(VKey, isButtonDown);
 											window.HooksCPPNamedPipe.WriteMessage(0x02, VKey, isButtonDown ? 1 : 0);
 
 											var state = window.MouseState;

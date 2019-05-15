@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.28307.271
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniversalSplitScreen", "UniversalSplitScreen\UniversalSplitScreen.csproj", "{9E383F40-1C96-4371-BBB5-08F58F210D96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetRawInputDataHook", "GetRawInputDataHook\GetRawInputDataHook.csproj", "{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2A1C1CD9-7E6F-495D-AF1C-5189FC7880C4}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -40,18 +38,6 @@ Global
 		{9E383F40-1C96-4371-BBB5-08F58F210D96}.Release|x64.Build.0 = Release|x64
 		{9E383F40-1C96-4371-BBB5-08F58F210D96}.Release|x86.ActiveCfg = Release|x86
 		{9E383F40-1C96-4371-BBB5-08F58F210D96}.Release|x86.Build.0 = Release|x86
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Debug|x64.Build.0 = Debug|Any CPU
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Debug|x86.Build.0 = Debug|Any CPU
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Release|x64.ActiveCfg = Release|x64
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Release|x64.Build.0 = Release|x64
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Release|x86.ActiveCfg = Release|x86
-		{FEC5583B-9F5B-4AD5-B4DC-30AB3F19ED13}.Release|x86.Build.0 = Release|x86
 		{6F47C175-654D-4FB2-9993-9CF3DB216C33}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{6F47C175-654D-4FB2-9993-9CF3DB216C33}.Debug|x64.ActiveCfg = Debug|x64
 		{6F47C175-654D-4FB2-9993-9CF3DB216C33}.Debug|x64.Build.0 = Debug|x64

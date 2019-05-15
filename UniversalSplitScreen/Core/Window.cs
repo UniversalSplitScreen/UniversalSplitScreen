@@ -10,8 +10,7 @@ namespace UniversalSplitScreen.Core
 		public readonly IntPtr hWnd;
 		public IntPtr borderlands2_DIEmWin_hWnd = IntPtr.Zero;//WM_INPUT needs to be sent to this hWnd instead of the visible game hWnd or it is ignored.
 		public readonly int pid;
-
-		public GetRawInputDataHook.ServerInterface GetRawInputData_HookServer { get; set; } = null;
+		
 		public IpcServerChannel GetRawInputData_HookIPCServerChannel { get; set; } = null;
 
 		public IntPtr MouseAttached { get; set; } = new IntPtr(0);
