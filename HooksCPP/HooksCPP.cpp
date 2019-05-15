@@ -113,7 +113,7 @@ BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT
 DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE *pState)
 {
 	if (controllerIndex == 0)
-		return ERROR_SUCCESS;
+		return ERROR_DEVICE_NOT_CONNECTED;
 	else
 		return XInputGetState(controllerIndex - 1, pState);
 }
