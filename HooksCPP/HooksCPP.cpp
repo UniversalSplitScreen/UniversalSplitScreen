@@ -105,26 +105,6 @@ BOOL WINAPI SetCursorPos_Hook(int X, int Y)
 	return TRUE;
 }
 
-/*
-LRESULT CALLBACK GetMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
-{
-	MSG* lpMsg = (MSG*)lParam;
-	UINT Msg = lpMsg->message;
-
-	if ((Msg == 0x0200 && ((int)wParam & 0b10000000) > 0)
-		|| !((Msg >= 0x020B && Msg <= 0x020D) || Msg == 0x0200 || Msg == 0x0021 || Msg == 0x02A1 || Msg == 0x02A3 || Msg == 0x00A0))
-	{
-		//cout << "Passing Msg=" << Msg << endl;
-		//return 0;
-		return CallNextHookEx(NULL, code, wParam, lParam);
-	}
-	else
-	{
-		return 0;
-	}
-}
-*/
-
 BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize)
 {
 	return true;
@@ -141,28 +121,6 @@ DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE *pState)
 inline int bytesToInt(BYTE* bytes)
 {
 	return (int)(bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3]);
-
-	/*BYTE *p = bytes;
-	int t = 0;
-	BYTE* ptr1 = (BYTE*)&t;
-
-	for (int i = 0; i < 4; i++)
-	{
-		*ptr1 = *p;
-		ptr1++;
-		p++;
-	}
-
-	return t;*/
-
-	//return (int)(*p << 24 | *++p << 16 | *++p << 8 | *++p);
-
-	//int val;
-	//memcpy(&val, &bytes[offset], sizeof(int));
-	//return val;
-
-	//BYTE *p = &bytes[offset];
-	//return (int)(*p);
 }
 
 void startPipeListen()
