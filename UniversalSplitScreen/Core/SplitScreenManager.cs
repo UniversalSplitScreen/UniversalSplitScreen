@@ -22,6 +22,9 @@ namespace UniversalSplitScreen.Core
 		Dictionary<Task, CancellationTokenSource> setFocusTasks = new Dictionary<Task, CancellationTokenSource>();
 		Dictionary<Task, CancellationTokenSource> drawMouseTasks = new Dictionary<Task, CancellationTokenSource>();
 
+		//Sometimes the game can be focused, which can break input. Fix: every X seconds, focus the desktop
+		(Task, CancellationTokenSource) autoUnfocusTask;
+
 		IntPtr active_hWnd = IntPtr.Zero;//Excludes self
 		IntPtr desktop_hWnd = IntPtr.Zero;
 
@@ -71,6 +74,7 @@ namespace UniversalSplitScreen.Core
 			deviceToWindows.Clear();
 			InitDeviceToWindows();
 			Cursor.Position = new System.Drawing.Point(0, 0);
+			WinApi.SetForegroundWindow((int)WinApi.GetDesktopWindow());//Loses focus of all windows, without minimizing
 
 			var options = Options.CurrentOptions;
 
@@ -197,6 +201,14 @@ namespace UniversalSplitScreen.Core
 				}
 			}
 
+			//Auto unfocus task
+			{
+				CancellationTokenSource c = new CancellationTokenSource();
+				Task task = new Task(() => AutoUnfocusTask(c.Token), c.Token);
+				task.Start();
+				autoUnfocusTask = (task, c);
+			}
+
 			Program.Form.OnSplitScreenStart();
 		}
 
@@ -212,6 +224,8 @@ namespace UniversalSplitScreen.Core
 			foreach (var thread in drawMouseTasks)
 				thread.Value.Cancel();
 
+			autoUnfocusTask.Item2?.Cancel();
+
 			foreach (var window in windows.Values)
 			{
 				window.HooksCPPNamedPipe?.WriteMessage(0x03, 0, 0);
@@ -225,6 +239,7 @@ namespace UniversalSplitScreen.Core
 			Program.Form.WindowState = FormWindowState.Normal;
 		}
 
+		#region Set handles
 		public void SetMouseHandle(IntPtr mouse)
 		{
 			if (!windows.ContainsKey(active_hWnd))
@@ -270,9 +285,11 @@ namespace UniversalSplitScreen.Core
 			Program.Form.KeyboardHandleText = "0";
 			Program.Form.ControllerSelectedIndex = 0;
 		}
+		#endregion
 
 		#endregion
-		
+
+		#region Threaded tasks
 		private void SetFocus(IntPtr hWnd, CancellationToken token)
 		{
 			while(true)
@@ -288,18 +305,6 @@ namespace UniversalSplitScreen.Core
 				if (token.IsCancellationRequested)
 					return;
 
-			}
-		}
-		
-		public void CheckIfWindowExists(IntPtr hWnd)
-		{
-			if (!WinApi.IsWindow(hWnd))
-			{
-				Logger.WriteLine($"Removing hWnd {hWnd}");
-
-				windows.Remove(hWnd);
-
-				InitDeviceToWindows();
 			}
 		}
 
@@ -335,6 +340,36 @@ namespace UniversalSplitScreen.Core
 					return;
 			}
 		}
+
+		private void AutoUnfocusTask(CancellationToken token)
+		{
+			while (true)
+			{
+				Thread.Sleep(3000);
+
+				WinApi.SetForegroundWindow((int)WinApi.GetDesktopWindow());
+
+				if (token.IsCancellationRequested)
+					return;
+
+			}
+		}
+
+		#endregion
+
+		public void CheckIfWindowExists(IntPtr hWnd)
+		{
+			if (!WinApi.IsWindow(hWnd))
+			{
+				Logger.WriteLine($"Removing hWnd {hWnd}");
+
+				windows.Remove(hWnd);
+
+				InitDeviceToWindows();
+			}
+		}
+
+		
 
 		private void EVENT_SYSTEM_FOREGROUND_Proc(IntPtr hWinEventHook, uint eventType, IntPtr hWnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
 		{

@@ -17,17 +17,9 @@ namespace UniversalSplitScreen.SendInput
 		public static bool IsAutoHotKeyNull => ahk == null;
 		private static bool IsInitialised = false;
 		private static Task initTask = null;
-
-		#region Windows API
-		[DllImport("user32.dll")]
-		private static extern bool SetForegroundWindow(int hwnd);
-
-		[DllImport("user32.dll")]
-		private static extern int GetDesktopWindow();
-
+		
 		[DllImport("user32.dll")]
 		static extern int ShowCursor(bool bShow);
-		#endregion
 
 		//TODO: move to start of program in separate thread so it doesnt cause delay when start is first clicked
 
@@ -79,7 +71,7 @@ namespace UniversalSplitScreen.SendInput
 			}
 
 			ahk?.UnSuspend();
-			SetForegroundWindow(GetDesktopWindow());//Loses focus of all windows, without minimizing
+			
 			if (ahk != null) System.Windows.Forms.Cursor.Hide();//Only works if the form window in the top left corner (0,0)
 
 			SendInput.WinApi.BlockInput(true);

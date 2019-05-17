@@ -71,5 +71,8 @@ namespace UniversalSplitScreen.Core
 				IntPtr hWnd,
 				string ipcChannelName);
 		}
+
+		[DllImport("user32.dll")]
+		public static extern bool SetForegroundWindow(int hwnd);
 	}
 }

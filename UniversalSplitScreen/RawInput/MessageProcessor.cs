@@ -59,8 +59,7 @@ namespace UniversalSplitScreen.RawInput
 			Options.CurrentOptions.EndVKey = endVKey;
 		}
 		#endregion
-
-
+		
 		AutoResetEvent autoEvent = new AutoResetEvent(false);
 		Queue<(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)> msgs = new Queue<(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)>();
 		Thread thread;
