@@ -82,7 +82,8 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 		if (GetRawInputData((HRAWINPUT)lParam, RID_HEADER, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == 0)
 		{
 
-			static RAWINPUT raw[sizeof(RAWINPUTHEADER)];
+			//static RAWINPUT raw[sizeof(RAWINPUTHEADER)];
+			register RAWINPUT raw[sizeof(RAWINPUTHEADER)];
 
 			/*try
 			{
