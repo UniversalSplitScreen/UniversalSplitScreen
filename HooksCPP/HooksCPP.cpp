@@ -15,6 +15,7 @@ static int x;
 static int y;
 UINT16 vkey_state;
 int controllerIndex = 0;
+int allowedMouseHandle = 0;
 
 BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 {
@@ -74,6 +75,73 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
 	logging << "Received msg = "<< Msg << endl;
 	logging.close();*/
+
+	if (Msg == WM_INPUT && allowedMouseHandle != 0)
+	{
+		UINT dwSize;
+		if (GetRawInputData((HRAWINPUT)lParam, RID_HEADER, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == 0)
+		{
+
+			static RAWINPUT raw[sizeof(RAWINPUTHEADER)];
+
+			/*try
+			{
+				LPBYTE lpb = new BYTE[dwSize];//CRASHES IT
+				delete[] lpb;
+			}
+			catch(...)
+			{
+				cout << "FAIL="<<dwSize << endl;
+			}*/
+
+
+			//cout << "dwSize=" << dwSize << endl;
+			//RAWINPUT* raw = (RAWINPUT*)malloc(dwSize);
+			//if (raw)
+			//{
+				if (GetRawInputData((HRAWINPUT)lParam, RID_HEADER, raw, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
+				{
+					if (raw->header.dwType == RIM_TYPEMOUSE)
+					{
+						if (raw->header.hDevice == (HANDLE)allowedMouseHandle)
+						{
+							//free(raw);
+							return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
+						}
+						else
+						{
+							//free(raw);
+							return 0;
+						}
+					}
+				}
+				//free(raw);
+			//}
+
+
+			//if (lpb != NULL)
+			{
+				//if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
+				{
+					//RAWINPUT* raw = (RAWINPUT*)lpb;
+					//if (raw->header.dwType == RIM_TYPEMOUSE)
+					{
+						/*if (raw->header.hDevice == (HANDLE)allowedMouseHandle)
+						{
+							delete[] lpb;
+							return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
+						}
+						else
+						{
+							delete[] lpb;
+							return 0;
+						}*/
+					}
+				}
+			}
+		}
+		
+	}
 
 	//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
 	if (Msg == WM_MOUSEMOVE && ((int)wParam & 0b10000000) > 0)
@@ -235,6 +303,7 @@ struct UserData
 	HWND hWnd;
 	char ipcChannelName[256];//Name will be 30 characters
 	int controllerIndex;
+	int allowedMouseHandle;
 	bool HookGetCursorPos;
 	bool HookGetForegroundWindow;
 	bool HookGetAsyncKeyState;
@@ -266,6 +335,10 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 		controllerIndex = userData.controllerIndex;
 		cout << "Received controller index: " << controllerIndex << endl;
+
+		allowedMouseHandle = userData.allowedMouseHandle;
+		cout << "Allowed mouse handle: " << allowedMouseHandle << endl;
+		cout << "Allowed mouse (HANDLE)handle: " << (HANDLE)allowedMouseHandle << endl;
 		
 		//Install hooks
 		if (userData.HookGetCursorPos)				installHook(TEXT("user32"),	"GetCursorPos",				GetCursorPos_Hook);
@@ -289,7 +362,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		}
 
 		//De-register from Raw Input
-		if (userData.HookRegisterRawInputDevices)
+		/*if (userData.HookRegisterRawInputDevices)
 		{
 			RAWINPUTDEVICE rid[1];
 			rid[0].usUsagePage = 0x01;
@@ -299,7 +372,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 			BOOL unregisterSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
 			cout << "Raw mouse input unregister success: " << unregisterSuccess << endl;
-		}
+		}*/
 		
 		//Start named pipe client
 		startPipeListen();

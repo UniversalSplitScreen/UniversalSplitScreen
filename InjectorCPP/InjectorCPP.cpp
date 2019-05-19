@@ -17,6 +17,7 @@ struct UserData
 	HWND hWnd;
 	char ipcChannelName[256];//Name will be 30 characters
 	int controllerIndex;
+	int allowedMouseHandle;
 	bool HookGetCursorPos;
 	bool HookGetForegroundWindow;
 	bool HookGetAsyncKeyState;
@@ -38,13 +39,14 @@ struct UserData
 	return 0;
 }*/
 
-extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, WCHAR* injectionDllPath64, HWND hWnd, char* ipcChannelName, bool controllerIndex,
+extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, WCHAR* injectionDllPath64, HWND hWnd, char* ipcChannelName, bool controllerIndex, int allowedMouseHandle,
 	bool HookGetCursorPos, bool HookGetForegroundWindow, bool HookGetAsyncKeyState, bool HookGetKeyState, bool HookCallWindowProcW, bool HookRegisterRawInputDevices, bool HookSetCursorPos, bool HookXInput)
 {	
 	UserData* data = new UserData();
 	data->hWnd = hWnd;
 	strcpy_s(data->ipcChannelName, ipcChannelName);
 	data->controllerIndex = controllerIndex;
+	data->allowedMouseHandle = allowedMouseHandle;
 
 	data->HookGetCursorPos = HookGetCursorPos;
 	data->HookGetForegroundWindow = HookGetForegroundWindow;

@@ -174,6 +174,7 @@ namespace UniversalSplitScreen.Core
 							window.hWnd,
 							needPipe ? pipe.pipeName : "USS_NO_PIPE_NEEDED",
 							window.ControllerIndex,
+							(int)window.MouseAttached,
 							options.Hook_GetCursorPos,
 							options.Hook_GetForegroundWindow,
 							options.Hook_GetAsyncKeyState,
