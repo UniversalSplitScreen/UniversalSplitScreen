@@ -297,7 +297,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			rid[0].dwFlags = RIDEV_REMOVE;
 			rid[0].hwndTarget = NULL;
 
-			BOOL unregisterSuccess = RegisterRawInputDevices(rid, 4, sizeof(rid[0]));
+			BOOL unregisterSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
 			cout << "Raw mouse input unregister success: " << unregisterSuccess << endl;
 		}
 		
