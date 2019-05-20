@@ -17,6 +17,9 @@ UINT16 vkey_state;
 int controllerIndex = 0;
 int allowedMouseHandle = 0;
 
+bool filterRawInput = FALSE;
+bool filterMouseMessages = FALSE;
+
 BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 {
 	POINT p = POINT();
@@ -76,7 +79,7 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 	logging << "Received msg = "<< Msg << endl;
 	logging.close();*/
 
-	if (Msg == WM_INPUT && allowedMouseHandle != 0)
+	if (filterRawInput && Msg == WM_INPUT && allowedMouseHandle != 0)
 	{
 		UINT dwSize;
 		if (GetRawInputData((HRAWINPUT)lParam, RID_HEADER, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == 0)
@@ -102,19 +105,25 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 	}
 
 	//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
-	if (Msg == WM_MOUSEMOVE && ((int)wParam & 0b10000000) > 0)
-		return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
-
-	// || Msg == 0x00FF
-	else if ((Msg >= WM_XBUTTONDOWN && Msg <= WM_XBUTTONDBLCLK) || Msg == WM_MOUSEMOVE || Msg == WM_MOUSEACTIVATE || Msg == WM_MOUSEHOVER || Msg == WM_MOUSELEAVE || Msg == WM_MOUSEWHEEL || Msg == WM_SETCURSOR)//Other mouse events. 
-		return 0;
-	else
+	if (filterMouseMessages)
 	{
-		if (Msg == WM_ACTIVATE) //0x0006 is WM_ACTIVATE, which resets the mouse position for starbound [citation needed]
-			return CallWindowProc(lpPrevWndFunc, hWnd, Msg, 1, 0);
-		else
+		if (Msg == WM_MOUSEMOVE && ((int)wParam & 0b10000000) > 0)
 			return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
+
+		// || Msg == 0x00FF
+		else if ((Msg >= WM_XBUTTONDOWN && Msg <= WM_XBUTTONDBLCLK) || Msg == WM_MOUSEMOVE || Msg == WM_MOUSEACTIVATE || Msg == WM_MOUSEHOVER || Msg == WM_MOUSELEAVE || Msg == WM_MOUSEWHEEL || Msg == WM_SETCURSOR)//Other mouse events. 
+			return 0;
+		else
+		{
+			if (Msg == WM_ACTIVATE) //0x0006 is WM_ACTIVATE, which resets the mouse position for starbound [citation needed]
+				return CallWindowProc(lpPrevWndFunc, hWnd, Msg, 1, 0);
+			else
+				return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
+		}
 	}
+
+	//Never will actually be called
+	return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
 }
 
 BOOL WINAPI SetCursorPos_Hook(int X, int Y)
@@ -303,9 +312,12 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (userData.HookGetForegroundWindow)		installHook(TEXT("user32"),	"GetForegroundWindow",		GetForegroundWindow_Hook);
 		if (userData.HookGetAsyncKeyState)			installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
 		if (userData.HookGetKeyState)				installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
-		if (userData.HookCallWindowProcW)			installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
 		if (userData.HookRegisterRawInputDevices)	installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 		if (userData.HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
+
+		filterRawInput = userData.HookRegisterRawInputDevices;
+		filterMouseMessages = userData.HookCallWindowProcW;
+		if (filterRawInput || filterMouseMessages)	installHook(TEXT("user32"), "CallWindowProcW", CallWindowProc_Hook);
 
 		//Hook XInput dll
 		if (userData.HookXInput)
@@ -319,18 +331,33 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			}
 		}
 
-		//De-register from Raw Input
-		/*if (userData.HookRegisterRawInputDevices)
+		//De-register & re-register from Raw Input
+		if (filterRawInput)
 		{
-			RAWINPUTDEVICE rid[1];
-			rid[0].usUsagePage = 0x01;
-			rid[0].usUsage = 0x02;
-			rid[0].dwFlags = RIDEV_REMOVE;
-			rid[0].hwndTarget = NULL;
+			//De-register
+			{
+				RAWINPUTDEVICE rid[1];
+				rid[0].usUsagePage = 0x01;
+				rid[0].usUsage = 0x02;
+				rid[0].dwFlags = RIDEV_REMOVE;
+				rid[0].hwndTarget = NULL;
 
-			BOOL unregisterSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
-			cout << "Raw mouse input unregister success: " << unregisterSuccess << endl;
-		}*/
+				BOOL unregisterSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
+				cout << "Raw mouse input de-register success: " << unregisterSuccess << endl;
+			}
+
+			//Re-register
+			{
+				RAWINPUTDEVICE rid[1];
+				rid[0].usUsagePage = 0x01;
+				rid[0].usUsage = 0x02;
+				rid[0].dwFlags = RIDEV_INPUTSINK;
+				rid[0].hwndTarget = hWnd;
+
+				BOOL unregisterSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
+				cout << "Raw mouse input re-register success: " << unregisterSuccess << endl;
+			}
+		}
 		
 		//Start named pipe client
 		startPipeListen();
