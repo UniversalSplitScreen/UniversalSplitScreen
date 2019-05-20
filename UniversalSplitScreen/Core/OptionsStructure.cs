@@ -6,7 +6,7 @@ namespace UniversalSplitScreen.Core
 	{
 		public string OptionsName					{ get; set; } = "Default";
 		
-		public bool SendRawMouseInput				{ get; set; } = true;
+		public bool SendRawMouseInput				{ get; set; } = false;
 		public bool SendRawKeyboardInput			{ get; set; } = false;
 		public bool SendNormalMouseInput			{ get; set; } = true;
 		public bool SendNormalKeyboardInput			{ get; set; } = true;
