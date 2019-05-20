@@ -17,8 +17,8 @@ UINT16 vkey_state;
 int controllerIndex = 0;
 int allowedMouseHandle = 0;
 
-bool filterRawInput = FALSE;
-bool filterMouseMessages = FALSE;
+bool filterRawInput;
+bool filterMouseMessages;
 
 BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 {
@@ -79,7 +79,7 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 	logging << "Received msg = "<< Msg << endl;
 	logging.close();*/
 
-	if (filterRawInput && Msg == WM_INPUT && allowedMouseHandle != 0)
+	if ((filterRawInput) && (Msg == WM_INPUT) && (allowedMouseHandle != 0))
 	{
 		UINT dwSize;
 		if (GetRawInputData((HRAWINPUT)lParam, RID_HEADER, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == 0)
@@ -122,7 +122,6 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 		}
 	}
 
-	//Never will actually be called
 	return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
 }
 
@@ -312,12 +311,12 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (userData.HookGetForegroundWindow)		installHook(TEXT("user32"),	"GetForegroundWindow",		GetForegroundWindow_Hook);
 		if (userData.HookGetAsyncKeyState)			installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
 		if (userData.HookGetKeyState)				installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
-		if (userData.HookRegisterRawInputDevices)	installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 		if (userData.HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
 
 		filterRawInput = userData.HookRegisterRawInputDevices;
 		filterMouseMessages = userData.HookCallWindowProcW;
-		if (filterRawInput || filterMouseMessages)	installHook(TEXT("user32"), "CallWindowProcW", CallWindowProc_Hook);
+		if (filterRawInput || filterMouseMessages)	installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
+		if (filterRawInput)							installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 
 		//Hook XInput dll
 		if (userData.HookXInput)
@@ -332,7 +331,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		}
 
 		//De-register & re-register from Raw Input
-		if (filterRawInput)
+		if (filterRawInput)//TODO: re-enable (minecraft needs this)
 		{
 			//De-register
 			{
