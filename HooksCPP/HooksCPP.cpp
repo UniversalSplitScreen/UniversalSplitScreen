@@ -81,67 +81,24 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 		UINT dwSize;
 		if (GetRawInputData((HRAWINPUT)lParam, RID_HEADER, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == 0)
 		{
-
 			//static RAWINPUT raw[sizeof(RAWINPUTHEADER)];
 			register RAWINPUT raw[sizeof(RAWINPUTHEADER)];
 
-			/*try
+			if (GetRawInputData((HRAWINPUT)lParam, RID_HEADER, raw, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
 			{
-				LPBYTE lpb = new BYTE[dwSize];//CRASHES IT
-				delete[] lpb;
-			}
-			catch(...)
-			{
-				cout << "FAIL="<<dwSize << endl;
-			}*/
-
-
-			//cout << "dwSize=" << dwSize << endl;
-			//RAWINPUT* raw = (RAWINPUT*)malloc(dwSize);
-			//if (raw)
-			//{
-				if (GetRawInputData((HRAWINPUT)lParam, RID_HEADER, raw, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
+				if (raw->header.dwType == RIM_TYPEMOUSE)
 				{
-					if (raw->header.dwType == RIM_TYPEMOUSE)
+					if (raw->header.hDevice == (HANDLE)allowedMouseHandle)
 					{
-						if (raw->header.hDevice == (HANDLE)allowedMouseHandle)
-						{
-							//free(raw);
-							return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
-						}
-						else
-						{
-							//free(raw);
-							return 0;
-						}
+						return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
 					}
-				}
-				//free(raw);
-			//}
-
-
-			//if (lpb != NULL)
-			{
-				//if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
-				{
-					//RAWINPUT* raw = (RAWINPUT*)lpb;
-					//if (raw->header.dwType == RIM_TYPEMOUSE)
+					else
 					{
-						/*if (raw->header.hDevice == (HANDLE)allowedMouseHandle)
-						{
-							delete[] lpb;
-							return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
-						}
-						else
-						{
-							delete[] lpb;
-							return 0;
-						}*/
+						return 0;
 					}
 				}
 			}
 		}
-		
 	}
 
 	//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
