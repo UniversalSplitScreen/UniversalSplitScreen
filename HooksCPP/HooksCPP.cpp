@@ -6,8 +6,10 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <fstream>
 using namespace std;
 
+extern HMODULE DllHandle;
 
 HWND hWnd = 0;
 string _ipcChannelName;
@@ -79,6 +81,11 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 	logging << "Received msg = "<< Msg << endl;
 	logging.close();*/
 
+	std::ofstream logging;
+	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+	logging << "windowProc\n";
+	logging.close();
+
 	if ((filterRawInput) && (Msg == WM_INPUT) && (allowedMouseHandle != 0))
 	{
 		UINT dwSize;
@@ -93,10 +100,18 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 				{
 					if (raw->header.hDevice == (HANDLE)allowedMouseHandle)
 					{
+						std::ofstream logging;
+						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+						logging << "Pass rhid = " << (raw->header.hDevice) << endl;
+						logging.close();
 						return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
 					}
 					else
 					{
+						std::ofstream logging;
+						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+						logging << "Block rhid = "<< (raw->header.hDevice) << endl;
+						logging.close();
 						return 0;
 					}
 				}
@@ -174,11 +189,11 @@ void startPipeListen()
 
 	if (pipe == INVALID_HANDLE_VALUE)
 	{
-		cout << "Failed to connect to pipe\n";
+		std::cout << "Failed to connect to pipe\n";
 		return;
 	}
 
-	cout << "Connected to pipe\n";
+	std::cout << "Connected to pipe\n";
 
 	for (;;)
 	{
@@ -224,7 +239,7 @@ void startPipeListen()
 				}
 				case 0x03:
 				{
-					cout << "Received pipe closed message. Closing pipe..." << endl;
+					std::cout << "Received pipe closed message. Closing pipe..." << endl;
 					return;
 				}
 				default:
@@ -254,11 +269,11 @@ NTSTATUS installHook(LPCSTR moduleHandle, LPCSTR lpProcName, void* InCallback)
 	{
 		ULONG ACLEntries[1] = { 0 };
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
-		cout << "Successfully installed hook " << lpProcName << " in module '" << moduleHandle << "'\n";
+		std::cout << "Successfully installed hook " << lpProcName << " in module '" << moduleHandle << "'\n";
 	}
 	else
 	{
-		cout << "Failed to install hook " << lpProcName << " in module '"<< moduleHandle << "', NTSTATUS: " << hookResult << "\n";
+		std::cout << "Failed to install hook " << lpProcName << " in module '"<< moduleHandle << "', NTSTATUS: " << hookResult << "\n";
 	}
 
 	return hookResult;
@@ -280,12 +295,98 @@ struct UserData
 	bool HookXInput;
 };
 
+LRESULT CALLBACK CallWndProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+	/*std::ofstream logging;
+	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+	logging << "AA";
+	logging.close();*/
+
+	MSG* pMsg = (MSG*)lParam;
+	UINT Msg = pMsg->message;
+	LPARAM _lParam = pMsg->lParam;
+	WPARAM _wParam = pMsg->wParam;
+
+	//CWPSTRUCT pCwp = *(CWPSTRUCT*)lParam;
+	//UINT Msg = pCwp.message;
+	//LPARAM _lParam = pCwp.lParam;
+	//WPARAM _wParam = pCwp.wParam;
+
+	LRESULT blockRet = 0;
+
+	if ((filterRawInput) && (Msg == WM_INPUT) && (allowedMouseHandle != 0))
+	{
+		UINT dwSize;
+		if (GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == 0)
+		{
+			//static RAWINPUT raw[sizeof(RAWINPUTHEADER)];
+			register RAWINPUT raw[sizeof(RAWINPUTHEADER)];
+
+			if (GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, raw, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
+			{
+				if (raw->header.dwType == RIM_TYPEMOUSE)
+				{
+					/*std::ofstream logging;
+						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+						logging << "rhid = " << (raw->header.hDevice) << endl;
+						logging.close();*/
+
+					if (raw->header.hDevice == (HANDLE)allowedMouseHandle)
+					{
+						/*std::ofstream logging;
+						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+						logging << "Pass rhid = " << (raw->header.hDevice) << endl;
+						logging.close();*/
+						return CallNextHookEx(NULL, code, wParam, lParam);
+					}
+					else
+					{
+						/*std::ofstream logging;
+						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+						logging << "Block rhid = " << (raw->header.hDevice) << endl;
+						logging.close();*/
+						pMsg->message = WM_NULL;
+						return blockRet;
+					}
+				}
+			}
+		}
+	}
+
+	//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
+	if (filterMouseMessages)
+	{
+		if (Msg == WM_MOUSEMOVE && ((int)_wParam & 0b10000000) > 0)
+			return CallNextHookEx(NULL, code, wParam, lParam);
+
+		// || Msg == 0x00FF
+		else if ((Msg >= WM_XBUTTONDOWN && Msg <= WM_XBUTTONDBLCLK) || Msg == WM_MOUSEMOVE || Msg == WM_MOUSEACTIVATE || Msg == WM_MOUSEHOVER || Msg == WM_MOUSELEAVE || Msg == WM_MOUSEWHEEL || Msg == WM_SETCURSOR)//Other mouse events. 
+		{
+			pMsg->message = WM_NULL;
+			return blockRet;
+		}
+		else
+		{
+			if (Msg == WM_ACTIVATE) //0x0006 is WM_ACTIVATE, which resets the mouse position for starbound [citation needed]
+				return CallNextHookEx(NULL, code, 1, 0);
+			else
+				return CallNextHookEx(NULL, code, wParam, lParam);
+		}
+	}
+
+	return CallNextHookEx(NULL, code, wParam, lParam);
+}
+
+
+
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
 	//Cout will go to the games console
-	cout << "Injected CPP\n";
-	cout << "Injected by host process ID: " << inRemoteInfo->HostPID << "\n";
-	cout << "Passed in data size:" << inRemoteInfo->UserDataSize << "\n";
+	std::cout << "Injected CPP\n";
+	std::cout << "Injected by host process ID: " << inRemoteInfo->HostPID << "\n";
+	std::cout << "Passed in data size:" << inRemoteInfo->UserDataSize << "\n";
+	
+	std::cout << "DllHandle=" << DllHandle << endl;
 	
 	if (inRemoteInfo->UserDataSize == sizeof(UserData))
 	{
@@ -293,18 +394,18 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		UserData userData = *reinterpret_cast<UserData *>(inRemoteInfo->UserData);
 
 		hWnd = userData.hWnd;
-		cout << "Received hWnd: " << hWnd << endl;
+		std::cout << "Received hWnd: " << hWnd << endl;
 
 		string ipcChannelName(userData.ipcChannelName);
 		_ipcChannelName = ipcChannelName;
-		cout << "Received IPC channel: " << ipcChannelName << endl;
+		std::cout << "Received IPC channel: " << ipcChannelName << endl;
 
 		controllerIndex = userData.controllerIndex;
-		cout << "Received controller index: " << controllerIndex << endl;
+		std::cout << "Received controller index: " << controllerIndex << endl;
 
 		allowedMouseHandle = userData.allowedMouseHandle;
-		cout << "Allowed mouse handle: " << allowedMouseHandle << endl;
-		cout << "Allowed mouse (HANDLE)handle: " << (HANDLE)allowedMouseHandle << endl;
+		std::cout << "Allowed mouse handle: " << allowedMouseHandle << endl;
+		std::cout << "Allowed mouse (HANDLE)handle: " << (HANDLE)allowedMouseHandle << endl;
 		
 		//Install hooks
 		if (userData.HookGetCursorPos)				installHook(TEXT("user32"),	"GetCursorPos",				GetCursorPos_Hook);
@@ -315,8 +416,15 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 		filterRawInput = userData.HookRegisterRawInputDevices;
 		filterMouseMessages = userData.HookCallWindowProcW;
-		if (filterRawInput || filterMouseMessages)	installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
-		if (filterRawInput)							installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
+		//if (filterRawInput || filterMouseMessages)	installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
+		
+		if (filterRawInput || filterMouseMessages)
+		{
+			HHOOK hhook = SetWindowsHookEx(WH_GETMESSAGE, CallWndProc, DllHandle, 0);//Doesn't work (especially won't let you block a message)
+			std::cout << "hhook = " << hhook << ", GetLastError=" << GetLastError() << endl;
+		}
+
+		
 
 		//Hook XInput dll
 		if (userData.HookXInput)
@@ -331,7 +439,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		}
 
 		//De-register & re-register from Raw Input
-		if (filterRawInput)//TODO: re-enable (minecraft needs this)
+		if (filterRawInput && false)//TODO: re-enable (minecraft needs this)
 		{
 			//De-register
 			{
@@ -342,7 +450,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 				rid[0].hwndTarget = NULL;
 
 				BOOL unregisterSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
-				cout << "Raw mouse input de-register success: " << unregisterSuccess << endl;
+				std::cout << "Raw mouse input de-register success: " << unregisterSuccess << endl;
 			}
 
 			//Re-register
@@ -354,16 +462,18 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 				rid[0].hwndTarget = hWnd;
 
 				BOOL registerSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
-				cout << "Raw mouse input re-register success: " << registerSuccess << endl;
+				std::cout << "Raw mouse input re-register success: " << registerSuccess << endl;
 			}
 		}
+
+		//if (filterRawInput)							installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 		
 		//Start named pipe client
 		startPipeListen();
 	}
 	else
 	{
-		cout << "Failed getting user data\n";
+		std::cout << "Failed getting user data\n";
 	}
 
 	return;
