@@ -384,6 +384,7 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 	return CallNextHookEx(NULL, code, wParam, lParam);
 }
 
+#if FALSE
 BOOL CALLBACK EnumWindowsProc_SubToRawInput(_In_ HWND hwnd, _In_ LPARAM lParam)
 {
 	DWORD _pid;
@@ -403,31 +404,7 @@ BOOL CALLBACK EnumWindowsProc_SubToRawInput(_In_ HWND hwnd, _In_ LPARAM lParam)
 
 	return TRUE;
 }
-
-/*void resubToRawInput(DWORD pid)
-{
-	HANDLE hThreadSnap = INVALID_HANDLE_VALUE;
-	THREADENTRY32 te32;
-
-	hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-	if (hThreadSnap == INVALID_HANDLE_VALUE) return;
-
-	te32.dwSize = sizeof(THREADENTRY32);
-
-	if (!Thread32First(hThreadSnap, &te32))
-	{
-		cout << "Thread32First error" << endl;
-		CloseHandle(hThreadSnap);
-	}
-
-	do
-	{
-		if (te32.th32OwnerProcessID == pid)
-		{
-			EnumWindows(EnumWindowsProc_SubToRawInput, te32.th32ThreadID);
-		}
-	} while (Thread32Next(hThreadSnap, &te32));
-}*/
+#endif
 
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
@@ -487,8 +464,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			}
 		}
 		
-		//De-register & re-register from Raw Input
 #if FALSE
+		//De-register & re-register from Raw Input
 		if (filterRawInput)//TODO: re-enable
 		{
 			//De-register
