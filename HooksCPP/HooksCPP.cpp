@@ -308,10 +308,10 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 	LPARAM _lParam = pMsg->lParam;
 	WPARAM _wParam = pMsg->wParam;
 
-	//CWPSTRUCT pCwp = *(CWPSTRUCT*)lParam;
-	//UINT Msg = pCwp.message;
-	//LPARAM _lParam = pCwp.lParam;
-	//WPARAM _wParam = pCwp.wParam;
+	//CWPSTRUCT* pCwp = (CWPSTRUCT*)lParam;
+	//UINT Msg = pCwp->message;
+	//LPARAM _lParam = pCwp->lParam;
+	//WPARAM _wParam = pCwp->wParam;
 
 	LRESULT blockRet = 0;
 
@@ -340,8 +340,8 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 						logging.close();*/
 						//cout << "pass " << (raw->header.hDevice) << endl;
 
-						return 0;
-						//return CallNextHookEx(NULL, code, wParam, lParam);
+						//return 0;
+						return CallNextHookEx(NULL, code, wParam, lParam);//Wastes CPU
 					}
 					else
 					{
@@ -350,7 +350,8 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 						logging << "Block rhid = " << (raw->header.hDevice) << endl;
 						logging.close();*/
 						//cout << "block " << (raw->header.hDevice) << endl;
-						pMsg->message = WM_NULL;
+						//pCwp->message = WM_NULL;
+							pMsg->message = WM_NULL;
 						return blockRet;
 					}
 				}
@@ -367,6 +368,7 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 		// || Msg == 0x00FF
 		else if ((Msg >= WM_XBUTTONDOWN && Msg <= WM_XBUTTONDBLCLK) || Msg == WM_MOUSEMOVE || Msg == WM_MOUSEACTIVATE || Msg == WM_MOUSEHOVER || Msg == WM_MOUSELEAVE || Msg == WM_MOUSEWHEEL || Msg == WM_SETCURSOR)//Other mouse events. 
 		{
+			//pCwp->message = WM_NULL;
 			pMsg->message = WM_NULL;
 			return blockRet;
 		}
@@ -461,6 +463,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (userData.HookGetAsyncKeyState)			installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
 		if (userData.HookGetKeyState)				installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
 		if (userData.HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
+		//if (filterRawInput)							installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 
 		filterRawInput = userData.HookRegisterRawInputDevices;
 		filterMouseMessages = userData.HookCallWindowProcW;
@@ -471,8 +474,6 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			HHOOK hhook = SetWindowsHookEx(WH_GETMESSAGE, CallMsgProc, DllHandle, 0);
 			std::cout << "hhook = " << hhook << ", GetLastError=" << GetLastError() << endl;
 		}
-
-		
 
 		//Hook XInput dll
 		if (userData.HookXInput)
@@ -485,14 +486,10 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 				ntResult = installHook(xinputNames[xi++], "XInputGetState", XInputGetState_Hook);
 			}
 		}
-
-		std::ofstream logging;
-						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-						
-						
-
+		
 		//De-register & re-register from Raw Input
-		if (filterRawInput && false)//TODO: re-enable (minecraft needs this)
+#if FALSE
+		if (filterRawInput)//TODO: re-enable
 		{
 			//De-register
 			{
@@ -504,32 +501,12 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 				BOOL unregisterSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
 				std::cout << "Raw mouse input de-register success: " << unregisterSuccess << endl;
-				logging << "Raw mouse input de-register success: " << unregisterSuccess << endl;
 			}
 
-			//DWORD pid;
-			//GetWindowThreadProcessId(hWnd, &pid);
-			//resubToRawInput(pid);
 			EnumWindows(EnumWindowsProc_SubToRawInput, GetCurrentProcessId());
-
-			//Re-register
-			/*{
-				RAWINPUTDEVICE rid[1];
-				rid[0].usUsagePage = 0x01;
-				rid[0].usUsage = 0x02;
-				rid[0].dwFlags = RIDEV_INPUTSINK;
-				rid[0].hwndTarget = hWnd;
-
-				BOOL registerSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
-				std::cout << "Raw mouse input re-register success: " << registerSuccess << endl;
-				logging << "Raw mouse input re-register success: " << registerSuccess << endl;
-			}*/
 		}
+#endif
 
-		logging.close();
-
-		//if (filterRawInput)							installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
-		
 		//Start named pipe client
 		startPipeListen();
 	}
