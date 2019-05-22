@@ -7,6 +7,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <fstream>
+#include <tlhelp32.h>
 using namespace std;
 
 extern HMODULE DllHandle;
@@ -295,7 +296,7 @@ struct UserData
 	bool HookXInput;
 };
 
-LRESULT CALLBACK CallWndProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
+LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
 	/*std::ofstream logging;
 	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
@@ -337,7 +338,10 @@ LRESULT CALLBACK CallWndProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
 						logging << "Pass rhid = " << (raw->header.hDevice) << endl;
 						logging.close();*/
-						return CallNextHookEx(NULL, code, wParam, lParam);
+						//cout << "pass " << (raw->header.hDevice) << endl;
+
+						return 0;
+						//return CallNextHookEx(NULL, code, wParam, lParam);
 					}
 					else
 					{
@@ -345,6 +349,7 @@ LRESULT CALLBACK CallWndProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
 						logging << "Block rhid = " << (raw->header.hDevice) << endl;
 						logging.close();*/
+						//cout << "block " << (raw->header.hDevice) << endl;
 						pMsg->message = WM_NULL;
 						return blockRet;
 					}
@@ -377,7 +382,50 @@ LRESULT CALLBACK CallWndProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 	return CallNextHookEx(NULL, code, wParam, lParam);
 }
 
+BOOL CALLBACK EnumWindowsProc_SubToRawInput(_In_ HWND hwnd, _In_ LPARAM lParam)
+{
+	DWORD _pid;
+	GetWindowThreadProcessId(hwnd, &_pid);
+	if (_pid == (DWORD)lParam)
+	{
+		RAWINPUTDEVICE rid[1];
+		rid[0].usUsagePage = 0x01;
+		rid[0].usUsage = 0x02;
+		rid[0].dwFlags = RIDEV_INPUTSINK;
+		rid[0].hwndTarget = hwnd;
 
+		BOOL registerSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
+		std::cout << "Raw mouse input re-register: hwnd=" << hwnd << ", success: " << registerSuccess << endl;
+		//logging << "Raw mouse input re-register success: " << registerSuccess << endl;
+	}
+
+	return TRUE;
+}
+
+/*void resubToRawInput(DWORD pid)
+{
+	HANDLE hThreadSnap = INVALID_HANDLE_VALUE;
+	THREADENTRY32 te32;
+
+	hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+	if (hThreadSnap == INVALID_HANDLE_VALUE) return;
+
+	te32.dwSize = sizeof(THREADENTRY32);
+
+	if (!Thread32First(hThreadSnap, &te32))
+	{
+		cout << "Thread32First error" << endl;
+		CloseHandle(hThreadSnap);
+	}
+
+	do
+	{
+		if (te32.th32OwnerProcessID == pid)
+		{
+			EnumWindows(EnumWindowsProc_SubToRawInput, te32.th32ThreadID);
+		}
+	} while (Thread32Next(hThreadSnap, &te32));
+}*/
 
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
@@ -420,7 +468,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		
 		if (filterRawInput || filterMouseMessages)
 		{
-			HHOOK hhook = SetWindowsHookEx(WH_GETMESSAGE, CallWndProc, DllHandle, 0);//Doesn't work (especially won't let you block a message)
+			HHOOK hhook = SetWindowsHookEx(WH_GETMESSAGE, CallMsgProc, DllHandle, 0);
 			std::cout << "hhook = " << hhook << ", GetLastError=" << GetLastError() << endl;
 		}
 
@@ -438,6 +486,11 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			}
 		}
 
+		std::ofstream logging;
+						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+						
+						
+
 		//De-register & re-register from Raw Input
 		if (filterRawInput && false)//TODO: re-enable (minecraft needs this)
 		{
@@ -451,10 +504,16 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 				BOOL unregisterSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
 				std::cout << "Raw mouse input de-register success: " << unregisterSuccess << endl;
+				logging << "Raw mouse input de-register success: " << unregisterSuccess << endl;
 			}
 
+			//DWORD pid;
+			//GetWindowThreadProcessId(hWnd, &pid);
+			//resubToRawInput(pid);
+			EnumWindows(EnumWindowsProc_SubToRawInput, GetCurrentProcessId());
+
 			//Re-register
-			{
+			/*{
 				RAWINPUTDEVICE rid[1];
 				rid[0].usUsagePage = 0x01;
 				rid[0].usUsage = 0x02;
@@ -463,8 +522,11 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 				BOOL registerSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
 				std::cout << "Raw mouse input re-register success: " << registerSuccess << endl;
-			}
+				logging << "Raw mouse input re-register success: " << registerSuccess << endl;
+			}*/
 		}
+
+		logging.close();
 
 		//if (filterRawInput)							installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 		
