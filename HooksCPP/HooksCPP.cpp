@@ -7,7 +7,8 @@
 #include <mutex>
 #include <condition_variable>
 #include <fstream>
-#include <tlhelp32.h>
+//#include <tlhelp32.h>
+#include <thread>
 using namespace std;
 
 extern HMODULE DllHandle;
@@ -485,7 +486,9 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 #endif
 
 		//Start named pipe client
-		startPipeListen();
+		std::thread t(startPipeListen);
+		t.join();
+		//startPipeListen();
 	}
 	else
 	{
