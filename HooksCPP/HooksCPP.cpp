@@ -416,6 +416,24 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 	
 	std::cout << "DllHandle=" << DllHandle << endl;
 	
+	/*std::ofstream logging;
+	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+	
+	HANDLE hProc = GetCurrentProcess();
+
+	logging << "before anything GetLastError=" << GetLastError() << endl;
+	
+	HANDLE xd = OpenMutexW(MAXIMUM_ALLOWED, TRUE, L"hl2_singleton_mutex");
+	logging << "handle=" << xd << ", err=" << GetLastError() << endl;
+	
+	BOOL asdf = DuplicateHandle(GetCurrentProcess(), xd, NULL, 0, 0, FALSE, DUPLICATE_CLOSE_SOURCE);
+	logging << "asdf=" << asdf << ", err=" << GetLastError() << endl;
+
+	BOOL qwer = CloseHandle(xd);
+	logging << "qwer=" << asdf << ", err=" << GetLastError() << endl;
+
+	logging.close();*/
+
 	if (inRemoteInfo->UserDataSize == sizeof(UserData))
 	{
 		//Get UserData
