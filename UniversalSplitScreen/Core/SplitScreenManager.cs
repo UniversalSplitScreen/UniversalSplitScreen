@@ -135,6 +135,10 @@ namespace UniversalSplitScreen.Core
 					drawMouseTasks.Add(task, c);
 				}
 
+				//Source engine unlock
+				int seu = WinApi.SourceEngineUnlock(window.pid);
+				Logger.WriteLine($"Source engine unlock = {seu}");
+
 				//EasyHook
 				if (options.Hook_FilterRawInput || 
 					options.Hook_FilterWindowsMouseInput || 

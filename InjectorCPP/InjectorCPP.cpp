@@ -6,7 +6,6 @@
 #include <string>
 #include <cstring>
 #include <easyhook.h>
-
 #include <iostream>
 #include <fstream>
 
@@ -27,17 +26,6 @@ struct UserData
 	bool HookSetCursorPos;
 	bool HookXInput;
 };
-
-/*LRESULT CALLBACK MouseProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
-{
-	ofstream logging;
-	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\InjectorCPP_Output.txt", std::ios_base::app);
-	logging << "Received code = "<< nCode << endl;
-	logging.close();
-
-
-	return 0;
-}*/
 
 extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, WCHAR* injectionDllPath64, HWND hWnd, char* ipcChannelName, bool controllerIndex, int allowedMouseHandle,
 	bool HookGetCursorPos, bool HookGetForegroundWindow, bool HookGetAsyncKeyState, bool HookGetKeyState, bool HookCallWindowProcW, bool HookRegisterRawInputDevices, bool HookSetCursorPos, bool HookXInput)
@@ -66,16 +54,6 @@ extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, 
 		data,
 		sizeof(UserData)
 	);
-
-	/*HHOOK hhook = SetWindowsHookEx(WH_MOUSE_LL, (HOOKPROC)MouseProc, hmod, 0);
-	if (hhook == NULL)
-	{
-		return GetLastError();
-	}
-	else
-	{
-		return 0;
-	}*/
 
 	return nt;//NTSTATUS: 32-bit
 }

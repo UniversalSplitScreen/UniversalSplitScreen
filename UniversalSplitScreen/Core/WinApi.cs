@@ -72,6 +72,10 @@ namespace UniversalSplitScreen.Core
 				string ipcChannelName);
 		}
 
+		[DllImport("SourceEngineUnlocker.dll", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+		public static extern int SourceEngineUnlock(
+				int pid);
+
 		[DllImport("user32.dll")]
 		public static extern bool SetForegroundWindow(int hwnd);
 	}
