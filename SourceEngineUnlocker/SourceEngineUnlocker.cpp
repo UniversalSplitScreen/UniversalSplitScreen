@@ -159,6 +159,7 @@ int Close(DWORD m_processId)
 					HANDLE dummyHandle = NULL;
 					BOOL err_ret = DuplicateHandle(hProcess, handle, GetCurrentProcess(), &dummyHandle, 0, FALSE, DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS);
 					CloseHandle(dummyHandle);
+					ret = 1;
 				}
 			}
 		}
