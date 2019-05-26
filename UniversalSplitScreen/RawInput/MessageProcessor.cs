@@ -152,24 +152,6 @@ namespace UniversalSplitScreen.RawInput
 
 								if (keyUpOrDown)
 								{
-									/**string cmd = string.Format("ControlSend, , {{vk{0:x} {1}}}, ahk_id {2:x}", VKey, keyboardMessage == (uint)KeyboardMessages.WM_KEYDOWN ? "down" : "up", hWnd);
-									//Logger.WriteLine(cmd);
-
-									if (0x73 != rawBuffer.data.keyboard.VKey)//f4
-									{
-										/**
-										AutoHotkeyEngine ahk;
-										if (ahks.TryGetValue(rawBuffer.header.hDevice, out var ahk0))
-											ahk = ahk0;
-										else
-										{
-											ahk = AutoHotkeyEngine.Instance;
-											ahks[rawBuffer.header.hDevice] = ahk;
-										}*
-										
-										//AHKThread.AddCommand(cmd);
-									}*/
-
 									foreach (Window window in Program.SplitScreenManager.GetWindowsForDevice(rawBuffer.header.hDevice))
 									{
 										IntPtr hWnd = window.hWnd;
