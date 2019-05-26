@@ -187,6 +187,7 @@ DWORD GetHandleName(HANDLE h_File, CString* ps_NTPath, objectinfo::MOBJECT_INFOR
 	}
 
 	BYTE  u8_Buffer[2000];
+	memset(&u8_Buffer[0], 0, 2000);
 	DWORD u32_ReqLength = 0;
 
 	UNICODE_STRING* pk_Info = &((OBJECT_NAME_INFORMATION*)u8_Buffer)->Name;
@@ -195,6 +196,15 @@ DWORD GetHandleName(HANDLE h_File, CString* ps_NTPath, objectinfo::MOBJECT_INFOR
 
 	// 1 or 2???
 	NtQueryObject()(h_File, xx, u8_Buffer, sizeof(u8_Buffer), &u32_ReqLength);//ObjectNameInformation not 2
+
+	std::ofstream logging;
+	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+	logging << "Length=" << pk_Info->Length << ", MaxLength=" << pk_Info->MaximumLength << "\n";
+
+	//WORD *p = (WORD*)(pk_Info->Buffer);
+	logging << u8_Buffer[0] << "," << u8_Buffer[1] << "," << u8_Buffer[2] << "," << u8_Buffer[3] << "," << u8_Buffer[4] << "," << u8_Buffer[5] << "," << u8_Buffer[6] << "\n";
+
+	logging.close();
 
 	// On error pk_Info->Buffer is NULL
 	if (!pk_Info->Buffer || !pk_Info->Length)
@@ -275,13 +285,8 @@ DWORD GetHandleName(HANDLE h_File, CString* ps_NTPath, objectinfo::MOBJECT_INFOR
 
 
 
-
-
-
-
-
-
-
+typedef NTSTATUS(NTAPI* lpNtDuplicateObject)(HANDLE SourceProcessHandle, HANDLE SourceHandle, HANDLE TargetProcessHandle, PHANDLE TargetHandle, ACCESS_MASK DesiredAccess, ULONG Attributes, ULONG Options);
+static lpNtDuplicateObject NtDuplicateObject = nullptr;
 
 
 
@@ -298,6 +303,12 @@ int Close(DWORD m_processId)
 
 	//if (!INtDll::NtDllStatus)
 	//	return FALSE;
+	
+	HMODULE hNtdll = LoadLibraryA("ntdll");
+	NtDuplicateObject = (lpNtDuplicateObject)GetProcAddress(hNtdll, "NtDuplicateObject");
+
+
+	
 
 	// Allocate the memory for the buffer
 	SYSTEM_HANDLE_INFORMATION* pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION*)VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
@@ -355,11 +366,15 @@ int Close(DWORD m_processId)
 			// That's it. We found one.
 			if (bAdd)
 			{*/
-
+			HANDLE hProcess = OpenProcess(PROCESS_DUP_HANDLE, FALSE, m_processId);
 			HANDLE handle = (HANDLE)(pSysHandleInformation->Handles[i].HandleNumber);
+
+			HANDLE hHandleLocal = NULL;
+			NTSTATUS status = NtDuplicateObject(hProcess, handle, GetCurrentProcess(), &hHandleLocal, 0, 0, DUPLICATE_SAME_ACCESS);// | DUPLICATE_SAME_ATTRIBUTES);
+
 			CString path;
 
-			DWORD _ret = GetHandleName(handle, &path, objectinfo::ObjectTypeInformation);
+			/*DWORD _ret = GetHandleName(handle, &path, objectinfo::ObjectTypeInformation);
 			if (_ret == 0)
 			{
 
@@ -383,9 +398,10 @@ int Close(DWORD m_processId)
 				logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
 				logging << "error = " << _ret << "\n";
 				logging.close();
-			}
+			}*/
 
-			_ret = GetHandleName(handle, &path, objectinfo::ObjectNameInformation);
+			DWORD _ret = GetHandleName(hHandleLocal, &path, objectinfo::ObjectNameInformation);
+			CloseHandle(hHandleLocal);
 			if (_ret == 0)
 			{
 
@@ -398,8 +414,41 @@ int Close(DWORD m_processId)
 				if (path.Find("hl2_singleton_mutex") != -1)
 				{
 					pSysHandleInformation->Handles[i].HandleType = (WORD)(pSysHandleInformation->Handles[i].HandleType % 256);
-					HANDLE hProcess = OpenProcess(PROCESS_DUP_HANDLE, FALSE, m_processId);
-					DuplicateHandle(hProcess, handle, 0, 0, 0, 0, DUPLICATE_CLOSE_SOURCE);
+					
+					//NtDuplicateObject(hProcess, handle, GetCurrentProcess(), &handle, 0, 0, DUPLICATE_CLOSE_SOURCE);
+
+					std::ofstream logging;
+					logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+					logging << "HL2HANDLE=" << handle << "\n";
+					logging.close();
+					
+
+					/*{
+						HANDLE dummyHandle = NULL;
+						BOOL err_ret = CloseHandle(handle);
+						if (err_ret == FALSE)
+						{
+							//TODO: http://forum.madshi.net/viewtopic.php?t=217
+							std::ofstream logging;
+							logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+							logging << "CLOSE_ERROR=" << GetLastError() << "\n";
+							logging.close();
+						}
+						
+					}*/
+
+					{
+						HANDLE dummyHandle = NULL;
+						BOOL err_ret = DuplicateHandle(hProcess, handle, GetCurrentProcess(), &dummyHandle, 0, FALSE, DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS);
+						if (err_ret == FALSE)
+						{
+							std::ofstream logging;
+							logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+							logging << "DUPLICATE_ERROR=" << GetLastError() << "\n";
+							logging.close();
+						}
+						CloseHandle(dummyHandle);
+					}
 				}
 			}
 			else
