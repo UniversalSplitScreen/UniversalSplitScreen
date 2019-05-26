@@ -409,21 +409,25 @@ namespace UniversalSplitScreen.Core
 
 			if (our_hWnd != hWnd && desktop_hWnd != hWnd && !string.IsNullOrWhiteSpace(title) && title != "Task Switching" && title != "Cortana")
 			{
-				active_hWnd = hWnd;
-				Program.Form.WindowTitleText = title;
-				Program.Form.WindowHandleText = hWnd.ToString();
+				WinApi.GetWindowThreadProcessId(hWnd, out int pid);
+				if (pid != Process.GetCurrentProcess().Id)
+				{
+					active_hWnd = hWnd;
+					Program.Form.WindowTitleText = title;
+					Program.Form.WindowHandleText = hWnd.ToString();
 
-				if (windows.TryGetValue(hWnd, out var x))
-				{
-					Program.Form.MouseHandleText = x.MouseAttached.ToString();
-					Program.Form.KeyboardHandleText = x.KeyboardAttached.ToString();
-					Program.Form.ControllerSelectedIndex = x.ControllerIndex;
-				}
-				else
-				{
-					Program.Form.MouseHandleText = "0";
-					Program.Form.KeyboardHandleText = "0";
-					Program.Form.ControllerSelectedIndex = 0;
+					if (windows.TryGetValue(hWnd, out var x))
+					{
+						Program.Form.MouseHandleText = x.MouseAttached.ToString();
+						Program.Form.KeyboardHandleText = x.KeyboardAttached.ToString();
+						Program.Form.ControllerSelectedIndex = x.ControllerIndex;
+					}
+					else
+					{
+						Program.Form.MouseHandleText = "0";
+						Program.Form.KeyboardHandleText = "0";
+						Program.Form.ControllerSelectedIndex = 0;
+					}
 				}
 			}
 
