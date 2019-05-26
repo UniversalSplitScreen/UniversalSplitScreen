@@ -54,7 +54,6 @@ t_NtQueryObject NtQueryObject()
 	return f_NtQueryObject;
 }
 
-//TODO: use https://docs.microsoft.com/en-gb/windows/desktop/api/fileapi/nf-fileapi-getfinalpathnamebyhandlea ??
 //https://stackoverflow.com/questions/65170/how-to-get-name-associated-with-open-handle
 DWORD GetHandleName(HANDLE h_File, CString* ps_NTPath, objectinfo::MOBJECT_INFORMATION_CLASS xx)
 {
@@ -106,14 +105,14 @@ int Close(DWORD m_processId)
 	SYSTEM_HANDLE_INFORMATION* pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION*)VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
 
 	if (pSysHandleInformation == NULL)
-		return FALSE;
+		return -1;
 
 	// Query the needed buffer size for the objects ( system wide )
 	if (NtQuerySystemInformation((SYSTEM_INFORMATION_CLASS)16, pSysHandleInformation, size, &needed) != 0)
 	{
 		if (needed == 0)
 		{
-			ret = FALSE;
+			ret = -2;
 			goto cleanup;
 		}
 
@@ -124,12 +123,12 @@ int Close(DWORD m_processId)
 	}
 
 	if (pSysHandleInformation == NULL)
-		return -1;
+		return -3;
 
 	// Query the objects ( system wide )
 	if (NtQuerySystemInformation((SYSTEM_INFORMATION_CLASS)16, pSysHandleInformation, size, NULL) != 0)
 	{
-		ret = -1;
+		ret = -4;
 		goto cleanup;
 	}
 
@@ -160,6 +159,7 @@ int Close(DWORD m_processId)
 					BOOL err_ret = DuplicateHandle(hProcess, handle, GetCurrentProcess(), &dummyHandle, 0, FALSE, DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS);
 					CloseHandle(dummyHandle);
 					ret = 1;
+					goto cleanup;
 				}
 			}
 		}

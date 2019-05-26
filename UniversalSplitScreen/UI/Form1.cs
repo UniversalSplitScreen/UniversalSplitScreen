@@ -195,6 +195,11 @@ namespace UniversalSplitScreen.UI
 		private void RefCheckbox_Hook_GetAsyncKeyState_CheckedChanged(object sender, EventArgs e)
 		{
 
-		}		
+		}
+
+		private void Button_UnlockSourceEngine_Click(object sender, EventArgs e)
+		{
+			Program.SplitScreenManager.UnlockSourceEngine();
+		}
 	}
 }

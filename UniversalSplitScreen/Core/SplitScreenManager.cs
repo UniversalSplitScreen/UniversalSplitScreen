@@ -134,11 +134,7 @@ namespace UniversalSplitScreen.Core
 					task.Start();
 					drawMouseTasks.Add(task, c);
 				}
-
-				//Source engine unlock
-				int seu = WinApi.SourceEngineUnlock(window.pid);
-				Logger.WriteLine($"Source engine unlock = {seu}");
-
+				
 				//EasyHook
 				if (options.Hook_FilterRawInput || 
 					options.Hook_FilterWindowsMouseInput || 
@@ -242,6 +238,31 @@ namespace UniversalSplitScreen.Core
 
 			Program.Form.OnSplitScreenEnd();
 			Program.Form.WindowState = FormWindowState.Normal;
+		}
+
+		public void UnlockSourceEngine()
+		{
+			string title = "";
+			string msg = "";
+			try
+			{
+				WinApi.GetWindowThreadProcessId(active_hWnd, out int pid);
+				int seu = WinApi.SourceEngineUnlock(pid);
+				Logger.WriteLine($"Source engine unlock return = {seu}");
+
+				msg = seu == 1 ?	"Successfully unlocked game. Launch another instance from the exe file." : 
+					(seu == 0 ?		"Couldn't find the source engine mutex" : 
+									$"Error while finding mutex: {seu}");
+
+				title = seu == 1 ? "Success" : "Error";
+			}
+			catch(Exception e)
+			{
+				msg = $"Exception while finding mutex: {e.GetType()}";
+				title = "Error";
+			}
+
+			MessageBox.Show(msg, title);
 		}
 
 		#region Set handles
