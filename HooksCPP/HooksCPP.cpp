@@ -15,8 +15,12 @@ extern HMODULE DllHandle;
 
 HWND hWnd = 0;
 string _ipcChannelName;
-static int x;
-static int y;
+
+
+int x;
+int y;
+std::mutex mxy;
+
 UINT16 vkey_state;
 int controllerIndex = 0;
 int allowedMouseHandle = 0;
@@ -26,11 +30,13 @@ bool filterMouseMessages;
 
 BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 {
-	POINT p = POINT();
-	p.x = x;
-	p.y = y;
-	ClientToScreen(hWnd, &p);
-	*lpPoint = p;
+	//POINT p = POINT();
+	mxy.lock();
+	lpPoint->x = x;
+	lpPoint->y = y;
+	mxy.unlock();
+	ClientToScreen(hWnd, lpPoint);
+	//*lpPoint = p;
 	return true;
 }
 
@@ -222,8 +228,10 @@ void startPipeListen()
 			{
 				case 0x01:
 				{
+					mxy.lock();
 					x = param1;
 					y = param2;
+					mxy.unlock();
 					break;
 				}
 				case 0x02:
@@ -504,9 +512,9 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 #endif
 
 		//Start named pipe client
-		std::thread t(startPipeListen);
-		t.join();
-		//startPipeListen();
+		//std::thread t(startPipeListen);
+		//t.join();
+		startPipeListen();
 	}
 	else
 	{
