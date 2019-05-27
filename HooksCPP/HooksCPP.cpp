@@ -30,13 +30,16 @@ bool filterMouseMessages;
 
 BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 {
-	//POINT p = POINT();
-	mxy.lock();
-	lpPoint->x = x;
-	lpPoint->y = y;
-	mxy.unlock();
-	ClientToScreen(hWnd, lpPoint);
-	//*lpPoint = p;
+	if (lpPoint)
+	{
+		//POINT p = POINT();
+		mxy.lock();
+		lpPoint->x = x;
+		lpPoint->y = y;
+		mxy.unlock();
+		ClientToScreen(hWnd, lpPoint);
+		//*lpPoint = p;
+	}
 	return true;
 }
 
@@ -89,10 +92,10 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 	logging << "Received msg = "<< Msg << endl;
 	logging.close();*/
 
-	std::ofstream logging;
+	/*std::ofstream logging;
 	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
 	logging << "windowProc\n";
-	logging.close();
+	logging.close();*/
 
 	if ((filterRawInput) && (Msg == WM_INPUT) && (allowedMouseHandle != 0))
 	{
