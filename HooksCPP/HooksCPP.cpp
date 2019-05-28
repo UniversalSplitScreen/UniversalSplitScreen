@@ -240,8 +240,8 @@ void startPipeListen()
 				{
 					//mxy.lock();
 					EnterCriticalSection(&mcs);
-					x = param1;
-					y = param2;
+					x += param1;
+					y += param2;
 					LeaveCriticalSection(&mcs);
 					//mxy.unlock();
 					break;
@@ -375,8 +375,8 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 						//pCwp->message = WM_NULL;
 
 						pMsg->message = WM_NULL;
-						//return blockRet;
-						return CallNextHookEx(NULL, code, wParam, lParam);//TODO: unecessary?
+						return blockRet;
+						//return CallNextHookEx(NULL, code, wParam, lParam);//TODO: unecessary?
 					}
 				}
 			}

@@ -256,12 +256,18 @@ namespace UniversalSplitScreen.RawInput
 
 								IntVector2 mouseVec = window.MousePosition;
 
-								mouseVec.x = Math.Min(window.Width, Math.Max(mouseVec.x + mouse.lLastX, 0));
-								mouseVec.y = Math.Min(window.Height, Math.Max(mouseVec.y + mouse.lLastY, 0));
-								
+								int deltaX = mouse.lLastX;
+								int deltaY = mouse.lLastY;
+
+								mouseVec.x = Math.Min(window.Width, Math.Max(mouseVec.x + deltaX, 0));
+								mouseVec.y = Math.Min(window.Height, Math.Max(mouseVec.y + deltaY, 0));
+
 								//if (Options.CurrentOptions.Hook_GetCursorPos)
 								//	window.HooksCPPNamedPipe?.WriteMessage(0x01, mouseVec.x, mouseVec.y);
-								
+
+								if (Options.CurrentOptions.Hook_GetCursorPos)
+									window.HooksCPPNamedPipe?.WriteMessage(0x01, deltaX, deltaY);
+
 								//Logger.WriteLine($"MOUSE. flags={mouse.usFlags}, X={mouseVec.x}, y={mouseVec.y}, buttonFlags={mouse.usButtonFlags} device pointer = {rawBuffer.header.hDevice}");
 
 								long packedXY = (mouseVec.y * 0x10000) + mouseVec.x;

@@ -347,7 +347,7 @@ namespace UniversalSplitScreen.Core
 					var mouseVec = window.MousePosition;
 					var x = mouseVec.x;
 					var y = mouseVec.y;
-					window.HooksCPPNamedPipe?.WriteMessage(0x01, x, y);
+					//window.HooksCPPNamedPipe?.WriteMessage(0x01, x, y);
 
 					if (x != 0 && y != 0 && x != window.Width && y != window.Height)
 					{
