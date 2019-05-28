@@ -9,6 +9,7 @@
 #include <fstream>
 //#include <tlhelp32.h>
 #include <thread>
+#include <time.h>
 using namespace std;
 
 extern HMODULE DllHandle;
@@ -17,10 +18,17 @@ HWND hWnd = 0;
 string _ipcChannelName;
 
 
-int x;
-int y;
-std::mutex mxy;
 CRITICAL_SECTION mcs;
+int fakeX;
+int fakeY;
+int absoluteX;
+int absoluteY;
+
+BOOL useAbsoluteCursorPos = FALSE;
+time_t timeSinceLastSetCursorPos;//TODO: make a config value
+const double minTimeForAbs = 0.5;//TODO: test with more values
+
+bool enableLegacyInput = true;
 
 UINT16 vkey_state;
 int controllerIndex = 0;
@@ -36,14 +44,55 @@ BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 		//POINT p = POINT();
 		//mxy.lock();
 		EnterCriticalSection(&mcs);
-		lpPoint->x = x;
-		lpPoint->y = y;
+		if ((!enableLegacyInput) || useAbsoluteCursorPos == TRUE)
+		{
+			lpPoint->x = absoluteX;
+			lpPoint->y = absoluteY;
+		}
+		else
+		{
+			lpPoint->x = fakeX;
+			lpPoint->y = fakeY;
+		}
+
 		LeaveCriticalSection(&mcs);
 		//mxy.unlock();
 		ClientToScreen(hWnd, lpPoint);
 		//*lpPoint = p;
+
+		if (enableLegacyInput && useAbsoluteCursorPos == FALSE)
+		{
+			double dt = difftime(time(NULL), timeSinceLastSetCursorPos);
+			if (dt > minTimeForAbs)
+			{
+				useAbsoluteCursorPos = TRUE;
+			}
+		}
+		
 	}
 	return true;
+}
+
+BOOL WINAPI SetCursorPos_Hook(int X, int Y)
+{
+	POINT p;
+	p.x = X;
+	p.y = Y;
+
+	ScreenToClient(hWnd, &p);
+
+	EnterCriticalSection(&mcs);
+	fakeX = p.x;
+	fakeY = p.y;
+	LeaveCriticalSection(&mcs);
+
+	if (enableLegacyInput)
+	{
+		time(&timeSinceLastSetCursorPos);
+		useAbsoluteCursorPos = FALSE;
+	}
+
+	return TRUE;
 }
 
 HWND WINAPI GetForegroundWindow_Hook()
@@ -156,21 +205,7 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 }
 #endif
 
-BOOL WINAPI SetCursorPos_Hook(int X, int Y)
-{
-	POINT p;
-	p.x = X;
-	p.y = Y;
 
-	ScreenToClient(hWnd, &p);
-
-	EnterCriticalSection(&mcs);
-	x = p.x;
-	y = p.y;
-	LeaveCriticalSection(&mcs);
-
-	return TRUE;
-}
 
 BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize)
 {
@@ -236,17 +271,31 @@ void startPipeListen()
 
 			switch (buffer[0])
 			{
-				case 0x01:
+				case 0x01://Add delta cursor pos
 				{
 					//mxy.lock();
 					EnterCriticalSection(&mcs);
-					x += param1;
-					y += param2;
+					fakeX += param1;
+					fakeY += param2;
 					LeaveCriticalSection(&mcs);
 					//mxy.unlock();
 					break;
 				}
-				case 0x02:
+				case 0x04://Set absolute cursor pos
+				{
+					EnterCriticalSection(&mcs);
+					absoluteX = param1;
+					absoluteY = param2;
+
+					/*if (useAbsoluteCursorPos == TRUE)//TODO: good or bad?
+					{
+						fakeX = absoluteX;
+						fakeY = absoluteY;
+					}*/
+
+					LeaveCriticalSection(&mcs);
+				}
+				case 0x02://Set VKey
 				{
 					UINT16 shift = (1 << getBitShiftForVKey(param1));
 					if (param2 == 0)//Button up
@@ -259,7 +308,7 @@ void startPipeListen()
 					}
 					break;
 				}
-				case 0x03:
+				case 0x03://Close named pipe
 				{
 					std::cout << "Received pipe closed message. Closing pipe..." << endl;
 					return;
@@ -405,6 +454,17 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 		}
 	}
 
+	if (enableLegacyInput && Msg == WM_MOUSEMOVE)
+	{
+		if (useAbsoluteCursorPos && ((int)_wParam & 0b10000000) > 0)
+			return CallNextHookEx(NULL, code, wParam, lParam);
+		else
+		{
+			pMsg->message = WM_NULL;
+			return blockRet;
+		}
+	}
+
 	return CallNextHookEx(NULL, code, wParam, lParam);
 }
 
@@ -490,7 +550,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		filterMouseMessages = userData.HookCallWindowProcW;
 		//if (filterRawInput || filterMouseMessages)	installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
 		
-		if (filterRawInput || filterMouseMessages)
+		if (filterRawInput || filterMouseMessages || enableLegacyInput)
 		{
 			HHOOK hhook = SetWindowsHookEx(WH_GETMESSAGE, CallMsgProc, DllHandle, 0);
 			std::cout << "hhook = " << hhook << ", GetLastError=" << GetLastError() << endl;

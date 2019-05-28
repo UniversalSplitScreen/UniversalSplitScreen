@@ -266,7 +266,10 @@ namespace UniversalSplitScreen.RawInput
 								//	window.HooksCPPNamedPipe?.WriteMessage(0x01, mouseVec.x, mouseVec.y);
 
 								if (Options.CurrentOptions.Hook_GetCursorPos)
+								{
 									window.HooksCPPNamedPipe?.WriteMessage(0x01, deltaX, deltaY);
+									window.HooksCPPNamedPipe?.WriteMessage(0x04, mouseVec.x, mouseVec.y);
+								}
 
 								//Logger.WriteLine($"MOUSE. flags={mouse.usFlags}, X={mouseVec.x}, y={mouseVec.y}, buttonFlags={mouse.usButtonFlags} device pointer = {rawBuffer.header.hDevice}");
 
