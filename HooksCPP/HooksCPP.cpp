@@ -20,10 +20,11 @@ string _ipcChannelName;
 int x;
 int y;
 std::mutex mxy;
+CRITICAL_SECTION mcs;
 
 UINT16 vkey_state;
 int controllerIndex = 0;
-int allowedMouseHandle = 0;
+HANDLE allowedMouseHandle = 0;
 
 bool filterRawInput;
 bool filterMouseMessages;
@@ -33,10 +34,12 @@ BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 	if (lpPoint)
 	{
 		//POINT p = POINT();
-		mxy.lock();
+		//mxy.lock();
+		EnterCriticalSection(&mcs);
 		lpPoint->x = x;
 		lpPoint->y = y;
-		mxy.unlock();
+		LeaveCriticalSection(&mcs);
+		//mxy.unlock();
 		ClientToScreen(hWnd, lpPoint);
 		//*lpPoint = p;
 	}
@@ -85,6 +88,7 @@ SHORT WINAPI GetKeyState_Hook(int nVirtKey)
 	}
 }
 
+#if FALSE
 LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	/*ofstream logging;
@@ -150,6 +154,7 @@ LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, W
 
 	return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
 }
+#endif
 
 BOOL WINAPI SetCursorPos_Hook(int X, int Y)
 {
@@ -159,8 +164,10 @@ BOOL WINAPI SetCursorPos_Hook(int X, int Y)
 
 	ScreenToClient(hWnd, &p);
 
+	EnterCriticalSection(&mcs);
 	x = p.x;
 	y = p.y;
+	LeaveCriticalSection(&mcs);
 
 	return TRUE;
 }
@@ -231,10 +238,12 @@ void startPipeListen()
 			{
 				case 0x01:
 				{
-					mxy.lock();
+					//mxy.lock();
+					EnterCriticalSection(&mcs);
 					x = param1;
 					y = param2;
-					mxy.unlock();
+					LeaveCriticalSection(&mcs);
+					//mxy.unlock();
 					break;
 				}
 				case 0x02:
@@ -325,15 +334,16 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 	//LPARAM _lParam = pCwp->lParam;
 	//WPARAM _wParam = pCwp->wParam;
 
-	LRESULT blockRet = 0;
+	const LRESULT blockRet = 0;
 
 	if ((filterRawInput) && (Msg == WM_INPUT) && (allowedMouseHandle != 0))
 	{
-		UINT dwSize;
-		if (GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == 0)
+		UINT dwSize = sizeof(RAWINPUTHEADER);
+		//if (GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == 0)
 		{
+			RAWINPUT raw[sizeof(RAWINPUTHEADER)];
 			//static RAWINPUT raw[sizeof(RAWINPUTHEADER)];
-			register RAWINPUT raw[sizeof(RAWINPUTHEADER)];
+			//register RAWINPUT raw[sizeof(RAWINPUTHEADER)];
 
 			if (GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, raw, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
 			{
@@ -344,7 +354,7 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 						logging << "rhid = " << (raw->header.hDevice) << endl;
 						logging.close();*/
 
-					if (raw->header.hDevice == (HANDLE)allowedMouseHandle)
+					if (raw->header.hDevice == allowedMouseHandle)
 					{
 						/*std::ofstream logging;
 						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
@@ -363,8 +373,10 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 						logging.close();*/
 						//cout << "block " << (raw->header.hDevice) << endl;
 						//pCwp->message = WM_NULL;
-							pMsg->message = WM_NULL;
-						return blockRet;
+
+						pMsg->message = WM_NULL;
+						//return blockRet;
+						return CallNextHookEx(NULL, code, wParam, lParam);//TODO: unecessary?
 					}
 				}
 			}
@@ -445,6 +457,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 	logging.close();*/
 
+	InitializeCriticalSection(&mcs);
+
 	if (inRemoteInfo->UserDataSize == sizeof(UserData))
 	{
 		//Get UserData
@@ -460,7 +474,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		controllerIndex = userData.controllerIndex;
 		std::cout << "Received controller index: " << controllerIndex << endl;
 
-		allowedMouseHandle = userData.allowedMouseHandle;
+		allowedMouseHandle = (HANDLE)userData.allowedMouseHandle;
 		std::cout << "Allowed mouse handle: " << allowedMouseHandle << endl;
 		std::cout << "Allowed mouse (HANDLE)handle: " << (HANDLE)allowedMouseHandle << endl;
 		
