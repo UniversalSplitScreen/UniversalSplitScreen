@@ -24,7 +24,7 @@ int fakeY;
 int absoluteX;
 int absoluteY;
 
-BOOL useAbsoluteCursorPos = FALSE;
+BOOL useAbsoluteCursorPos = TRUE;
 time_t timeSinceLastSetCursorPos;//TODO: make a config value
 const double minTimeForAbs = 0.5;//TODO: test with more values
 
@@ -63,7 +63,7 @@ BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 		if (enableLegacyInput && useAbsoluteCursorPos == FALSE)
 		{
 			double dt = difftime(time(NULL), timeSinceLastSetCursorPos);
-			if (dt > minTimeForAbs)
+			if (dt >= minTimeForAbs)
 			{
 				useAbsoluteCursorPos = TRUE;
 			}
