@@ -27,8 +27,8 @@ int absoluteY;
 
 bool enableLegacyInput = true;
 BOOL useAbsoluteCursorPos = TRUE;
-time_t timeSinceLastSetCursorPos;//TODO: make a config value
-const double minTimeForAbs = 0.5;//TODO: test with more values
+time_t timeSinceLastSetCursorPos;
+const double minTimeForAbs = 0.5;
 
 UINT16 vkey_state;
 int controllerIndex = 0;
@@ -41,8 +41,6 @@ BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 {
 	if (lpPoint)
 	{
-		//POINT p = POINT();
-		//mxy.lock();
 		EnterCriticalSection(&mcs);
 		if ((!enableLegacyInput) || useAbsoluteCursorPos == TRUE)
 		{
@@ -56,9 +54,7 @@ BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 		}
 
 		LeaveCriticalSection(&mcs);
-		//mxy.unlock();
 		ClientToScreen(hWnd, lpPoint);
-		//*lpPoint = p;
 
 		if (enableLegacyInput && useAbsoluteCursorPos == FALSE)
 		{
@@ -137,76 +133,6 @@ SHORT WINAPI GetKeyState_Hook(int nVirtKey)
 	}
 }
 
-#if FALSE
-LRESULT WINAPI CallWindowProc_Hook(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
-{
-	/*ofstream logging;
-	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-	logging << "Received msg = "<< Msg << endl;
-	logging.close();*/
-
-	/*std::ofstream logging;
-	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-	logging << "windowProc\n";
-	logging.close();*/
-
-	if ((filterRawInput) && (Msg == WM_INPUT) && (allowedMouseHandle != 0))
-	{
-		UINT dwSize;
-		if (GetRawInputData((HRAWINPUT)lParam, RID_HEADER, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == 0)
-		{
-			//static RAWINPUT raw[sizeof(RAWINPUTHEADER)];
-			register RAWINPUT raw[sizeof(RAWINPUTHEADER)];
-
-			if (GetRawInputData((HRAWINPUT)lParam, RID_HEADER, raw, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
-			{
-				if (raw->header.dwType == RIM_TYPEMOUSE)
-				{
-					if (raw->header.hDevice == (HANDLE)allowedMouseHandle)
-					{
-						std::ofstream logging;
-						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-						logging << "Pass rhid = " << (raw->header.hDevice) << endl;
-						logging.close();
-						return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
-					}
-					else
-					{
-						std::ofstream logging;
-						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-						logging << "Block rhid = "<< (raw->header.hDevice) << endl;
-						logging.close();
-						return 0;
-					}
-				}
-			}
-		}
-	}
-
-	//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
-	if (filterMouseMessages)
-	{
-		if (Msg == WM_MOUSEMOVE && ((int)wParam & 0b10000000) > 0)
-			return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
-
-		// || Msg == 0x00FF
-		else if ((Msg >= WM_XBUTTONDOWN && Msg <= WM_XBUTTONDBLCLK) || Msg == WM_MOUSEMOVE || Msg == WM_MOUSEACTIVATE || Msg == WM_MOUSEHOVER || Msg == WM_MOUSELEAVE || Msg == WM_MOUSEWHEEL || Msg == WM_SETCURSOR)//Other mouse events. 
-			return 0;
-		else
-		{
-			if (Msg == WM_ACTIVATE) //0x0006 is WM_ACTIVATE, which resets the mouse position for starbound [citation needed]
-				return CallWindowProc(lpPrevWndFunc, hWnd, Msg, 1, 0);
-			else
-				return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
-		}
-	}
-
-	return CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
-}
-#endif
-
-
-
 BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize)
 {
 	return true;
@@ -273,12 +199,10 @@ void startPipeListen()
 			{
 				case 0x01://Add delta cursor pos
 				{
-					//mxy.lock();
 					EnterCriticalSection(&mcs);
 					fakeX += param1;
 					fakeY += param2;
 					LeaveCriticalSection(&mcs);
-					//mxy.unlock();
 					break;
 				}
 				case 0x04://Set absolute cursor pos
@@ -286,13 +210,6 @@ void startPipeListen()
 					EnterCriticalSection(&mcs);
 					absoluteX = param1;
 					absoluteY = param2;
-
-					/*if (useAbsoluteCursorPos == TRUE)//TODO: good or bad?
-					{
-						fakeX = absoluteX;
-						fakeY = absoluteY;
-					}*/
-
 					LeaveCriticalSection(&mcs);
 				}
 				case 0x02://Set VKey
@@ -369,21 +286,11 @@ struct UserData
 
 LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
-	/*std::ofstream logging;
-	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-	logging << "AA";
-	logging.close();*/
-
 	MSG* pMsg = (MSG*)lParam;
 	UINT Msg = pMsg->message;
 	LPARAM _lParam = pMsg->lParam;
 	WPARAM _wParam = pMsg->wParam;
-
-	//CWPSTRUCT* pCwp = (CWPSTRUCT*)lParam;
-	//UINT Msg = pCwp->message;
-	//LPARAM _lParam = pCwp->lParam;
-	//WPARAM _wParam = pCwp->wParam;
-
+	
 	const LRESULT blockRet = 0;
 
 	if ((filterRawInput) && (Msg == WM_INPUT) && (allowedMouseHandle != 0))
@@ -469,28 +376,6 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 	return CallNextHookEx(NULL, code, wParam, lParam);
 }
 
-#if FALSE
-BOOL CALLBACK EnumWindowsProc_SubToRawInput(_In_ HWND hwnd, _In_ LPARAM lParam)
-{
-	DWORD _pid;
-	GetWindowThreadProcessId(hwnd, &_pid);
-	if (_pid == (DWORD)lParam)
-	{
-		RAWINPUTDEVICE rid[1];
-		rid[0].usUsagePage = 0x01;
-		rid[0].usUsage = 0x02;
-		rid[0].dwFlags = RIDEV_INPUTSINK;
-		rid[0].hwndTarget = hwnd;
-
-		BOOL registerSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
-		std::cout << "Raw mouse input re-register: hwnd=" << hwnd << ", success: " << registerSuccess << endl;
-		//logging << "Raw mouse input re-register success: " << registerSuccess << endl;
-	}
-
-	return TRUE;
-}
-#endif
-
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
 	//Cout will go to the games console
@@ -500,24 +385,6 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 	
 	std::cout << "DllHandle=" << DllHandle << endl;
 	
-	/*std::ofstream logging;
-	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-	
-	HANDLE hProc = GetCurrentProcess();
-
-	logging << "before anything GetLastError=" << GetLastError() << endl;
-	
-	HANDLE xd = OpenMutexW(MAXIMUM_ALLOWED, TRUE, L"hl2_singleton_mutex");
-	logging << "handle=" << xd << ", err=" << GetLastError() << endl;
-	
-	BOOL asdf = DuplicateHandle(GetCurrentProcess(), xd, NULL, 0, 0, FALSE, DUPLICATE_CLOSE_SOURCE);
-	logging << "asdf=" << asdf << ", err=" << GetLastError() << endl;
-
-	BOOL qwer = CloseHandle(xd);
-	logging << "qwer=" << asdf << ", err=" << GetLastError() << endl;
-
-	logging.close();*/
-
 	InitializeCriticalSection(&mcs);
 
 	if (inRemoteInfo->UserDataSize == sizeof(UserData))
@@ -547,7 +414,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (userData.HookGetAsyncKeyState)			installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
 		if (userData.HookGetKeyState)				installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
 		if (userData.HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
-		//if (filterRawInput)							installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
+		//if (filterRawInput)						installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 
 		filterRawInput = userData.HookRegisterRawInputDevices;
 		filterMouseMessages = userData.HookCallWindowProcW;
