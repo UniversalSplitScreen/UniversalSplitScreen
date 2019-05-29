@@ -28,6 +28,7 @@ namespace UniversalSplitScreen.Core
 		public bool Hook_GetAsyncKeyState			{ get; set; } = false;
 		public bool Hook_GetKeyState				{ get; set; } = false;
 		public bool Hook_XInput						{ get; set; } = false;
+		public bool Hook_UseLegacyInput				{ get; set; } = false;
 
 		public ushort EndVKey						{ get; set; } = 0x23;
 

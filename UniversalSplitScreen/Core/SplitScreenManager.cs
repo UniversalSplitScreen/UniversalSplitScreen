@@ -143,7 +143,8 @@ namespace UniversalSplitScreen.Core
 					options.Hook_GetKeyState || 
 					options.Hook_GetAsyncKeyState ||
 					options.Hook_SetCursorPos ||
-					options.Hook_XInput)
+					options.Hook_XInput ||
+					options.Hook_UseLegacyInput)
 				{
 
 					
@@ -175,6 +176,7 @@ namespace UniversalSplitScreen.Core
 							needPipe ? pipe.pipeName : "USS_NO_PIPE_NEEDED",
 							window.ControllerIndex,
 							(int)window.MouseAttached,
+							options.Hook_UseLegacyInput,
 							options.Hook_GetCursorPos,
 							options.Hook_GetForegroundWindow,
 							options.Hook_GetAsyncKeyState,

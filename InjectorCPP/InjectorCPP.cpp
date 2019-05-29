@@ -25,9 +25,10 @@ struct UserData
 	bool HookRegisterRawInputDevices;
 	bool HookSetCursorPos;
 	bool HookXInput;
+	bool useLegacyInput;
 };
 
-extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, WCHAR* injectionDllPath64, HWND hWnd, char* ipcChannelName, bool controllerIndex, int allowedMouseHandle,
+extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, WCHAR* injectionDllPath64, HWND hWnd, char* ipcChannelName, bool controllerIndex, int allowedMouseHandle, bool useLegacyInput,
 	bool HookGetCursorPos, bool HookGetForegroundWindow, bool HookGetAsyncKeyState, bool HookGetKeyState, bool HookCallWindowProcW, bool HookRegisterRawInputDevices, bool HookSetCursorPos, bool HookXInput)
 {	
 	UserData* data = new UserData();
@@ -44,6 +45,7 @@ extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, 
 	data->HookRegisterRawInputDevices = HookRegisterRawInputDevices;
 	data->HookSetCursorPos = HookSetCursorPos;
 	data->HookXInput = HookXInput;
+	data->useLegacyInput = useLegacyInput;
 		
 	NTSTATUS nt = RhInjectLibrary(
 		pid,

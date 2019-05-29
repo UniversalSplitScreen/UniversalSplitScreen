@@ -16,6 +16,7 @@ namespace InjectorLoader
 					string ipcChannelName,
 					int controllerIndex,
 					int allowedMouseHandle,
+					bool useLegacyInput,
 					bool HookGetCursorPos,
 					bool HookGetForegroundWindow,
 					bool HookGetAsyncKeyState,
@@ -37,6 +38,7 @@ namespace InjectorLoader
 					string ipcChannelName,
 					int controllerIndex,
 					int allowedMouseHandle,
+					bool useLegacyInput,
 					bool HookGetCursorPos,
 					bool HookGetForegroundWindow,
 					bool HookGetAsyncKeyState,
@@ -49,9 +51,9 @@ namespace InjectorLoader
 
 		public static void Main(string[] args)
 		{
-			if (args.Length != 14)
+			if (args.Length != 15)
 			{
-				throw new ArgumentException("Need exactly 14 arguments");
+				throw new ArgumentException("Need exactly 15 arguments");
 			}
 
 			//Arguments
@@ -68,7 +70,9 @@ namespace InjectorLoader
 
 			int.TryParse(args[5], out int allowedMouseHandle);
 
-			int i = 6;
+			bool useLegacyInput = args[6].ToLower().Equals("true");
+
+			int i = 7;
 			bool nextBool() => args[i++].ToLower().Equals("true");
 
 			bool HookGetCursorPos = nextBool();
@@ -91,6 +95,7 @@ namespace InjectorLoader
 					ipcChannelName,
 					controllerIndex,
 					allowedMouseHandle,
+					useLegacyInput,
 					HookGetCursorPos,
 					HookGetForegroundWindow,
 					HookGetAsyncKeyState,
@@ -109,6 +114,7 @@ namespace InjectorLoader
 					ipcChannelName,
 					controllerIndex,
 					allowedMouseHandle,
+					useLegacyInput,
 					HookGetCursorPos,
 					HookGetForegroundWindow,
 					HookGetAsyncKeyState,

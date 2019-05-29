@@ -21,14 +21,14 @@ string _ipcChannelName;
 CRITICAL_SECTION mcs;
 int fakeX;
 int fakeY;
+
 int absoluteX;
 int absoluteY;
 
+bool enableLegacyInput = true;
 BOOL useAbsoluteCursorPos = TRUE;
 time_t timeSinceLastSetCursorPos;//TODO: make a config value
 const double minTimeForAbs = 0.5;//TODO: test with more values
-
-bool enableLegacyInput = true;
 
 UINT16 vkey_state;
 int controllerIndex = 0;
@@ -364,6 +364,7 @@ struct UserData
 	bool HookRegisterRawInputDevices;
 	bool HookSetCursorPos;
 	bool HookXInput;
+	bool useLegacyInput;
 };
 
 LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
@@ -536,8 +537,10 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 		allowedMouseHandle = (HANDLE)userData.allowedMouseHandle;
 		std::cout << "Allowed mouse handle: " << allowedMouseHandle << endl;
-		std::cout << "Allowed mouse (HANDLE)handle: " << (HANDLE)allowedMouseHandle << endl;
 		
+		enableLegacyInput = userData.useLegacyInput;
+		std::cout << "Use legacy input: " << enableLegacyInput << endl;
+
 		//Install hooks
 		if (userData.HookGetCursorPos)				installHook(TEXT("user32"),	"GetCursorPos",				GetCursorPos_Hook);
 		if (userData.HookGetForegroundWindow)		installHook(TEXT("user32"),	"GetForegroundWindow",		GetForegroundWindow_Hook);
