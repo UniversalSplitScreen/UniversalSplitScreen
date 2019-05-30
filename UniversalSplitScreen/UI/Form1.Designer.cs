@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -35,7 +36,9 @@
 			this.stopButton = new System.Windows.Forms.Button();
 			this.resetAllButton = new System.Windows.Forms.Button();
 			this.activeWindowPanel = new System.Windows.Forms.Panel();
+			this.GroupBox_Utilities = new System.Windows.Forms.GroupBox();
 			this.Button_UnlockSourceEngine = new System.Windows.Forms.Button();
+			this.Label_CurrentWindowTabInstructions = new System.Windows.Forms.Label();
 			this.GamePadGroupBox = new System.Windows.Forms.GroupBox();
 			this.ControllerHookNote = new System.Windows.Forms.Label();
 			this.ControllerIndexLabel = new System.Windows.Forms.Label();
@@ -76,6 +79,7 @@
 			this.RefCheckbox_SendRawMouseInput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.endButtonSetter = new System.Windows.Forms.Button();
 			this.hooksBox = new System.Windows.Forms.GroupBox();
+			this.RefCheckbox_Hook_UseLegacyInput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_XInput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_SetCursorPos = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_GetKeyState = new UniversalSplitScreen.UI.RefCheckbox();
@@ -102,10 +106,11 @@
 			this.GroupBoxLicense = new System.Windows.Forms.GroupBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this.WebLinkWebsite = new UniversalSplitScreen.UI.WebLinkLabel();
-			this.RefCheckbox_Hook_UseLegacyInput = new UniversalSplitScreen.UI.RefCheckbox();
+			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
+			this.GroupBox_Utilities.SuspendLayout();
 			this.GamePadGroupBox.SuspendLayout();
 			this.windowTitleBox.SuspendLayout();
 			this.keyboardBox.SuspendLayout();
@@ -185,7 +190,8 @@
 			// activeWindowPanel
 			// 
 			this.activeWindowPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.activeWindowPanel.Controls.Add(this.Button_UnlockSourceEngine);
+			this.activeWindowPanel.Controls.Add(this.GroupBox_Utilities);
+			this.activeWindowPanel.Controls.Add(this.Label_CurrentWindowTabInstructions);
 			this.activeWindowPanel.Controls.Add(this.GamePadGroupBox);
 			this.activeWindowPanel.Controls.Add(this.windowTitleBox);
 			this.activeWindowPanel.Controls.Add(this.keyboardBox);
@@ -196,24 +202,45 @@
 			this.activeWindowPanel.Size = new System.Drawing.Size(759, 359);
 			this.activeWindowPanel.TabIndex = 7;
 			// 
+			// GroupBox_Utilities
+			// 
+			this.GroupBox_Utilities.Controls.Add(this.Button_UnlockSourceEngine);
+			this.GroupBox_Utilities.Location = new System.Drawing.Point(3, 214);
+			this.GroupBox_Utilities.Name = "GroupBox_Utilities";
+			this.GroupBox_Utilities.Size = new System.Drawing.Size(247, 51);
+			this.GroupBox_Utilities.TabIndex = 10;
+			this.GroupBox_Utilities.TabStop = false;
+			this.GroupBox_Utilities.Text = "Window utilities";
+			// 
 			// Button_UnlockSourceEngine
 			// 
-			this.Button_UnlockSourceEngine.Location = new System.Drawing.Point(4, 331);
+			this.Button_UnlockSourceEngine.Location = new System.Drawing.Point(6, 19);
 			this.Button_UnlockSourceEngine.Name = "Button_UnlockSourceEngine";
 			this.Button_UnlockSourceEngine.Size = new System.Drawing.Size(234, 23);
 			this.Button_UnlockSourceEngine.TabIndex = 8;
 			this.Button_UnlockSourceEngine.Text = "Unlock Source engine for a new instance";
+			this.toolTip1.SetToolTip(this.Button_UnlockSourceEngine, resources.GetString("Button_UnlockSourceEngine.ToolTip"));
 			this.Button_UnlockSourceEngine.UseVisualStyleBackColor = true;
 			this.Button_UnlockSourceEngine.Click += new System.EventHandler(this.Button_UnlockSourceEngine_Click);
+			// 
+			// Label_CurrentWindowTabInstructions
+			// 
+			this.Label_CurrentWindowTabInstructions.AutoSize = true;
+			this.Label_CurrentWindowTabInstructions.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.Label_CurrentWindowTabInstructions.Location = new System.Drawing.Point(4, 49);
+			this.Label_CurrentWindowTabInstructions.Name = "Label_CurrentWindowTabInstructions";
+			this.Label_CurrentWindowTabInstructions.Size = new System.Drawing.Size(426, 15);
+			this.Label_CurrentWindowTabInstructions.TabIndex = 9;
+			this.Label_CurrentWindowTabInstructions.Text = "Focus a game\'s window (e.g. by alt+tabbing) and setup its input devices here.";
 			// 
 			// GamePadGroupBox
 			// 
 			this.GamePadGroupBox.Controls.Add(this.ControllerHookNote);
 			this.GamePadGroupBox.Controls.Add(this.ControllerIndexLabel);
 			this.GamePadGroupBox.Controls.Add(this.ControllerIndexComboBox);
-			this.GamePadGroupBox.Location = new System.Drawing.Point(415, 48);
+			this.GamePadGroupBox.Location = new System.Drawing.Point(415, 76);
 			this.GamePadGroupBox.Name = "GamePadGroupBox";
-			this.GamePadGroupBox.Size = new System.Drawing.Size(210, 126);
+			this.GamePadGroupBox.Size = new System.Drawing.Size(210, 132);
 			this.GamePadGroupBox.TabIndex = 7;
 			this.GamePadGroupBox.TabStop = false;
 			this.GamePadGroupBox.Text = "Gamepad/Controller/Joystick";
@@ -277,7 +304,7 @@
 			this.keyboardBox.Controls.Add(this.keyboardResetButton);
 			this.keyboardBox.Controls.Add(this.flowLayoutPanel2);
 			this.keyboardBox.Controls.Add(this.keyboardSetTextbox);
-			this.keyboardBox.Location = new System.Drawing.Point(209, 48);
+			this.keyboardBox.Location = new System.Drawing.Point(209, 76);
 			this.keyboardBox.Name = "keyboardBox";
 			this.keyboardBox.Size = new System.Drawing.Size(200, 132);
 			this.keyboardBox.TabIndex = 6;
@@ -345,7 +372,7 @@
 			this.mouseBox.Controls.Add(this.mouseResetButton);
 			this.mouseBox.Controls.Add(this.attachMouseButton);
 			this.mouseBox.Controls.Add(this.flowLayoutPanel1);
-			this.mouseBox.Location = new System.Drawing.Point(3, 48);
+			this.mouseBox.Location = new System.Drawing.Point(3, 76);
 			this.mouseBox.Name = "mouseBox";
 			this.mouseBox.Size = new System.Drawing.Size(200, 132);
 			this.mouseBox.TabIndex = 4;
@@ -525,6 +552,8 @@
 			this.RefCheckbox_SendScrollwheel.Size = new System.Drawing.Size(109, 17);
 			this.RefCheckbox_SendScrollwheel.TabIndex = 20;
 			this.RefCheckbox_SendScrollwheel.Text = "Send scroll wheel";
+			this.toolTip1.SetToolTip(this.RefCheckbox_SendScrollwheel, "Sends scroll wheel messages to the game.\r\nThis can conflict with some games.\r\nUse" +
+        " this if scroll wheel input is not working.");
 			this.RefCheckbox_SendScrollwheel.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_DrawMouse
@@ -536,6 +565,7 @@
 			this.RefCheckbox_DrawMouse.Size = new System.Drawing.Size(85, 17);
 			this.RefCheckbox_DrawMouse.TabIndex = 19;
 			this.RefCheckbox_DrawMouse.Text = "Draw mouse";
+			this.toolTip1.SetToolTip(this.RefCheckbox_DrawMouse, resources.GetString("RefCheckbox_DrawMouse.ToolTip"));
 			this.RefCheckbox_DrawMouse.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_RefreshWindowBoundsOnMouseClick
@@ -547,6 +577,9 @@
 			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.Size = new System.Drawing.Size(214, 17);
 			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.TabIndex = 18;
 			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.Text = "Refresh window bounds on mouse click";
+			this.toolTip1.SetToolTip(this.RefCheckbox_RefreshWindowBoundsOnMouseClick, "This program will bound the fake mouse cursor to the window bounds of the game.\r\n" +
+        "If you resize the game window, the window bounds are only refreshed with this op" +
+        "tion.");
 			this.RefCheckbox_RefreshWindowBoundsOnMouseClick.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_SendFakeWindowFocusMessages
@@ -558,6 +591,8 @@
 			this.RefCheckbox_SendFakeWindowFocusMessages.Size = new System.Drawing.Size(193, 17);
 			this.RefCheckbox_SendFakeWindowFocusMessages.TabIndex = 17;
 			this.RefCheckbox_SendFakeWindowFocusMessages.Text = "Send fake window focus messages";
+			this.toolTip1.SetToolTip(this.RefCheckbox_SendFakeWindowFocusMessages, "Similar to send fake window activate messages. \r\nTry this if the other doesn\'t wo" +
+        "rk.\r\nVery few games will be affected by this.");
 			this.RefCheckbox_SendFakeWindowFocusMessages.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_SendFakeWindowActivateMessages
@@ -569,6 +604,9 @@
 			this.RefCheckbox_SendFakeWindowActivateMessages.Size = new System.Drawing.Size(205, 17);
 			this.RefCheckbox_SendFakeWindowActivateMessages.TabIndex = 16;
 			this.RefCheckbox_SendFakeWindowActivateMessages.Text = "Send fake window activate messages";
+			this.toolTip1.SetToolTip(this.RefCheckbox_SendFakeWindowActivateMessages, "Repeatedly sends windows activate messages to the game.\r\nThis can trick the game " +
+        "into thinking it is the foreground window,\r\nwhich may mean it will start listeni" +
+        "ng for input.");
 			this.RefCheckbox_SendFakeWindowActivateMessages.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_SendNormalKeyboardInput
@@ -580,6 +618,8 @@
 			this.RefCheckbox_SendNormalKeyboardInput.Size = new System.Drawing.Size(158, 17);
 			this.RefCheckbox_SendNormalKeyboardInput.TabIndex = 15;
 			this.RefCheckbox_SendNormalKeyboardInput.Text = "Send normal keyboard input";
+			this.toolTip1.SetToolTip(this.RefCheckbox_SendNormalKeyboardInput, "Sends normal (not raw input) mouse messages to the target game.\r\nRequired for key" +
+        "board input to function in most games.");
 			this.RefCheckbox_SendNormalKeyboardInput.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_SendNormalMouseInput
@@ -591,6 +631,9 @@
 			this.RefCheckbox_SendNormalMouseInput.Size = new System.Drawing.Size(145, 17);
 			this.RefCheckbox_SendNormalMouseInput.TabIndex = 14;
 			this.RefCheckbox_SendNormalMouseInput.Text = "Send normal mouse input";
+			this.toolTip1.SetToolTip(this.RefCheckbox_SendNormalMouseInput, "Sends mouse input messages to the target game.\r\nUse this if a game is not respond" +
+        "ing to mouse input in menus.\r\nThis is also required in most 2D games, or any gam" +
+        "e that uses the windows mouse cursor.");
 			this.RefCheckbox_SendNormalMouseInput.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_SendRawKeyboardInput
@@ -602,6 +645,7 @@
 			this.RefCheckbox_SendRawKeyboardInput.Size = new System.Drawing.Size(144, 17);
 			this.RefCheckbox_SendRawKeyboardInput.TabIndex = 13;
 			this.RefCheckbox_SendRawKeyboardInput.Text = "Send raw keyboard input";
+			this.toolTip1.SetToolTip(this.RefCheckbox_SendRawKeyboardInput, resources.GetString("RefCheckbox_SendRawKeyboardInput.ToolTip"));
 			this.RefCheckbox_SendRawKeyboardInput.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_SendRawMouseInput
@@ -613,6 +657,7 @@
 			this.RefCheckbox_SendRawMouseInput.Size = new System.Drawing.Size(131, 17);
 			this.RefCheckbox_SendRawMouseInput.TabIndex = 12;
 			this.RefCheckbox_SendRawMouseInput.Text = "Send raw mouse input";
+			this.toolTip1.SetToolTip(this.RefCheckbox_SendRawMouseInput, resources.GetString("RefCheckbox_SendRawMouseInput.ToolTip"));
 			this.RefCheckbox_SendRawMouseInput.UseVisualStyleBackColor = true;
 			// 
 			// endButtonSetter
@@ -622,6 +667,8 @@
 			this.endButtonSetter.Size = new System.Drawing.Size(175, 23);
 			this.endButtonSetter.TabIndex = 11;
 			this.endButtonSetter.Text = "Stop button = End";
+			this.toolTip1.SetToolTip(this.endButtonSetter, "Split screen will end when this key is pressed.\r\nChange this from end if you use " +
+        "the end key in the game\'s controls.");
 			this.endButtonSetter.UseVisualStyleBackColor = true;
 			this.endButtonSetter.Click += new System.EventHandler(this.endButtonSetter_Click);
 			// 
@@ -644,6 +691,18 @@
 			this.hooksBox.TabStop = false;
 			this.hooksBox.Text = "Hooks";
 			// 
+			// RefCheckbox_Hook_UseLegacyInput
+			// 
+			this.RefCheckbox_Hook_UseLegacyInput.AutoSize = true;
+			this.RefCheckbox_Hook_UseLegacyInput.Location = new System.Drawing.Point(9, 186);
+			this.RefCheckbox_Hook_UseLegacyInput.Name = "RefCheckbox_Hook_UseLegacyInput";
+			this.RefCheckbox_Hook_UseLegacyInput.RefType = null;
+			this.RefCheckbox_Hook_UseLegacyInput.Size = new System.Drawing.Size(194, 17);
+			this.RefCheckbox_Hook_UseLegacyInput.TabIndex = 22;
+			this.RefCheckbox_Hook_UseLegacyInput.Text = "Use legacy input (see requirements)";
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_UseLegacyInput, resources.GetString("RefCheckbox_Hook_UseLegacyInput.ToolTip"));
+			this.RefCheckbox_Hook_UseLegacyInput.UseVisualStyleBackColor = true;
+			// 
 			// RefCheckbox_Hook_XInput
 			// 
 			this.RefCheckbox_Hook_XInput.AutoSize = true;
@@ -653,6 +712,8 @@
 			this.RefCheckbox_Hook_XInput.Size = new System.Drawing.Size(153, 17);
 			this.RefCheckbox_Hook_XInput.TabIndex = 21;
 			this.RefCheckbox_Hook_XInput.Text = "Hook XInput for gamepads";
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_XInput, "Redirects controller input to the selected controller index.\r\nThis hook is requir" +
+        "ed if you want to use gamepad/controller input.");
 			this.RefCheckbox_Hook_XInput.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_Hook_SetCursorPos
@@ -664,6 +725,8 @@
 			this.RefCheckbox_Hook_SetCursorPos.Size = new System.Drawing.Size(119, 17);
 			this.RefCheckbox_Hook_SetCursorPos.TabIndex = 20;
 			this.RefCheckbox_Hook_SetCursorPos.Text = "Hook SetCursorPos";
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_SetCursorPos, "Overloads the SetCursorPos function, so a game can only move its fake cursor and " +
+        "not the real cursor.");
 			this.RefCheckbox_Hook_SetCursorPos.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_Hook_GetKeyState
@@ -675,6 +738,8 @@
 			this.RefCheckbox_Hook_GetKeyState.Size = new System.Drawing.Size(191, 17);
 			this.RefCheckbox_Hook_GetKeyState.TabIndex = 20;
 			this.RefCheckbox_Hook_GetKeyState.Text = "Hook GetKeyState for WASD keys";
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_GetKeyState, "This hook will fix a bug in Borderlands 2 where the player would seemingly random" +
+        "ly stop moving.");
 			this.RefCheckbox_Hook_GetKeyState.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_Hook_GetAsyncKeyState
@@ -686,6 +751,8 @@
 			this.RefCheckbox_Hook_GetAsyncKeyState.Size = new System.Drawing.Size(144, 17);
 			this.RefCheckbox_Hook_GetAsyncKeyState.TabIndex = 20;
 			this.RefCheckbox_Hook_GetAsyncKeyState.Text = "Hook GetAsyncKeyState";
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_GetAsyncKeyState, "This hook will overload GetAsyncKeyState for mouse buttons.\r\nUse this if a game i" +
+        "s not responding to mouse buttons.");
 			this.RefCheckbox_Hook_GetAsyncKeyState.UseVisualStyleBackColor = true;
 			this.RefCheckbox_Hook_GetAsyncKeyState.CheckedChanged += new System.EventHandler(this.RefCheckbox_Hook_GetAsyncKeyState_CheckedChanged);
 			// 
@@ -698,6 +765,8 @@
 			this.RefCheckbox_Hook_GetCursorPos.Size = new System.Drawing.Size(120, 17);
 			this.RefCheckbox_Hook_GetCursorPos.TabIndex = 20;
 			this.RefCheckbox_Hook_GetCursorPos.Text = "Hook GetCursorPos";
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_GetCursorPos, "Tricks the game into using the fake mouse cursor if it calls GetCursorPos.\r\nUse t" +
+        "his if mouse input is not working correctly.");
 			this.RefCheckbox_Hook_GetCursorPos.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_Hook_GetForegroundWindow
@@ -709,6 +778,8 @@
 			this.RefCheckbox_Hook_GetForegroundWindow.Size = new System.Drawing.Size(165, 17);
 			this.RefCheckbox_Hook_GetForegroundWindow.TabIndex = 20;
 			this.RefCheckbox_Hook_GetForegroundWindow.Text = "Hook GetForegroundWindow";
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_GetForegroundWindow, "Tricks the game into thinking it is the foreground window.\r\nUse this if a game is" +
+        " not responding to input.");
 			this.RefCheckbox_Hook_GetForegroundWindow.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_Hook_FilterMouseInputMessages
@@ -720,6 +791,8 @@
 			this.RefCheckbox_Hook_FilterMouseInputMessages.Size = new System.Drawing.Size(228, 17);
 			this.RefCheckbox_Hook_FilterMouseInputMessages.TabIndex = 20;
 			this.RefCheckbox_Hook_FilterMouseInputMessages.Text = "Filter mouse input messages from Windows";
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_FilterMouseInputMessages, "Filters out mouse input messages sent by Windows, but not by this program.\r\nUse t" +
+        "his if a game is not tricked into using the fake mouse cursor.");
 			this.RefCheckbox_Hook_FilterMouseInputMessages.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_Hook_FilterRawInput
@@ -731,6 +804,8 @@
 			this.RefCheckbox_Hook_FilterRawInput.Size = new System.Drawing.Size(214, 17);
 			this.RefCheckbox_Hook_FilterRawInput.TabIndex = 20;
 			this.RefCheckbox_Hook_FilterRawInput.Text = "Filter raw input messages from Windows";
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_FilterRawInput, "Filters raw mouse input so only one device is used.\r\nUse this if the game is resp" +
+        "onding to input from multiple mice.");
 			this.RefCheckbox_Hook_FilterRawInput.UseVisualStyleBackColor = true;
 			// 
 			// hooksWarningLabel
@@ -753,6 +828,8 @@
 			this.drawMouseEveryXmsLabel.Size = new System.Drawing.Size(164, 13);
 			this.drawMouseEveryXmsLabel.TabIndex = 8;
 			this.drawMouseEveryXmsLabel.Text = "Draw mouse every X milliseconds";
+			this.toolTip1.SetToolTip(this.drawMouseEveryXmsLabel, "If draw mouse is selected, the mouse is drawn every X milliseconds.\r\nA smaller va" +
+        "lue will mean the mouse is less flickery, but can be blurred.");
 			// 
 			// drawMouseEveryXmsField
 			// 
@@ -951,16 +1028,11 @@
 			this.WebLinkWebsite.Text = "Universal Split Screen website";
 			this.WebLinkWebsite.Url = "https://universalsplitscreen.github.io/";
 			// 
-			// RefCheckbox_Hook_UseLegacyInput
+			// toolTip1
 			// 
-			this.RefCheckbox_Hook_UseLegacyInput.AutoSize = true;
-			this.RefCheckbox_Hook_UseLegacyInput.Location = new System.Drawing.Point(9, 186);
-			this.RefCheckbox_Hook_UseLegacyInput.Name = "RefCheckbox_Hook_UseLegacyInput";
-			this.RefCheckbox_Hook_UseLegacyInput.RefType = null;
-			this.RefCheckbox_Hook_UseLegacyInput.Size = new System.Drawing.Size(194, 17);
-			this.RefCheckbox_Hook_UseLegacyInput.TabIndex = 22;
-			this.RefCheckbox_Hook_UseLegacyInput.Text = "Use legacy input (see requirements)";
-			this.RefCheckbox_Hook_UseLegacyInput.UseVisualStyleBackColor = true;
+			this.toolTip1.AutoPopDelay = 100000;
+			this.toolTip1.InitialDelay = 500;
+			this.toolTip1.ReshowDelay = 100;
 			// 
 			// Form1
 			// 
@@ -977,6 +1049,8 @@
 			this.tabControl1.ResumeLayout(false);
 			this.tabPage1.ResumeLayout(false);
 			this.activeWindowPanel.ResumeLayout(false);
+			this.activeWindowPanel.PerformLayout();
+			this.GroupBox_Utilities.ResumeLayout(false);
 			this.GamePadGroupBox.ResumeLayout(false);
 			this.GamePadGroupBox.PerformLayout();
 			this.windowTitleBox.ResumeLayout(false);
@@ -1085,5 +1159,8 @@
 		private System.Windows.Forms.GroupBox GroupBoxLicense;
 		private System.Windows.Forms.Label label1;
 		private RefCheckbox RefCheckbox_Hook_UseLegacyInput;
+		private System.Windows.Forms.ToolTip toolTip1;
+		private System.Windows.Forms.Label Label_CurrentWindowTabInstructions;
+		private System.Windows.Forms.GroupBox GroupBox_Utilities;
 	}
 }
