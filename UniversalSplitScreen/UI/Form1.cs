@@ -202,5 +202,10 @@ namespace UniversalSplitScreen.UI
 		{
 			Program.SplitScreenManager.UnlockSourceEngine();
 		}
+
+		private void Button_EnableWindowResize_Click(object sender, EventArgs e)
+		{
+			Program.SplitScreenManager.AllowWindowResize();
+		}
 	}
 }

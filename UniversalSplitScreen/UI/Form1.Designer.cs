@@ -107,6 +107,7 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.WebLinkWebsite = new UniversalSplitScreen.UI.WebLinkLabel();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this.Button_EnableWindowResize = new System.Windows.Forms.Button();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -204,10 +205,11 @@
 			// 
 			// GroupBox_Utilities
 			// 
+			this.GroupBox_Utilities.Controls.Add(this.Button_EnableWindowResize);
 			this.GroupBox_Utilities.Controls.Add(this.Button_UnlockSourceEngine);
 			this.GroupBox_Utilities.Location = new System.Drawing.Point(3, 214);
 			this.GroupBox_Utilities.Name = "GroupBox_Utilities";
-			this.GroupBox_Utilities.Size = new System.Drawing.Size(247, 51);
+			this.GroupBox_Utilities.Size = new System.Drawing.Size(245, 77);
 			this.GroupBox_Utilities.TabIndex = 10;
 			this.GroupBox_Utilities.TabStop = false;
 			this.GroupBox_Utilities.Text = "Window utilities";
@@ -1034,6 +1036,17 @@
 			this.toolTip1.InitialDelay = 500;
 			this.toolTip1.ReshowDelay = 100;
 			// 
+			// Button_EnableWindowResize
+			// 
+			this.Button_EnableWindowResize.Location = new System.Drawing.Point(6, 48);
+			this.Button_EnableWindowResize.Name = "Button_EnableWindowResize";
+			this.Button_EnableWindowResize.Size = new System.Drawing.Size(141, 23);
+			this.Button_EnableWindowResize.TabIndex = 11;
+			this.Button_EnableWindowResize.Text = "Enable window resizing";
+			this.toolTip1.SetToolTip(this.Button_EnableWindowResize, "Allows target window to be resized");
+			this.Button_EnableWindowResize.UseVisualStyleBackColor = true;
+			this.Button_EnableWindowResize.Click += new System.EventHandler(this.Button_EnableWindowResize_Click);
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1162,5 +1175,6 @@
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.Label Label_CurrentWindowTabInstructions;
 		private System.Windows.Forms.GroupBox GroupBox_Utilities;
+		private System.Windows.Forms.Button Button_EnableWindowResize;
 	}
 }
