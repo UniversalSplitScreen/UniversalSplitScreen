@@ -35,6 +35,11 @@ namespace UniversalSplitScreen
 				excArgs.SetObserved();
 			};
 
+			//ThreadPool.GetMaxThreads(out int workerThreads, out int completionPortThreads);
+			//Logger.WriteLine($"ThreadPool: max worker threads = {workerThreads}, completion port threads = {completionPortThreads}");
+			//bool smt = ThreadPool.SetMaxThreads(100 * workerThreads, 100 * completionPortThreads);
+			//Console.WriteLine($"SetMaxTheads*100 success = {smt}");
+
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
