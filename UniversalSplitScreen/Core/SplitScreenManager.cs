@@ -276,6 +276,16 @@ namespace UniversalSplitScreen.Core
 			WinApi.RefreshWindow(active_hWnd);
 		}
 
+		public void ToggleWindowBorders()
+		{
+			const int flip = 0x00C00000 | 0x00080000;//WS_BORDER | WS_SYSMENU
+
+			int x = (int)WinApi.GetWindowLongPtr32(active_hWnd, WinApi.GWL_STYLE);
+			x ^= flip;
+			WinApi.SetWindowLong32(active_hWnd, WinApi.GWL_STYLE, x);
+			WinApi.RefreshWindow(active_hWnd);
+		}
+
 		#region Set handles
 		public void SetMouseHandle(IntPtr mouse)
 		{

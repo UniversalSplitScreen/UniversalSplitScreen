@@ -207,5 +207,10 @@ namespace UniversalSplitScreen.UI
 		{
 			Program.SplitScreenManager.AllowWindowResize();
 		}
+
+		private void Button_ToggleWindowBorders_Click(object sender, EventArgs e)
+		{
+			Program.SplitScreenManager.ToggleWindowBorders();
+		}
 	}
 }
