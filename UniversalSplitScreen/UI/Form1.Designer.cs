@@ -37,6 +37,7 @@
 			this.resetAllButton = new System.Windows.Forms.Button();
 			this.activeWindowPanel = new System.Windows.Forms.Panel();
 			this.GroupBox_Utilities = new System.Windows.Forms.GroupBox();
+			this.Button_ToggleWindowBorders = new System.Windows.Forms.Button();
 			this.Button_EnableWindowResize = new System.Windows.Forms.Button();
 			this.Button_UnlockSourceEngine = new System.Windows.Forms.Button();
 			this.Label_CurrentWindowTabInstructions = new System.Windows.Forms.Label();
@@ -108,7 +109,6 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.WebLinkWebsite = new UniversalSplitScreen.UI.WebLinkLabel();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.Button_ToggleWindowBorders = new System.Windows.Forms.Button();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -215,6 +215,16 @@
 			this.GroupBox_Utilities.TabIndex = 10;
 			this.GroupBox_Utilities.TabStop = false;
 			this.GroupBox_Utilities.Text = "Window utilities";
+			// 
+			// Button_ToggleWindowBorders
+			// 
+			this.Button_ToggleWindowBorders.Location = new System.Drawing.Point(7, 78);
+			this.Button_ToggleWindowBorders.Name = "Button_ToggleWindowBorders";
+			this.Button_ToggleWindowBorders.Size = new System.Drawing.Size(140, 23);
+			this.Button_ToggleWindowBorders.TabIndex = 12;
+			this.Button_ToggleWindowBorders.Text = "Toggle window borders";
+			this.Button_ToggleWindowBorders.UseVisualStyleBackColor = true;
+			this.Button_ToggleWindowBorders.Click += new System.EventHandler(this.Button_ToggleWindowBorders_Click);
 			// 
 			// Button_EnableWindowResize
 			// 
@@ -1048,16 +1058,6 @@
 			this.toolTip1.AutoPopDelay = 100000;
 			this.toolTip1.InitialDelay = 500;
 			this.toolTip1.ReshowDelay = 100;
-			// 
-			// Button_ToggleWindowBorders
-			// 
-			this.Button_ToggleWindowBorders.Location = new System.Drawing.Point(7, 78);
-			this.Button_ToggleWindowBorders.Name = "Button_ToggleWindowBorders";
-			this.Button_ToggleWindowBorders.Size = new System.Drawing.Size(140, 23);
-			this.Button_ToggleWindowBorders.TabIndex = 12;
-			this.Button_ToggleWindowBorders.Text = "Toggle window borders";
-			this.Button_ToggleWindowBorders.UseVisualStyleBackColor = true;
-			this.Button_ToggleWindowBorders.Click += new System.EventHandler(this.Button_ToggleWindowBorders_Click);
 			// 
 			// Form1
 			// 

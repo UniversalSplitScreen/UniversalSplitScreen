@@ -128,7 +128,7 @@ If you target a game window and click this button, it will "unlock" it so you ca
     <value>This program will draw a "fake" mouse cursor over the game's mouse position.
 Use this if the game doesn't have its own mouse cursor image and relies on the Windows mouse cursor.
 The fake cursor will flicker a lot because the game keeps re-drawing over it. Use this only if necessary.
-</value>
+Enabling V-Sync in the game's options will reduce flickering significantly.</value>
   </data>
   <data name="RefCheckbox_SendRawKeyboardInput.ToolTip" xml:space="preserve">
     <value>Forwards any raw keyboard input messages from windows to the target game.
