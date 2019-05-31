@@ -15,7 +15,7 @@
   "Hook_GetForegroundWindow": false,
   "Hook_GetCursorPos": true,
   "Hook_SetCursorPos": false,
-  "Hook_GetAsyncKeyState": false,
+  "Hook_GetAsyncKeyState": true,
   "Hook_GetKeyState": false,
   "Hook_XInput": false,
   "EndVKey": 35
