@@ -42,10 +42,15 @@ namespace UniversalSplitScreen.Piping
 			clientConnected = true;
 			Logger.WriteLine($"Client connected to pipe {pipeName}");
 
+			bool sendDelta = Options.CurrentOptions.Hook_UseLegacyInput;
+
 			while (clientConnected)
 			{
 				xyResetEvent.WaitOne();
-				WriteMessageNow(0x01, toSendDeltaX, toSendDeltaY);
+				if (sendDelta)
+				{
+					WriteMessageNow(0x01, toSendDeltaX, toSendDeltaY);
+				}
 				WriteMessageNow(0x04, toSendAbsX, toSendAbsY);
 				xyResetEvent.Reset();
 				//Thread.Sleep()
