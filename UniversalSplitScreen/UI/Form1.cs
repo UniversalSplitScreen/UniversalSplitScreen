@@ -212,5 +212,10 @@ namespace UniversalSplitScreen.UI
 		{
 			Program.SplitScreenManager.ToggleWindowBorders();
 		}
+
+		private void CheckBox_Transparency_CheckedChanged(object sender, EventArgs e)
+		{
+			Program.Form.Opacity = CheckBox_Transparency.Checked ? 0.90 : 1.00;
+		}
 	}
 }
