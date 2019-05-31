@@ -41,19 +41,22 @@ namespace UniversalSplitScreen.Piping
 			pipeServer.WaitForConnection();
 			clientConnected = true;
 			Logger.WriteLine($"Client connected to pipe {pipeName}");
-
+			
 			bool sendDelta = Options.CurrentOptions.Hook_UseLegacyInput;
 
-			while (clientConnected)
+			if (sendDelta || Options.CurrentOptions.Hook_GetCursorPos)
 			{
-				xyResetEvent.WaitOne();
-				if (sendDelta)
+				while (clientConnected)
 				{
-					WriteMessageNow(0x01, toSendDeltaX, toSendDeltaY);
+					xyResetEvent.WaitOne();
+					if (sendDelta)
+					{
+						WriteMessageNow(0x01, toSendDeltaX, toSendDeltaY);
+					}
+					WriteMessageNow(0x04, toSendAbsX, toSendAbsY);
+					xyResetEvent.Reset();
+					//Thread.Sleep()
 				}
-				WriteMessageNow(0x04, toSendAbsX, toSendAbsY);
-				xyResetEvent.Reset();
-				//Thread.Sleep()
 			}
 		}
 
