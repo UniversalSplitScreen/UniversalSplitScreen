@@ -23,7 +23,14 @@ namespace UniversalSplitScreen.Core
 		public static void WriteLine(string msg)
 		{
 			Console.WriteLine(msg);
-			stream.Write(msg + "\r\n");//TODO: will crash if USS is already running
+			try
+			{
+				stream.Write(msg + "\r\n");//TODO: will crash if USS is already running
+			}
+			catch (Exception)
+			{
+
+			}
 		}
 
 		public static void WriteLine(object obj) => WriteLine(obj.ToString());

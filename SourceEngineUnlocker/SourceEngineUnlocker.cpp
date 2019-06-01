@@ -89,7 +89,6 @@ DWORD GetHandleName(HANDLE h_File, CString* ps_NTPath, objectinfo::MOBJECT_INFOR
 typedef NTSTATUS(NTAPI* lpNtDuplicateObject)(HANDLE SourceProcessHandle, HANDLE SourceHandle, HANDLE TargetProcessHandle, PHANDLE TargetHandle, ACCESS_MASK DesiredAccess, ULONG Attributes, ULONG Options);
 static lpNtDuplicateObject NtDuplicateObject = nullptr;
 
-//TODO: NEEDS CREDIT IN ABOUT PAGE
 //https://www.codeguru.com/cpp/w-p/system/processesmodules/article.php/c2827/Examine-Information-on-Windows-NT-System-Level-Primitives.htm
 int Close(DWORD m_processId)
 {
