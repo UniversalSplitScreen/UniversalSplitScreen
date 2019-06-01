@@ -37,6 +37,8 @@ HANDLE allowedMouseHandle = 0;
 bool filterRawInput;
 bool filterMouseMessages;
 
+bool pipeClosed = false;
+
 BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 {
 	if (lpPoint)
@@ -211,6 +213,7 @@ void startPipeListen()
 					absoluteX = param1;
 					absoluteY = param2;
 					LeaveCriticalSection(&mcs);
+					break;
 				}
 				case 0x02://Set VKey
 				{
@@ -228,7 +231,13 @@ void startPipeListen()
 				case 0x03://Close named pipe
 				{
 					std::cout << "Received pipe closed message. Closing pipe..." << endl;
+					pipeClosed = true;
 					return;
+				}
+				case 0x05://Focus desktop
+				{
+					SetForegroundWindow(GetDesktopWindow());
+					break;
 				}
 				default:
 				{

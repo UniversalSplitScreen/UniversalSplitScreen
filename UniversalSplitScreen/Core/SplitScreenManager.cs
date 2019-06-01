@@ -147,8 +147,9 @@ namespace UniversalSplitScreen.Core
 					options.Hook_UseLegacyInput)
 				{
 
-					
-					bool needPipe = options.Hook_GetCursorPos || options.Hook_GetAsyncKeyState || options.Hook_GetKeyState;
+
+					//bool needPipe = options.Hook_GetCursorPos || options.Hook_GetAsyncKeyState || options.Hook_GetKeyState;
+					bool needPipe = true;
 					NamedPipe pipe = needPipe ? new NamedPipe(hWnd) : null;
 					window.HooksCPPNamedPipe = pipe;
 						
@@ -396,6 +397,11 @@ namespace UniversalSplitScreen.Core
 				Thread.Sleep(3000);
 
 				WinApi.SetForegroundWindow((int)WinApi.GetDesktopWindow());
+
+				foreach (Window window in windows.Values)
+				{
+					window.HooksCPPNamedPipe?.WriteMessage(0x05, 0, 0);
+				}
 
 				if (token.IsCancellationRequested)
 					return;
