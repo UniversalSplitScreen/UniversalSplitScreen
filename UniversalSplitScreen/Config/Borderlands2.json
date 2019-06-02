@@ -1,6 +1,6 @@
 {
   "OptionsName": "Borderlands2",
-  "SendRawMouseInput": true,
+  "SendRawMouseInput": false,
   "SendRawKeyboardInput": false,
   "SendNormalMouseInput": true,
   "SendNormalKeyboardInput": true,
