@@ -150,7 +150,8 @@ int Close(DWORD m_processId)
 			CloseHandle(hHandleLocal);
 			if (_ret == 0)
 			{
-				if (path.Find("hl2_singleton_mutex") != -1)
+				if (path.Find("hl2_singleton_mutex") != -1 || //source engine
+					path.Find("ValveHalfLifeLauncherMutex") != -1)//goldsrc
 				{
 					pSysHandleInformation->Handles[i].HandleType = (WORD)(pSysHandleInformation->Handles[i].HandleType % 256);
 						
