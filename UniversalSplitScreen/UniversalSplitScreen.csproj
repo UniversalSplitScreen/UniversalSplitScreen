@@ -111,6 +111,9 @@
     <Compile Include="Core\OptionsStructure.cs" />
     <Compile Include="Core\WinApi.cs" />
     <Compile Include="Core\Window.cs" />
+    <None Include="Config\Dont Starve Together.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="LICENSE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
