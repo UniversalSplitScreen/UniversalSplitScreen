@@ -1,0 +1,23 @@
+{
+  "OptionsName": "Source Engine",
+  "SendRawMouseInput": false,
+  "SendRawKeyboardInput": false,
+  "SendNormalMouseInput": true,
+  "SendNormalKeyboardInput": true,
+  "SendScrollwheel": true,
+  "SendWM_ACTIVATE": true,
+  "SendWM_SETFOCUS": false,
+  "RefreshWindowBoundsOnMouseClick": false,
+  "DrawMouse": true,
+  "DrawMouseEveryXMilliseconds": 15,
+  "Hook_FilterRawInput": false,
+  "Hook_FilterWindowsMouseInput": false,
+  "Hook_GetForegroundWindow": true,
+  "Hook_GetCursorPos": true,
+  "Hook_SetCursorPos": true,
+  "Hook_GetAsyncKeyState": true,
+  "Hook_GetKeyState": false,
+  "Hook_XInput": true,
+  "Hook_UseLegacyInput": true,
+  "EndVKey": 35
+}
