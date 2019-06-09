@@ -117,7 +117,9 @@
     <None Include="Config\Dont Starve Together.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Config\Source Engine.json" />
+    <None Include="Config\Source Engine.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="LICENSE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
