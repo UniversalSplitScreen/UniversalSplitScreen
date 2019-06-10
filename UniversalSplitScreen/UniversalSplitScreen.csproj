@@ -112,6 +112,7 @@
     <Compile Include="Core\Logger.cs" />
     <Compile Include="Core\Options.cs" />
     <Compile Include="Core\OptionsStructure.cs" />
+    <Compile Include="Core\UpdateChecker.cs" />
     <Compile Include="Core\WinApi.cs" />
     <Compile Include="Core\Window.cs" />
     <None Include="Config\Dont Starve Together.json">

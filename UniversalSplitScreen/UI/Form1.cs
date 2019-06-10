@@ -35,6 +35,8 @@ namespace UniversalSplitScreen.UI
 			ControllerIndexComboBox.SelectedIndex = 0;
 
 			PopulateOptionsRefTypes(Options.CurrentOptions);
+
+			Label_CurrentVersion.Text = $"Current version: {UpdateChecker.currentVersion}";
 		}
 
 		public void PopulateOptionsRefTypes(OptionsStructure options)
@@ -216,6 +218,12 @@ namespace UniversalSplitScreen.UI
 		private void CheckBox_Transparency_CheckedChanged(object sender, EventArgs e)
 		{
 			Program.Form.Opacity = CheckBox_Transparency.Checked ? 0.90 : 1.00;
+		}
+
+		private async void Button_CheckUpdates_Click(object sender, EventArgs e)
+		{
+			string versionName = await UpdateChecker.IsThereAnUpdate();
+			MessageBox.Show(string.IsNullOrWhiteSpace(versionName) ? "No new version found" : $"Found new version: {versionName}\nDownload the latest version from the website.");
 		}
 	}
 }
