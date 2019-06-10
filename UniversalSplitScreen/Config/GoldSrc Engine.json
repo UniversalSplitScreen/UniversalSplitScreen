@@ -1,0 +1,23 @@
+{
+  "OptionsName": "GoldSrc Engine",
+  "SendRawMouseInput": true,
+  "SendRawKeyboardInput": false,
+  "SendNormalMouseInput": true,
+  "SendNormalKeyboardInput": true,
+  "SendScrollwheel": true,
+  "SendWM_ACTIVATE": true,
+  "SendWM_SETFOCUS": false,
+  "RefreshWindowBoundsOnMouseClick": false,
+  "DrawMouse": true,
+  "DrawMouseEveryXMilliseconds": 15,
+  "Hook_FilterRawInput": false,
+  "Hook_FilterWindowsMouseInput": true,
+  "Hook_GetForegroundWindow": true,
+  "Hook_GetCursorPos": true,
+  "Hook_SetCursorPos": true,
+  "Hook_GetAsyncKeyState": true,
+  "Hook_GetKeyState": false,
+  "Hook_XInput": false,
+  "Hook_UseLegacyInput": false,
+  "EndVKey": 35
+}
