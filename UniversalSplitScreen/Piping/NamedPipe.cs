@@ -10,6 +10,22 @@ using UniversalSplitScreen.Core;
 
 namespace UniversalSplitScreen.Piping
 {
+	/*	(All messages are outgoing from NamedPipe.cs to HooksCPP.cpp
+		Messages:
+
+		* 0x01: add DELTA cursor pos. param1 =x, param2=y
+
+		* 0x02: Set VKEY. 
+			param 1 = key. Mouse buttons: 1,2,4,5,6. WASD: 0x41, 0x44, 0x53, 0x47
+			param 2 = on off: 0 = off, 1 = on
+
+		* 0x03: close named pipe
+
+		* 0x04: set ABSOLUTE cursor pos. param1 =x, param2=y
+
+		* 0x05: set desktop as foreground window
+	*/
+
 	public class NamedPipe
 	{
 		public readonly string pipeName;
@@ -50,21 +66,26 @@ namespace UniversalSplitScreen.Piping
 
 			clientConnected = true;
 			Logger.WriteLine($"Client connected to pipe {pipeName}");
-			
+
+			// If legacy input is enabled, HooksCPP needs to know 
+			// - Delta changes in mouse position (since last input). There is no bounding on this as it is used for first person camera movement.
+			// - Absolute mouse position (this is bound from 0,0 to width,height). This is used in the menus.
+			//If legacy input is disabled, Delta changes aren't used for first person camera movement (e.g. it uses raw input) so it doesn't need to be sent.
+						
 			bool sendDelta = Options.CurrentOptions.Hook_UseLegacyInput;
 
 			if (sendDelta || Options.CurrentOptions.Hook_GetCursorPos)
 			{
+				//With this system, input messages are only sent as fast as one thread can manage.
 				while (clientConnected)
 				{
-					xyResetEvent.WaitOne();
+					xyResetEvent.WaitOne();//Wait for an mouse input message to have altered toSendDeltaX/Y
 					if (sendDelta)
 					{
 						WriteMessageNow(0x01, toSendDeltaX, toSendDeltaY);
 					}
 					WriteMessageNow(0x04, toSendAbsX, toSendAbsY);
-					xyResetEvent.Reset();
-					//Thread.Sleep()
+					xyResetEvent.Reset();//Reset the event (or WaitOne passes immediately)
 				}
 			}
 		}
