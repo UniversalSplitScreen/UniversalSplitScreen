@@ -83,6 +83,8 @@ namespace UniversalSplitScreen.Piping
 					if (sendDelta)
 					{
 						WriteMessageNow(0x01, toSendDeltaX, toSendDeltaY);
+						toSendDeltaX = 0;
+						toSendDeltaY = 0;
 					}
 					WriteMessageNow(0x04, toSendAbsX, toSendAbsY);
 					xyResetEvent.Reset();//Reset the event (or WaitOne passes immediately)
@@ -92,8 +94,8 @@ namespace UniversalSplitScreen.Piping
 
 		public void SendMousePosition(int deltaX, int deltaY, int absoluteX, int absoluteY)
 		{
-			toSendDeltaX = deltaX;
-			toSendDeltaY = deltaY;
+			toSendDeltaX += deltaX;
+			toSendDeltaY += deltaY;
 			toSendAbsX = absoluteX;
 			toSendAbsY = absoluteY;
 			xyResetEvent.Set();
