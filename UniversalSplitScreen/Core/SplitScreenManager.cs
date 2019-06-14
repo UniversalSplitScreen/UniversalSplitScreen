@@ -253,7 +253,6 @@ namespace UniversalSplitScreen.Core
 
 			foreach (var window in windows.Values)
 			{
-				window.HooksCPPNamedPipe?.WriteMessage(0x03, 0, 0);//Close pipe message.
 				window.HooksCPPNamedPipe?.Close();
 			}
 

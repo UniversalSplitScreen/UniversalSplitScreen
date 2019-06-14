@@ -92,6 +92,14 @@ namespace UniversalSplitScreen.Piping
 			}
 		}
 
+		/// <summary>
+		/// Updates the mouse position to send, and makes the loop know there is data to be sent.
+		/// (Doesn't immediately send a message)
+		/// </summary>
+		/// <param name="deltaX"></param>
+		/// <param name="deltaY"></param>
+		/// <param name="absoluteX"></param>
+		/// <param name="absoluteY"></param>
 		public void SendMousePosition(int deltaX, int deltaY, int absoluteX, int absoluteY)
 		{
 			toSendDeltaX += deltaX;
@@ -101,6 +109,12 @@ namespace UniversalSplitScreen.Piping
 			xyResetEvent.Set();
 		}
 
+		/// <summary>
+		/// Queues a send message via the ThreadPool.
+		/// </summary>
+		/// <param name="message"></param>
+		/// <param name="param1"></param>
+		/// <param name="param2"></param>
 		public void WriteMessage(byte message, int param1, int param2)
 		{
 			if (clientConnected)
@@ -124,6 +138,12 @@ namespace UniversalSplitScreen.Piping
 			}
 		}
 
+		/// <summary>
+		/// Immediately sends a message via the named pipe on the current thread.
+		/// </summary>
+		/// <param name="message"></param>
+		/// <param name="param1"></param>
+		/// <param name="param2"></param>
 		private void WriteMessageNow(byte message, int param1, int param2)
 		{
 			byte[] bytes = {
@@ -145,6 +165,7 @@ namespace UniversalSplitScreen.Piping
 		public void Close()
 		{
 			Logger.WriteLine($"Closing pipe {pipeName}");
+			WriteMessageNow(0x03, 0, 0);//Close pipe message.
 			pipeServer?.Dispose();
 			pipeServer = null;
 			clientConnected = false;
@@ -152,6 +173,10 @@ namespace UniversalSplitScreen.Piping
 		}
 
 		//https://github.com/EasyHook/EasyHook/blob/master/EasyHook/RemoteHook.cs
+		/// <summary>
+		/// Generates a random 30 character long string of numbers and upper/lower case letters.
+		/// </summary>
+		/// <returns></returns>
 		private string GenerateName()
 		{
 			byte[] data = new byte[30];
