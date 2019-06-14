@@ -14,24 +14,31 @@ using namespace std;
 extern HMODULE DllHandle;
 
 HWND hWnd = 0;
-string _ipcChannelName;
+string _ipcChannelName;//The name of the named pipe.
 
 
 CRITICAL_SECTION mcs;
-int fakeX;
+int fakeX;//Delta X
 int fakeY;
 
 int absoluteX;
 int absoluteY;
 
-bool enableLegacyInput = true;
+
+// If enabled, will alternate between absolute mouse position (bound to 0,0 and width,height) and delta mouse position (returns the changes, without bounding)
+bool enableLegacyInput = true; 
+
 BOOL useAbsoluteCursorPos = TRUE;
 time_t timeSinceLastSetCursorPos;
+
+//Time since the last SetCursorPos that we will assume the game is in a UI menu and needs absolute mouse position
+//(Technically one second since it records as an time_t).
 const double minTimeForAbs = 0.5;
 
-UINT16 vkey_state;
-int controllerIndex = 0;
-HANDLE allowedMouseHandle = 0;
+
+UINT16 vkey_state;//Stores the mouse keys (5 of them) and the WASD keys. (1=on, 0=off)
+int controllerIndex = 0;//The controller index for this game.
+HANDLE allowedMouseHandle = 0;//We will allow raw input from this mouse handle.
 
 bool filterRawInput;
 bool filterMouseMessages;
@@ -45,11 +52,13 @@ BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 		EnterCriticalSection(&mcs);
 		if ((!enableLegacyInput) || useAbsoluteCursorPos == TRUE)
 		{
+			//Absolute mouse position (always do this if legacy input is off)
 			lpPoint->x = absoluteX;
 			lpPoint->y = absoluteY;
 		}
 		else
 		{
+			//Delta mouse position
 			lpPoint->x = fakeX;
 			lpPoint->y = fakeY;
 		}
@@ -62,6 +71,7 @@ BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 			double dt = difftime(time(NULL), timeSinceLastSetCursorPos);
 			if (dt >= minTimeForAbs)
 			{
+				//It's been minTimeForAbs since last SetCursorPos, so we assume we're in a menu and need absolute cursor pos
 				useAbsoluteCursorPos = TRUE;
 			}
 		}
@@ -76,6 +86,7 @@ BOOL WINAPI SetCursorPos_Hook(int X, int Y)
 	p.x = X;
 	p.y = Y;
 
+	//SetCursorPos require screen coordinates (relative to 0,0 of monitor)
 	ScreenToClient(hWnd, &p);
 
 	EnterCriticalSection(&mcs);
@@ -100,12 +111,13 @@ HWND WINAPI GetForegroundWindow_Hook()
 inline int getBitShiftForVKey(int VKey)
 {
 	int shift = 0;
-	if (VKey <= 6)
+	if (VKey <= 6)//The mouse keys
 	{
 		return VKey - 1;
 	}
 	else
 	{
+		//WASD keys
 		switch (VKey)
 		{
 			case 0x41: return 6;
@@ -119,14 +131,16 @@ inline int getBitShiftForVKey(int VKey)
 
 SHORT WINAPI GetAsyncKeyState_Hook(int vKey)
 {
-	return (vkey_state & (1 << getBitShiftForVKey(vKey))) == 0 ? 0 : 0b1000000000000000;
+	return (vkey_state & (1 << getBitShiftForVKey(vKey))) == 0 ? // is the vKey up?
+		0 : 0b1000000000000000;
 }
 
 SHORT WINAPI GetKeyState_Hook(int nVirtKey)
 {
 	if (nVirtKey == 0x41 || nVirtKey == 0x44 || nVirtKey == 0x53 || nVirtKey == 0x57)//WASD
 	{
-		return (vkey_state & (1 << getBitShiftForVKey(nVirtKey))) == 0 ? 0 : 0b1000000000000000;
+		return (vkey_state & (1 << getBitShiftForVKey(nVirtKey))) == 0 ? // is the vKey down?
+			0 : 0b1000000000000000;
 	}
 	else
 	{
@@ -136,12 +150,13 @@ SHORT WINAPI GetKeyState_Hook(int nVirtKey)
 
 BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize)
 {
+	//Don't actually let raw input be registered, but pretend to the game it has
 	return true;
 }
 
 DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE *pState)
 {
-	if (controllerIndex == 0)
+	if (controllerIndex == 0) // user wants no controller on this game
 		return ERROR_DEVICE_NOT_CONNECTED;
 	else
 		return XInputGetState(controllerIndex - 1, pState);
@@ -175,9 +190,10 @@ void startPipeListen()
 
 	std::cout << "Connected to pipe\n";
 
+	//Loop until pipe close message is received
 	for (;;)
 	{
-		BYTE buffer[9];
+		BYTE buffer[9];//9 bytes are sent at a time (1st is message, next 8 for 2 ints)
 		DWORD bytesRead = 0;
 
 		BOOL result = ReadFile(
@@ -235,6 +251,7 @@ void startPipeListen()
 				}
 				case 0x05://Focus desktop
 				{
+					//If the game brings itself to the foreground, it is the only window that can set something else as foreground (so it's required to do this in HooksCPP)
 					SetForegroundWindow(GetDesktopWindow());
 					break;
 				}
@@ -275,6 +292,7 @@ NTSTATUS installHook(LPCSTR moduleHandle, LPCSTR lpProcName, void* InCallback)
 	return hookResult;
 }
 
+//Passed as a void* from InjectorCPP
 struct UserData
 {
 	HWND hWnd;
@@ -313,7 +331,7 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 				{
 					if (raw->header.hDevice == allowedMouseHandle)
 					{
-						return CallNextHookEx(NULL, code, wParam, lParam);//Wastes CPU
+						return CallNextHookEx(NULL, code, wParam, lParam);//Wastes CPU (?)
 					}
 					else
 					{
@@ -350,7 +368,7 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 	if (enableLegacyInput && Msg == WM_MOUSEMOVE)
 	{
 		if (useAbsoluteCursorPos && ((int)_wParam & 0b10000000) > 0)
-			return CallNextHookEx(NULL, code, wParam, lParam);
+			return CallNextHookEx(NULL, code, wParam, lParam);//This is from USS. We should pass this as it is the absolute pos.
 		else
 		{
 			pMsg->message = WM_NULL;
@@ -358,12 +376,12 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 		}
 	}
 
-	return CallNextHookEx(NULL, code, wParam, lParam);
+	return CallNextHookEx(NULL, code, wParam, lParam);//Pass
 }
 
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
-	//Cout will go to the games console
+	//Cout will go to the games console (test easily with SMAPI/Minecraft)
 	std::cout << "Injected CPP\n";
 	std::cout << "Injected by host process ID: " << inRemoteInfo->HostPID << "\n";
 	std::cout << "Passed in data size:" << inRemoteInfo->UserDataSize << "\n";
