@@ -7,7 +7,6 @@
 #include <mutex>
 #include <condition_variable>
 #include <fstream>
-//#include <tlhelp32.h>
 #include <thread>
 #include <time.h>
 using namespace std;
@@ -305,44 +304,21 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 	if ((filterRawInput) && (Msg == WM_INPUT) && (allowedMouseHandle != 0))
 	{
 		UINT dwSize = sizeof(RAWINPUTHEADER);
-		//if (GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == 0)
 		{
 			RAWINPUT raw[sizeof(RAWINPUTHEADER)];
-			//static RAWINPUT raw[sizeof(RAWINPUTHEADER)];
-			//register RAWINPUT raw[sizeof(RAWINPUTHEADER)];
 
 			if (GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, raw, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
 			{
 				if (raw->header.dwType == RIM_TYPEMOUSE)
 				{
-					/*std::ofstream logging;
-						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-						logging << "rhid = " << (raw->header.hDevice) << endl;
-						logging.close();*/
-
 					if (raw->header.hDevice == allowedMouseHandle)
 					{
-						/*std::ofstream logging;
-						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-						logging << "Pass rhid = " << (raw->header.hDevice) << endl;
-						logging.close();*/
-						//cout << "pass " << (raw->header.hDevice) << endl;
-
-						//return 0;
 						return CallNextHookEx(NULL, code, wParam, lParam);//Wastes CPU
 					}
 					else
 					{
-						/*std::ofstream logging;
-						logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-						logging << "Block rhid = " << (raw->header.hDevice) << endl;
-						logging.close();*/
-						//cout << "block " << (raw->header.hDevice) << endl;
-						//pCwp->message = WM_NULL;
-
 						pMsg->message = WM_NULL;
 						return blockRet;
-						//return CallNextHookEx(NULL, code, wParam, lParam);//TODO: unecessary?
 					}
 				}
 			}
@@ -446,30 +422,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 				ntResult = installHook(xinputNames[xi++], "XInputGetState", XInputGetState_Hook);
 			}
 		}
-		
-#if FALSE
-		//De-register & re-register from Raw Input
-		if (filterRawInput)//TODO: re-enable
-		{
-			//De-register
-			{
-				RAWINPUTDEVICE rid[1];
-				rid[0].usUsagePage = 0x01;
-				rid[0].usUsage = 0x02;
-				rid[0].dwFlags = RIDEV_REMOVE;
-				rid[0].hwndTarget = NULL;
-
-				BOOL unregisterSuccess = RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
-				std::cout << "Raw mouse input de-register success: " << unregisterSuccess << endl;
-			}
-
-			EnumWindows(EnumWindowsProc_SubToRawInput, GetCurrentProcessId());
-		}
-#endif
 
 		//Start named pipe client
-		//std::thread t(startPipeListen);
-		//t.join();
 		startPipeListen();
 	}
 	else
