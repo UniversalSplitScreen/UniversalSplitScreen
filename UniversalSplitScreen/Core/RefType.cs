@@ -1,5 +1,6 @@
 ﻿namespace UniversalSplitScreen.Core
 {
+	//Provides methods to easily update OptionsStructure via reflection
 	public class RefType<T>
 	{
 		public readonly string propertyName;

@@ -14,13 +14,10 @@ namespace UniversalSplitScreen.RawInput
 {
 	class MessageProcessor
 	{
-		private static readonly System.Drawing.Rectangle clipRect = 
-			new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
-
 		/// <summary>
 		/// Only updated when split screen is deactivated
 		/// </summary>
-		public IntPtr LastKeyboardPressed { get; private set; } = new IntPtr(0);
+		public IntPtr LastKeyboardPressed { get; private set; } = IntPtr.Zero;
 		
 		//leftMiddleRight: left=1, middle=2, right=3, xbutton1=4, xbutton2=5
 		readonly Dictionary<ButtonFlags, (MouseInputNotifications msg, uint wParam, ushort leftMiddleRight, bool isButtonDown, int VKey)> ButtonFlagToMouseInputNotifications = new Dictionary<ButtonFlags, (MouseInputNotifications, uint, ushort, bool, int)>()
@@ -60,16 +57,9 @@ namespace UniversalSplitScreen.RawInput
 		}
 		#endregion
 		
-		AutoResetEvent autoEvent = new AutoResetEvent(false);
-		Queue<(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)> msgs = new Queue<(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)>();
-		Thread thread;
-
 		public MessageProcessor()
 		{
 			endVKey = Options.CurrentOptions.EndVKey;
-
-			thread = new Thread(MessageLoop);
-			thread.Start();
 		}
 
 		public void WndProc(ref Message msg)
@@ -81,29 +71,11 @@ namespace UniversalSplitScreen.RawInput
 				Process(hRawInput);
 			}
 		}
-
-		void MessageLoop()
-		{
-			while (true)
-			{
-				if (msgs.Count == 0)
-					autoEvent.WaitOne();
-
-				var (hWnd, Msg, wParam, lParam) = msgs.Dequeue();
-				SendInput.WinApi.PostMessageA(hWnd, Msg, wParam, lParam);
-			}
-		}
-
+		
 		void PostMessageA(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)
 		{
 			SendInput.WinApi.PostMessageA(hWnd, Msg, wParam, lParam);
 			return;
-			//TODO: Re-enable ? (Broke starbound)
-
-			//msgs.Enqueue((hWnd, Msg, wParam, lParam));
-
-			//if (msgs.Count == 0)
-			//	autoEvent.Set();
 		}
 
 		private void Process(IntPtr hRawInput)
@@ -155,8 +127,7 @@ namespace UniversalSplitScreen.RawInput
 									foreach (Window window in Program.SplitScreenManager.GetWindowsForDevice(rawBuffer.header.hDevice))
 									{
 										IntPtr hWnd = window.hWnd;
-
-										//Works better than ahk (doesn't lock mouse when two keyboards are held, and works with Source games)
+										
 										if (Options.CurrentOptions.SendNormalKeyboardInput)
 										{
 											uint scanCode = rawBuffer.data.keyboard.MakeCode;
@@ -179,18 +150,12 @@ namespace UniversalSplitScreen.RawInput
 											}
 											else
 											{
-												code |= 0xC0000000;//WM_KEYUP required the bit 31 and 30 to be 1
+												code |= 0xC0000000;//WM_KEYUP requires the bit 31 and 30 to be 1
 												code |= 0x000000000000001;
 											}
 
 											keysDown[VKey] = keyDown;
-
-											//if (VKey == 0x41 || VKey == 0x44 || VKey == 0x53 || VKey == 0x57)//WASD
-											//{
-											//	window.GetRawInputData_HookServer?.SetVKey(VKey, keyDown);
-											//	window.HooksCPPNamedPipe?.AddMessage(0x02, VKey, keyDown ? 1 : 0);
-											//}
-
+											
 											if (Options.CurrentOptions.Hook_GetKeyState)
 											{
 												byte shift = (byte)(VKey == 0x41 ? 0b0001 : (VKey == 0x44 ? 0b0010 : (VKey == 0x53 ? 0b0100 : (VKey == 0x57 ? 0b1000 : 0))));
@@ -228,7 +193,7 @@ namespace UniversalSplitScreen.RawInput
 							{
 								if ((mouse.usButtonFlags & (ushort)ButtonFlags.RI_MOUSE_LEFT_BUTTON_UP) > 0 && Program.Form.ButtonPressed)
 								{
-									Logger.WriteLine($"Set mouse, pointer = {rawBuffer.header.hDevice}");
+									Logger.WriteLine($"Set mouse, handle = {rawBuffer.header.hDevice}");
 									Program.SplitScreenManager.SetMouseHandle(rawBuffer.header.hDevice);
 								}
 								break; 
@@ -243,13 +208,6 @@ namespace UniversalSplitScreen.RawInput
 								//Resend raw input to application. Works for some games only
 								if (Options.CurrentOptions.SendRawMouseInput)
 								{
-									/*IntPtr hptr = Marshal.AllocHGlobal((int)pbDataSize);
-									WinApi.GetRawInputData(hRawInput, DataCommand.RID_INPUT, hptr, ref pbDataSize, Marshal.SizeOf(typeof(RAWINPUTHEADER)));
-									
-									SendInput.WinApi.PostMessageA(window.borderlands2_DIEmWin_hWnd == IntPtr.Zero ? hWnd : window.borderlands2_DIEmWin_hWnd,
-										(uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0000, hptr);*/
-										
-
 									SendInput.WinApi.PostMessageA(window.borderlands2_DIEmWin_hWnd == IntPtr.Zero ? hWnd : window.borderlands2_DIEmWin_hWnd, 
 										(uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0000, hRawInput);
 								}
@@ -261,25 +219,14 @@ namespace UniversalSplitScreen.RawInput
 
 								mouseVec.x = Math.Min(window.Width, Math.Max(mouseVec.x + deltaX, 0));
 								mouseVec.y = Math.Min(window.Height, Math.Max(mouseVec.y + deltaY, 0));
-
-								//if (Options.CurrentOptions.Hook_GetCursorPos)
-								//	window.HooksCPPNamedPipe?.WriteMessage(0x01, mouseVec.x, mouseVec.y);
-
+								
 								if (Options.CurrentOptions.Hook_GetCursorPos)
 								{
-									//window.HooksCPPNamedPipe?.WriteMessage(0x01, deltaX, deltaY);
-									//window.HooksCPPNamedPipe?.WriteMessage(0x04, mouseVec.x, mouseVec.y);
 									window.HooksCPPNamedPipe?.SendMousePosition(deltaX, deltaY, mouseVec.x, mouseVec.y);
 								}
-
-								//Logger.WriteLine($"MOUSE. flags={mouse.usFlags}, X={mouseVec.x}, y={mouseVec.y}, buttonFlags={mouse.usButtonFlags} device pointer = {rawBuffer.header.hDevice}");
-
+								
 								long packedXY = (mouseVec.y * 0x10000) + mouseVec.x;
-
-								//TODO: move away to reduce lag?
-								//Cursor.Position = new System.Drawing.Point(0, 0);
-								//Cursor.Clip = new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), new System.Drawing.Size(1, 1));
-
+								
 								if (Options.CurrentOptions.SendNormalMouseInput)
 								{
 									ushort mouseMoveState = 0x0000;
@@ -291,7 +238,6 @@ namespace UniversalSplitScreen.RawInput
 									if (x2) mouseMoveState	|= (ushort)WM_MOUSEMOVE_wParam.MK_XBUTTON2;
 									mouseMoveState |= 0b10000000;//Signature for USS 
 									PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEMOVE, (IntPtr)mouseMoveState, (IntPtr)packedXY);
-									//PostMessageA(hWnd, (uint)MouseInputNotifications.WM_NCMOUSEMOVE, (IntPtr)0x0000, (IntPtr)packedXY);
 								}
 
 								//Mouse buttons.
@@ -330,9 +276,6 @@ namespace UniversalSplitScreen.RawInput
 
 											}
 											window.MouseState = state;
-
-											//Cursor.Position = new System.Drawing.Point(0, 0);
-											//Cursor.Clip = clipRect;
 										}
 									}
 									

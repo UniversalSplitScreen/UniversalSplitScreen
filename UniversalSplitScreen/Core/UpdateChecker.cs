@@ -15,7 +15,7 @@ namespace UniversalSplitScreen.Core
 		const string request = @"https://api.github.com/repos/UniversalSplitScreen/UniversalSplitScreen/releases/latest";
 
 		/// <summary>
-		/// Returns empty string if no update availible
+		/// Returns empty string if no update availible, and the new version tag name otherwise
 		/// </summary>
 		/// <returns></returns>
 		public static async Task<string> IsThereAnUpdate()
@@ -24,12 +24,12 @@ namespace UniversalSplitScreen.Core
 			{
 				try
 				{
-					client.DefaultRequestHeaders.Add("User-Agent", "UniversalSplitScreen");
+					client.DefaultRequestHeaders.Add("User-Agent", "UniversalSplitScreen");//GitHub needs User-Agent to be set or it gives forbidden
 					HttpResponseMessage response = await client.GetAsync(request);
 					response.EnsureSuccessStatusCode();
 					string responseBody = await response.Content.ReadAsStringAsync();
 
-					Console.WriteLine(responseBody);
+					Logger.WriteLine(responseBody);
 
 					//https://www.newtonsoft.com/json/help/html/ReadingWritingJSON.htm
 					var reader = new JsonTextReader(new StringReader(responseBody));
@@ -48,12 +48,12 @@ namespace UniversalSplitScreen.Core
 						}
 					}
 
-					Console.WriteLine($"Github version name = {versionName}");
+					Logger.WriteLine($"Github version name = {versionName}");
 					return versionName == currentVersion ? string.Empty : versionName;//Return nothing if same version
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine(e);
+					Logger.WriteLine(e);
 					return string.Empty;
 				}
 			}

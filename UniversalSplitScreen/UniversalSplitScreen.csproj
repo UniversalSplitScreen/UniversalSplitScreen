@@ -156,7 +156,6 @@
     <Compile Include="RawInput\Structs\RID_DEVICE_INFO_KEYBOARD.cs" />
     <Compile Include="RawInput\Structs\RID_DEVICE_INFO_MOUSE.cs" />
     <Compile Include="RawInput\WinApi.cs" />
-    <Compile Include="SendInput\AHKThread.cs" />
     <Compile Include="SendInput\ButtonFlags.cs" />
     <Compile Include="SendInput\Intercept.cs" />
     <Compile Include="SendInput\KeyboardInputNotifications.cs" />

@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using UniversalSplitScreen.Core;
 
 namespace UniversalSplitScreen.SendInput
@@ -84,7 +79,7 @@ namespace UniversalSplitScreen.SendInput
 				if ((vk == 0x09 || vk == 0x1B) //tab or escape
 					&& ((kb.flags & 0b100000) != 0))//is alt down
 				{
-					return (IntPtr)1;
+					return (IntPtr)1;//alt+tab and alt+esc will change foreground window.
 				}
 				else
 				{

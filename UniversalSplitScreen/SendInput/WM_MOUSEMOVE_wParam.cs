@@ -12,6 +12,5 @@ namespace UniversalSplitScreen.SendInput
 		MK_SHIFT = 0x0004,
 		MK_XBUTTON1 = 0x0020,
 		MK_XBUTTON2 = 0x0040
-
 	}
 }

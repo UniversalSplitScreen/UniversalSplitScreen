@@ -37,6 +37,7 @@ namespace UniversalSplitScreen.Core
 			comboBox.SelectedItem = CurrentOptions;
 		}
 		
+		//The form's checkboxes need to know the field names in OptionsStructure so they can update them via reflection
 		public static void LoadButtonClicked()
 		{
 			CurrentOptions = (OptionsStructure)Program.Form.OptionsComboBox.SelectedItem;
