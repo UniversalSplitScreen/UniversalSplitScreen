@@ -42,6 +42,9 @@ namespace UniversalSplitScreen.Core
 
 		#region Public methods
 
+		/// <summary>
+		/// Initializes the EVENT_SYSTEM_FOREGROUND hook (for monitoring the foreground window)
+		/// </summary>
 		public void Init()
 		{
 			Logger.WriteLine("Registering EVENT_SYSTEM_FOREGROUND hook");
@@ -49,6 +52,9 @@ namespace UniversalSplitScreen.Core
 			IntPtr m_hhook = WinApi.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, EVENT_SYSTEM_FOREGROUND_delegate, 0, 0, WINEVENT_OUTOFCONTEXT);
 		}
 
+		/// <summary>
+		/// deviceToWindows is a Dictionary with device handle as the key and the attached windows as the value.
+		/// </summary>
 		void InitDeviceToWindows()
 		{
 			deviceToWindows.Clear();
@@ -64,6 +70,9 @@ namespace UniversalSplitScreen.Core
 			}
 		}
 
+		/// <summary>
+		/// Starts running split screen
+		/// </summary>
 		public void ActivateSplitScreen()
 		{
 			var options = Options.CurrentOptions;
@@ -345,6 +354,11 @@ namespace UniversalSplitScreen.Core
 		#endregion
 
 		#region Threaded tasks
+		/// <summary>
+		/// Periodically sends WM_ACTIVATE and WM_SETFOCUS to trick the target game into thinking it is the foreground.
+		/// </summary>
+		/// <param name="hWnd"></param>
+		/// <param name="token"></param>
 		private void SetFocus(IntPtr hWnd, CancellationToken token)
 		{
 			while(true)
@@ -363,6 +377,13 @@ namespace UniversalSplitScreen.Core
 			}
 		}
 
+		/// <summary>
+		/// Periodically draws a mouse cursor over the game. 
+		/// The cursor is wiped every time the game updates a frame. 
+		/// The cursor will be flickery unless vsync is enabled in the game.
+		/// </summary>
+		/// <param name="hWnd"></param>
+		/// <param name="token"></param>
 		private void DrawMouse(IntPtr hWnd, CancellationToken token)
 		{
 			var g = System.Drawing.Graphics.FromHwnd(hWnd);
@@ -376,7 +397,6 @@ namespace UniversalSplitScreen.Core
 					var mouseVec = window.MousePosition;
 					var x = mouseVec.x;
 					var y = mouseVec.y;
-					//window.HooksCPPNamedPipe?.WriteMessage(0x01, x, y);
 
 					if (x != 0 && y != 0 && x != window.Width && y != window.Height)
 					{
@@ -397,6 +417,12 @@ namespace UniversalSplitScreen.Core
 			}
 		}
 
+		/// <summary>
+		/// Periodically sets the foreground window to the desktop.
+		/// Windows will do nothing unless we are the foreground window, so this isn't particularly useful.
+		/// HooksCPP will automatically set the desktop to foreground if a game brings itself to the foreground.
+		/// </summary>
+		/// <param name="token"></param>
 		private void AutoUnfocusTask(CancellationToken token)
 		{
 			while (true)
@@ -415,9 +441,12 @@ namespace UniversalSplitScreen.Core
 
 			}
 		}
-
 		#endregion
 
+		/// <summary>
+		/// Checks if a window still exists, and removes it from windows and devicesToWindows if it doesn't.
+		/// </summary>
+		/// <param name="hWnd"></param>
 		public void CheckIfWindowExists(IntPtr hWnd)
 		{
 			if (!WinApi.IsWindow(hWnd))
@@ -430,8 +459,17 @@ namespace UniversalSplitScreen.Core
 			}
 		}
 
-		
-
+		/// <summary>
+		/// Called whenever the foreground window changes.
+		/// Used for setting up input devices in the Current window tab.
+		/// </summary>
+		/// <param name="hWinEventHook"></param>
+		/// <param name="eventType"></param>
+		/// <param name="hWnd"></param>
+		/// <param name="idObject"></param>
+		/// <param name="idChild"></param>
+		/// <param name="dwEventThread"></param>
+		/// <param name="dwmsEventTime"></param>
 		private void EVENT_SYSTEM_FOREGROUND_Proc(IntPtr hWinEventHook, uint eventType, IntPtr hWnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
 		{
 			if (IsRunningInSplitScreen)
@@ -442,6 +480,7 @@ namespace UniversalSplitScreen.Core
 			string title = WinApi.GetWindowText(hWnd);
 			Logger.WriteLine($"Activated hWnd {hWnd}, self = {our_hWnd == hWnd}, Title = {title}");
 
+			//"Task Switching" is alt+tab and "Cortana" is the start menu.
 			if (our_hWnd != hWnd && desktop_hWnd != hWnd && !string.IsNullOrWhiteSpace(title) && title != "Task Switching" && title != "Cortana")
 			{
 				WinApi.GetWindowThreadProcessId(hWnd, out int pid);
@@ -453,12 +492,14 @@ namespace UniversalSplitScreen.Core
 
 					if (windows.TryGetValue(hWnd, out var x))
 					{
+						//We have devices attached to this window, so display the handles.
 						Program.Form.MouseHandleText = x.MouseAttached.ToString();
 						Program.Form.KeyboardHandleText = x.KeyboardAttached.ToString();
 						Program.Form.ControllerSelectedIndex = x.ControllerIndex;
 					}
 					else
 					{
+						//We have no devices attached to this window, so make sure handles display 0.
 						Program.Form.MouseHandleText = "0";
 						Program.Form.KeyboardHandleText = "0";
 						Program.Form.ControllerSelectedIndex = 0;
