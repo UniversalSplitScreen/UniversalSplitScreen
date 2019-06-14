@@ -78,10 +78,16 @@ namespace UniversalSplitScreen.Core
 			var options = Options.CurrentOptions;
 
 			//Check if windows still exist
-			for (int i = 0; i < windows.Count; i++)
 			{
-				IntPtr hWnd = windows.ElementAt(i).Key;
-				if (!WinApi.IsWindow(hWnd))
+				var toRemove = new List<IntPtr>();
+				for (int i = 0; i < windows.Count; i++)
+				{
+					IntPtr hWnd = windows.ElementAt(i).Key;
+					if (!WinApi.IsWindow(hWnd))
+						toRemove.Add(hWnd);
+				}
+
+				foreach (var hWnd in toRemove)
 					windows.Remove(hWnd);
 			}
 
@@ -218,9 +224,7 @@ namespace UniversalSplitScreen.Core
 				task.Start();
 				autoUnfocusTask = (task, c);
 			}
-
-			Program.Form.WindowState = FormWindowState.Minimized;
-
+			
 			IsRunningInSplitScreen = true;
 			InputDisabler.Lock();
 			Intercept.InterceptEnabled = true;
@@ -228,6 +232,7 @@ namespace UniversalSplitScreen.Core
 			InitDeviceToWindows();
 			Cursor.Position = new System.Drawing.Point(0, 0);
 			WinApi.SetForegroundWindow((int)WinApi.GetDesktopWindow());//Loses focus of all windows, without minimizing
+			Program.Form.WindowState = FormWindowState.Minimized;
 
 			Program.Form.OnSplitScreenStart();
 		}
