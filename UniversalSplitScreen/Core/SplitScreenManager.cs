@@ -66,16 +66,6 @@ namespace UniversalSplitScreen.Core
 
 		public void ActivateSplitScreen()
 		{
-			Program.Form.WindowState = FormWindowState.Minimized;
-
-			IsRunningInSplitScreen = true;
-			InputDisabler.Lock();
-			Intercept.InterceptEnabled = true;
-			deviceToWindows.Clear();
-			InitDeviceToWindows();
-			Cursor.Position = new System.Drawing.Point(0, 0);
-			WinApi.SetForegroundWindow((int)WinApi.GetDesktopWindow());//Loses focus of all windows, without minimizing
-
 			var options = Options.CurrentOptions;
 
 			//Check if windows still exist
@@ -201,7 +191,14 @@ namespace UniversalSplitScreen.Core
 					proc.Start();
 					proc.WaitForExit();
 
-					Logger.WriteLine($"InjectorCPP.Inject result = 0x{(uint)proc.ExitCode:x}. is64={is64}, needPipe={needPipe}");
+					uint exitCode = (uint)proc.ExitCode;
+					Logger.WriteLine($"InjectorCPP.Inject result = 0x{exitCode:x}. is64={is64}, needPipe={needPipe}");
+					if (exitCode != 0 )
+					{
+						MessageBox.Show($"Error injecting hooks into pid={window.pid}, Error = 0x{exitCode:x}", "Error");
+						DeactivateSplitScreen();
+						return;
+					}
 				}
 			}
 
@@ -213,9 +210,19 @@ namespace UniversalSplitScreen.Core
 				autoUnfocusTask = (task, c);
 			}
 
+			Program.Form.WindowState = FormWindowState.Minimized;
+
+			IsRunningInSplitScreen = true;
+			InputDisabler.Lock();
+			Intercept.InterceptEnabled = true;
+			deviceToWindows.Clear();
+			InitDeviceToWindows();
+			Cursor.Position = new System.Drawing.Point(0, 0);
+			WinApi.SetForegroundWindow((int)WinApi.GetDesktopWindow());//Loses focus of all windows, without minimizing
+
 			Program.Form.OnSplitScreenStart();
 		}
-
+		
 		public void DeactivateSplitScreen()
 		{
 			IsRunningInSplitScreen = false;

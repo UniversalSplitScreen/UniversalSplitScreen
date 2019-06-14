@@ -38,7 +38,16 @@ namespace UniversalSplitScreen.Piping
 			pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);//WriteThrough?
 			Logger.WriteLine($"Created pipe {pipeName}");
 
-			pipeServer.WaitForConnection();
+			try
+			{
+				pipeServer.WaitForConnection();
+			}
+			catch(Exception e)
+			{
+				Logger.WriteLine($"Exception while waiting for pipe client to connect: {e}");
+				return;
+			}
+
 			clientConnected = true;
 			Logger.WriteLine($"Client connected to pipe {pipeName}");
 			
