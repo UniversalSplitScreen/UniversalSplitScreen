@@ -248,9 +248,9 @@ namespace UniversalSplitScreen.RawInput
 												case 1:
 													oldBtnState = state.l; break;
 												case 2:
-													oldBtnState = state.m; break;
-												case 3:
 													oldBtnState = state.r; break;
+												case 3:
+													oldBtnState = state.m; break;
 												case 4:
 													oldBtnState = state.x1; break;
 												case 5:
@@ -274,9 +274,9 @@ namespace UniversalSplitScreen.RawInput
 
 													break;
 												case 2:
-													state.m = isButtonDown; break;
-												case 3:
 													state.r = isButtonDown; break;
+												case 3:
+													state.m = isButtonDown; break;
 												case 4:
 													state.x1 = isButtonDown; break;
 												case 5:
