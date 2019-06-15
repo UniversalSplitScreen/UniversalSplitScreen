@@ -51,7 +51,7 @@ namespace UniversalSplitScreen.Piping
 		private void Start()
 		{
 			Logger.WriteLine($"Starting pipe {pipeName}");
-			pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);//WriteThrough?
+			pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.WriteThrough);//WriteThrough?
 			Logger.WriteLine($"Created pipe {pipeName}");
 
 			try
