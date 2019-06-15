@@ -251,7 +251,7 @@ namespace UniversalSplitScreen.Core
 
 			autoUnfocusTask.Item2?.Cancel();
 
-			foreach (var window in windows.Values)
+			foreach (var window in windows.Values.ToArray())
 			{
 				window.HooksCPPNamedPipe?.Close();
 			}

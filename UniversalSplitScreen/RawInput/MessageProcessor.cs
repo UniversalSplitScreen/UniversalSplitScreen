@@ -227,18 +227,7 @@ namespace UniversalSplitScreen.RawInput
 								
 								long packedXY = (mouseVec.y * 0x10000) + mouseVec.x;
 								
-								if (Options.CurrentOptions.SendNormalMouseInput)
-								{
-									ushort mouseMoveState = 0x0000;
-									var (l, m, r, x1, x2) = window.MouseState;
-									if (l) mouseMoveState	|= (ushort)WM_MOUSEMOVE_wParam.MK_LBUTTON;
-									if (m) mouseMoveState	|= (ushort)WM_MOUSEMOVE_wParam.MK_MBUTTON;
-									if (r) mouseMoveState	|= (ushort)WM_MOUSEMOVE_wParam.MK_RBUTTON;
-									if (x1) mouseMoveState	|= (ushort)WM_MOUSEMOVE_wParam.MK_XBUTTON1;
-									if (x2) mouseMoveState	|= (ushort)WM_MOUSEMOVE_wParam.MK_XBUTTON2;
-									mouseMoveState |= 0b10000000;//Signature for USS 
-									PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEMOVE, (IntPtr)mouseMoveState, (IntPtr)packedXY);
-								}
+								
 
 								//Mouse buttons.
 								ushort f = mouse.usButtonFlags;
@@ -250,12 +239,31 @@ namespace UniversalSplitScreen.RawInput
 										{
 											var (msg, wParam, leftMiddleRight, isButtonDown, VKey) = pair.Value;
 											//Logger.WriteLine(pair.Key);
-											SendInput.WinApi.PostMessageA(hWnd, (uint)msg, (IntPtr)wParam, (IntPtr)packedXY);
-											
-											if (Options.CurrentOptions.Hook_GetAsyncKeyState || Options.CurrentOptions.Hook_GetKeyState)
-												window.HooksCPPNamedPipe?.WriteMessage(0x02, VKey, isButtonDown ? 1 : 0);
 
 											var state = window.MouseState;
+
+											bool oldBtnState = false;
+											switch (leftMiddleRight)
+											{
+												case 1:
+													oldBtnState = state.l; break;
+												case 2:
+													oldBtnState = state.m; break;
+												case 3:
+													oldBtnState = state.r; break;
+												case 4:
+													oldBtnState = state.x1; break;
+												case 5:
+													oldBtnState = state.x2; break;
+											}
+											
+											if (oldBtnState != isButtonDown)
+												SendInput.WinApi.PostMessageA(hWnd, (uint)msg, (IntPtr)wParam, (IntPtr)packedXY);
+											
+											if (Options.CurrentOptions.Hook_GetAsyncKeyState || Options.CurrentOptions.Hook_GetKeyState && (oldBtnState != isButtonDown))
+												window.HooksCPPNamedPipe?.WriteMessage(0x02, VKey, isButtonDown ? 1 : 0);
+
+											
 											switch (leftMiddleRight)
 											{
 												case 1:
@@ -284,6 +292,19 @@ namespace UniversalSplitScreen.RawInput
 										ushort delta = mouse.usButtonData;
 										PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEWHEEL, (IntPtr)((delta * 0x10000) + 0), (IntPtr)packedXY);
 									}
+								}
+
+								if (Options.CurrentOptions.SendNormalMouseInput)
+								{
+									ushort mouseMoveState = 0x0000;
+									var (l, m, r, x1, x2) = window.MouseState;
+									if (l) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_LBUTTON;
+									if (m) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_MBUTTON;
+									if (r) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_RBUTTON;
+									if (x1) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_XBUTTON1;
+									if (x2) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_XBUTTON2;
+									mouseMoveState |= 0b10000000;//Signature for USS 
+									PostMessageA(hWnd, (uint)MouseInputNotifications.WM_MOUSEMOVE, (IntPtr)mouseMoveState, (IntPtr)packedXY);
 								}
 							}
 
