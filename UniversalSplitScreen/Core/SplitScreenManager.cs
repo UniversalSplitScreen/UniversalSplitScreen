@@ -20,7 +20,6 @@ namespace UniversalSplitScreen.Core
 		public bool IsRunningInSplitScreen { get; private set; } = false;
 
 		Dictionary<Task, CancellationTokenSource> setFocusTasks = new Dictionary<Task, CancellationTokenSource>();
-		Dictionary<Task, CancellationTokenSource> drawMouseTasks = new Dictionary<Task, CancellationTokenSource>();
 
 		//Sometimes the game can be focused, which can break input. Fix: every X seconds, focus the desktop
 		(Task, CancellationTokenSource) autoUnfocusTask;
@@ -98,6 +97,11 @@ namespace UniversalSplitScreen.Core
 
 				Logger.WriteLine($"hWnd={hWnd}, mouse={window.MouseAttached}, kb={window.KeyboardAttached}");
 				
+				if (Options.CurrentOptions.DrawMouse)
+				{
+					window.CreateCursor();
+				}
+
 				//Borderlands 2 requires WM_INPUT to be sent to a window named DIEmWin, not the main hWnd.
 				foreach (ProcessThread thread in Process.GetProcessById(window.pid).Threads)
 				{
@@ -130,16 +134,7 @@ namespace UniversalSplitScreen.Core
 					task.Start();
 					setFocusTasks.Add(task, c);
 				}
-
-				//Draw mouse tasks
-				if (options.DrawMouse)
-				{
-					CancellationTokenSource c = new CancellationTokenSource();
-					Task task = new Task(() => DrawMouse(hWnd, c.Token), c.Token);
-					task.Start();
-					drawMouseTasks.Add(task, c);
-				}
-				
+								
 				//EasyHook
 				if (options.Hook_FilterRawInput || 
 					options.Hook_FilterWindowsMouseInput || 
@@ -245,19 +240,16 @@ namespace UniversalSplitScreen.Core
 
 			foreach (var thread in setFocusTasks)
 				thread.Value.Cancel();
-
-			foreach (var thread in drawMouseTasks)
-				thread.Value.Cancel();
-
+			
 			autoUnfocusTask.Item2?.Cancel();
 
 			foreach (var window in windows.Values.ToArray())
 			{
 				window.HooksCPPNamedPipe?.Close();
+				window.KillCursor();
 			}
 
 			setFocusTasks.Clear();
-			drawMouseTasks.Clear();
 
 			Program.Form.OnSplitScreenEnd();
 			Program.Form.WindowState = FormWindowState.Normal;
@@ -380,88 +372,7 @@ namespace UniversalSplitScreen.Core
 
 			}
 		}
-
-		class PointerForm : Form
-		{
-			public PointerForm() : base()
-			{
-				BackColor = System.Drawing.Color.Green;
-				TransparencyKey = BackColor;
-			}
-
-			protected override void OnPaintBackground(PaintEventArgs e)
-			{
-				//Console.WriteLine("PB");
-				base.OnPaintBackground(e);
-				var g = System.Drawing.Graphics.FromHwnd(this.Handle);
-				Cursors.Default.Draw(g, new System.Drawing.Rectangle(new System.Drawing.Point(0,0), Cursors.Default.Size));
-			//	WinApi.DrawIcon(hdc, x, y, hicon);
-				
-			}
-		}
-		/// <summary>
-		/// Periodically draws a mouse cursor over the game. 
-		/// The cursor is wiped every time the game updates a frame. 
-		/// The cursor will be flickery unless vsync is enabled in the game.
-		/// </summary>
-		/// <param name="hWnd"></param>
-		/// <param name="token"></param>
-		private void DrawMouse(IntPtr hWnd, CancellationToken token)
-		{
-			var g = System.Drawing.Graphics.FromHwnd(hWnd);
-			var hdc = new HandleRef(g, g.GetHdc());
-			var hicon = new HandleRef(Cursors.Default, Cursors.Default.Handle);
-
-			var f = new PointerForm()
-			{
-				Width = 1,
-				Height = 1,
-				FormBorderStyle = FormBorderStyle.None,
-				Text = "test",
-				StartPosition = FormStartPosition.Manual,
-				Location = new System.Drawing.Point(0, 0),
-				TopMost = true
-			};
-
-			f.Show();
-
-			while (true)
-			{
-				Thread.Sleep(Options.CurrentOptions.DrawMouseEveryXMilliseconds);
-
-				if (windows.TryGetValue(hWnd, out Window window))
-				{
-					var mouseVec = window.MousePosition;
-					var x = mouseVec.x;
-					var y = mouseVec.y;
-
-					if (x != 0 && y != 0 && x != window.Width && y != window.Height)
-					{
-						try
-						{
-							//Cursors.Default.Draw(g, new System.Drawing.Rectangle(new System.Drawing.Point(x, y), Cursors.Default.Size));
-							//WinApi.DrawIcon(hdc, x, y, hicon);
-							var po = new System.Drawing.Point(x,  y);
-							WinApi.ClientToScreen(hWnd, ref po);
-							f.Location = po;
-						}
-						catch (Exception e)
-						{
-							Logger.WriteLine($"Exception while drawing mouse. (Checking if window still exists): {e}");
-							CheckIfWindowExists(hWnd);
-						}
-					}
-				}
-
-				if (token.IsCancellationRequested)
-				{
-					f.Hide();
-					f.Dispose();
-					return;
-				}
-			}
-		}
-
+			
 		/// <summary>
 		/// Periodically sets the foreground window to the desktop.
 		/// Windows will do nothing unless we are the foreground window, so this isn't particularly useful.

@@ -117,8 +117,11 @@ namespace UniversalSplitScreen.Core
 				0x0002 | 0x0001 | 0x0004 | 0x0020);//SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED
 		}
 		
+		//[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+		//public static extern bool DrawIcon(HandleRef hDC, int x, int y, HandleRef hIcon);
+
 		[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-		public static extern bool DrawIcon(HandleRef hDC, int x, int y, HandleRef hIcon);
+		public static extern bool DrawIcon(IntPtr hDC, int x, int y, IntPtr hIcon);
 
 		[DllImport("user32.dll")]
 		public static extern bool ClientToScreen(IntPtr hWnd, ref System.Drawing.Point lpPoint);

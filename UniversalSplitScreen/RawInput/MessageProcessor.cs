@@ -226,8 +226,8 @@ namespace UniversalSplitScreen.RawInput
 								}
 								
 								long packedXY = (mouseVec.y * 0x10000) + mouseVec.x;
-								
-								
+
+								window.UpdateCursorPosition();
 
 								//Mouse buttons.
 								ushort f = mouse.usButtonFlags;
