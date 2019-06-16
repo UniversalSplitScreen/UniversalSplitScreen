@@ -391,6 +391,8 @@ namespace UniversalSplitScreen.Core
 		private void DrawMouse(IntPtr hWnd, CancellationToken token)
 		{
 			var g = System.Drawing.Graphics.FromHwnd(hWnd);
+			var hdc = new HandleRef(g, g.GetHdc());
+			var hicon = new HandleRef(Cursors.Default, Cursors.Default.Handle);
 
 			while (true)
 			{
@@ -406,7 +408,8 @@ namespace UniversalSplitScreen.Core
 					{
 						try
 						{
-							Cursors.Default.Draw(g, new System.Drawing.Rectangle(new System.Drawing.Point(x, y), Cursors.Default.Size));
+							//Cursors.Default.Draw(g, new System.Drawing.Rectangle(new System.Drawing.Point(x, y), Cursors.Default.Size));
+							WinApi.DrawIcon(hdc, x, y, hicon);
 						}
 						catch (Exception e)
 						{
