@@ -119,5 +119,8 @@ namespace UniversalSplitScreen.Core
 		
 		[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
 		public static extern bool DrawIcon(HandleRef hDC, int x, int y, HandleRef hIcon);
+
+		[DllImport("user32.dll")]
+		public static extern bool ClientToScreen(IntPtr hWnd, ref System.Drawing.Point lpPoint);
 	}
 }

@@ -381,6 +381,24 @@ namespace UniversalSplitScreen.Core
 			}
 		}
 
+		class PointerForm : Form
+		{
+			public PointerForm() : base()
+			{
+				BackColor = System.Drawing.Color.Green;
+				TransparencyKey = BackColor;
+			}
+
+			protected override void OnPaintBackground(PaintEventArgs e)
+			{
+				//Console.WriteLine("PB");
+				base.OnPaintBackground(e);
+				var g = System.Drawing.Graphics.FromHwnd(this.Handle);
+				Cursors.Default.Draw(g, new System.Drawing.Rectangle(new System.Drawing.Point(0,0), Cursors.Default.Size));
+			//	WinApi.DrawIcon(hdc, x, y, hicon);
+				
+			}
+		}
 		/// <summary>
 		/// Periodically draws a mouse cursor over the game. 
 		/// The cursor is wiped every time the game updates a frame. 
@@ -393,6 +411,19 @@ namespace UniversalSplitScreen.Core
 			var g = System.Drawing.Graphics.FromHwnd(hWnd);
 			var hdc = new HandleRef(g, g.GetHdc());
 			var hicon = new HandleRef(Cursors.Default, Cursors.Default.Handle);
+
+			var f = new PointerForm()
+			{
+				Width = 1,
+				Height = 1,
+				FormBorderStyle = FormBorderStyle.None,
+				Text = "test",
+				StartPosition = FormStartPosition.Manual,
+				Location = new System.Drawing.Point(0, 0),
+				TopMost = true
+			};
+
+			f.Show();
 
 			while (true)
 			{
@@ -409,7 +440,10 @@ namespace UniversalSplitScreen.Core
 						try
 						{
 							//Cursors.Default.Draw(g, new System.Drawing.Rectangle(new System.Drawing.Point(x, y), Cursors.Default.Size));
-							WinApi.DrawIcon(hdc, x, y, hicon);
+							//WinApi.DrawIcon(hdc, x, y, hicon);
+							var po = new System.Drawing.Point(x,  y);
+							WinApi.ClientToScreen(hWnd, ref po);
+							f.Location = po;
 						}
 						catch (Exception e)
 						{
@@ -420,7 +454,11 @@ namespace UniversalSplitScreen.Core
 				}
 
 				if (token.IsCancellationRequested)
+				{
+					f.Hide();
+					f.Dispose();
 					return;
+				}
 			}
 		}
 
