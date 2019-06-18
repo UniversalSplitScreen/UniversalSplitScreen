@@ -2,13 +2,14 @@
 
 #include "stdafx.h"
 
-extern "C" __declspec(dllexport) int Inject(int pid, 
+extern "C" __declspec(dllexport) int Inject(
+	int pid, 
 	WCHAR* injectionDllPath32, 
 	WCHAR* injectionDllPath64, 
 	HWND hWnd, 
 	char* ipcChannelNameRead,
 	char* ipcChannelNameWrite, 
-	bool controllerIndex, 
+	int controllerIndex, 
 	int allowedMouseHandle, 
 	bool useLegacyInput,
 
