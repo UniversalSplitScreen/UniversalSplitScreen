@@ -174,7 +174,8 @@ namespace UniversalSplitScreen.Core
 							window.pid,
 							$"\"{(is64 ? hooksLibrary64 : hooksLibrary32)}\"",
 							window.hWnd,
-							needPipe ? pipe.pipeName : "USS_NO_PIPE_NEEDED",
+							needPipe ? pipe.pipeNameRead : "USS_NO_PIPE_NEEDED",
+							pipe.pipeNameWrite,//TODO: only if needed!
 							window.ControllerIndex,
 							(int)window.MouseAttached,
 							options.Hook_UseLegacyInput,

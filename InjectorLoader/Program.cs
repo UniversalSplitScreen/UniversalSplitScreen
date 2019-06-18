@@ -13,7 +13,8 @@ namespace InjectorLoader
 					[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath32,
 					[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath64,
 					IntPtr hWnd,
-					string ipcChannelName,
+					string ipcChannelNameRead,
+					string ipcChannelNameWrite,
 					int controllerIndex,
 					int allowedMouseHandle,
 					bool useLegacyInput,
@@ -35,7 +36,8 @@ namespace InjectorLoader
 					[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath32,
 					[MarshalAsAttribute(UnmanagedType.LPWStr)] string injectionDllPath64,
 					IntPtr hWnd,
-					string ipcChannelName,
+					string ipcChannelNameRead,
+					string ipcChannelNameWrite,
 					int controllerIndex,
 					int allowedMouseHandle,
 					bool useLegacyInput,
@@ -51,9 +53,11 @@ namespace InjectorLoader
 
 		public static void Main(string[] args)
 		{
-			if (args.Length != 15)
+			const int argsL = 16;
+
+			if (args.Length != argsL)
 			{
-				throw new ArgumentException("Need exactly 15 arguments");
+				throw new ArgumentException($"Need exactly {argsL} arguments");
 			}
 
 			//Arguments
@@ -64,13 +68,14 @@ namespace InjectorLoader
 			int.TryParse(args[2], out int _hWnd);
 			IntPtr hWnd = (IntPtr)_hWnd;
 
-			string ipcChannelName = args[3];
+			string ipcChannelNameRead = args[3];
+			string ipcChannelNameWrite = args[4];
 
-			int.TryParse(args[4], out int controllerIndex);
+			int.TryParse(args[5], out int controllerIndex);
 
-			int.TryParse(args[5], out int allowedMouseHandle);
+			int.TryParse(args[6], out int allowedMouseHandle);
 
-			bool useLegacyInput = args[6].ToLower().Equals("true");
+			bool useLegacyInput = args[7].ToLower().Equals("true");
 
 			int i = 7;
 			bool nextBool() => args[i++].ToLower().Equals("true");
@@ -92,7 +97,8 @@ namespace InjectorLoader
 					"",
 					injectionDllPath,
 					hWnd,
-					ipcChannelName,
+					ipcChannelNameRead,
+					ipcChannelNameWrite,
 					controllerIndex,
 					allowedMouseHandle,
 					useLegacyInput,
@@ -111,7 +117,8 @@ namespace InjectorLoader
 					injectionDllPath,
 					"",
 					hWnd,
-					ipcChannelName,
+					ipcChannelNameRead,
+					ipcChannelNameWrite,
 					controllerIndex,
 					allowedMouseHandle,
 					useLegacyInput,

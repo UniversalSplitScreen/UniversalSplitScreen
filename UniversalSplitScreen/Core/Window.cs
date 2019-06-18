@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Channels.Ipc;
 using System.Windows.Forms;
@@ -36,7 +37,12 @@ namespace UniversalSplitScreen.Core
 			public int x;
 			public int y;
 
+			private int oldX;
+			private int oldY;
+
 			IntPtr hWnd;
+
+			System.Reflection.MethodInfo paintBkgMethod;
 
 			public PointerForm(IntPtr hWnd) : base()
 			{
@@ -47,15 +53,35 @@ namespace UniversalSplitScreen.Core
 				ShowInTaskbar = false;
 				
 				hicon = Cursors.Default.Handle;
-			}
 
+				//g = System.Drawing.Graphics.FromHwnd(hWnd);
+				g = System.Drawing.Graphics.FromHwnd(this.Handle);
+				h = g.GetHdc();
+
+				paintBkgMethod = typeof(Control).GetMethod("PaintBackground", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(PaintEventArgs), typeof(System.Drawing.Rectangle) }, null);
+			}
+			System.Drawing.Graphics g;
+			IntPtr h;
+			bool hasDrawn = false;
 			protected override void OnPaintBackground(PaintEventArgs e)
 			{
-				base.OnPaintBackground(e);
-
-				var graphics = System.Drawing.Graphics.FromHwnd(this.Handle);
+				//base.OnPaintBackground(e);
+				if (!hasDrawn)
+				{ 
+					hasDrawn = true;
+					base.OnPaintBackground(e);
+					return;
+				}
+				paintBkgMethod.Invoke(this, new object[]{e, new System.Drawing.Rectangle(oldX, oldY, 20, 20)});
+				//var graphics = System.Drawing.Graphics.FromHwnd(this.Handle);
 				//var graphics = System.Drawing.Graphics.FromHwnd(hWnd);
-				WinApi.DrawIcon(graphics.GetHdc(), 0, 0, hicon);
+				WinApi.DrawIcon(h, x,y, hicon);
+
+				oldX = x;
+				oldY = y;
+
+				//Greatly reduces cpu usage, doesn't lock any input. Insignificant delay. Mouse cursor is only used in menus, not first person.
+				System.Threading.Thread.Sleep(5);
 
 				/*Console.WriteLine("a");
 				if (!Bounds.Contains(x, y))
@@ -75,6 +101,11 @@ namespace UniversalSplitScreen.Core
 				//var graphics = System.Drawing.Graphics.FromHwnd(hWnd);
 				//WinApi.DrawIcon(graphics.GetHdc(), x - Location.X, y - Location.Y, hicon);*/
 			}
+
+			public void InvalidateMouse(int oldX, int oldY)
+			{
+				Invalidate(new System.Drawing.Rectangle(oldX, oldY, 30, 30));
+			}
 		}
 
 		private PointerForm pointerForm = null;
@@ -83,42 +114,42 @@ namespace UniversalSplitScreen.Core
 		{
 			pointerForm = new PointerForm(hWnd)
 			{
-				Width = 30,
-				Height = 30,
+				Width = 1000,
+				Height = 1000,
 				FormBorderStyle = FormBorderStyle.None,
 				Text = "",
 				StartPosition = FormStartPosition.Manual,
-				Location = new System.Drawing.Point(0, 0),
-				//Location = new System.Drawing.Point(Bounds.Left, Bounds.Right),
+				//Location = new System.Drawing.Point(0, 0),
+				Location = new System.Drawing.Point(Bounds.Left + 7, Bounds.Top + 31),
 				TopMost = true
 			};
 
 			pointerForm.Show();
 		}
-
+		
 		public void UpdateCursorPosition()
 		{
 			if (pointerForm != null)
 			{
-				var p = new System.Drawing.Point(MousePosition.x, MousePosition.y);
-				WinApi.ClientToScreen(hWnd, ref p);
-				
+				//var p = new System.Drawing.Point(MousePosition.x, MousePosition.y);
+				//WinApi.ClientToScreen(hWnd, ref p);
+
 
 				//if (!pointerForm.Bounds.Contains(p.X, p.Y))
 				//{
 				//	Console.WriteLine("jmp2");
 				//	pointerForm.Location = new System.Drawing.Point(p.X - pointerForm.Width / 2, p.Y - pointerForm.Height / 2);
 				//}
+
+
+				int oldX = pointerForm.x;
+				int oldY = pointerForm.y;
+				pointerForm.x = MousePosition.x;
+				pointerForm.y = MousePosition.y;
+				pointerForm.InvalidateMouse(oldX, oldY);
+
+				//pointerForm.Location = p;
 				
-
-				const int res = 5;
-
-				int roundedX = res * (int)Math.Round((double)p.X / res);
-				int roundedY = res * (int)Math.Round((double)p.Y / res);
-				if (pointerForm.Location.X != roundedX || pointerForm.Location.Y != roundedY)
-				{
-					pointerForm.Location = new System.Drawing.Point(roundedX, roundedY);
-				}
 			}
 		}
 

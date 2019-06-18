@@ -14,7 +14,8 @@ using namespace std;
 struct UserData
 {
 	HWND hWnd;
-	char ipcChannelName[256];//Name will be 30 characters
+	char ipcChannelNameRead[256];//Name will be 30 characters
+	char ipcChannelNameWrite[256];//Name will be 30 characters
 	int controllerIndex;
 	int allowedMouseHandle;
 	bool HookGetCursorPos;
@@ -28,12 +29,13 @@ struct UserData
 	bool useLegacyInput;
 };
 
-extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, WCHAR* injectionDllPath64, HWND hWnd, char* ipcChannelName, bool controllerIndex, int allowedMouseHandle, bool useLegacyInput,
+extern "C" __declspec(dllexport) int Inject(int pid, WCHAR* injectionDllPath32, WCHAR* injectionDllPath64, HWND hWnd, char* ipcChannelNameRead, char* ipcChannelNameWrite, bool controllerIndex, int allowedMouseHandle, bool useLegacyInput,
 	bool HookGetCursorPos, bool HookGetForegroundWindow, bool HookGetAsyncKeyState, bool HookGetKeyState, bool HookCallWindowProcW, bool HookRegisterRawInputDevices, bool HookSetCursorPos, bool HookXInput)
 {	
 	UserData* data = new UserData();
 	data->hWnd = hWnd;
-	strcpy_s(data->ipcChannelName, ipcChannelName);
+	strcpy_s(data->ipcChannelNameRead, ipcChannelNameRead);
+	strcpy_s(data->ipcChannelNameWrite, ipcChannelNameWrite);
 	data->controllerIndex = controllerIndex;
 	data->allowedMouseHandle = allowedMouseHandle;
 

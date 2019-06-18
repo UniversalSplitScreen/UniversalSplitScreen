@@ -28,10 +28,15 @@ namespace UniversalSplitScreen.Piping
 
 	public class NamedPipe
 	{
-		public readonly string pipeName;
+		public readonly string pipeNameRead;//Read FROM HooksCPP
+		public readonly string pipeNameWrite;//Written from HooksCPP
 
 		Thread serverThread;
-		NamedPipeServerStream pipeServer;
+		Thread receiveThread;
+
+		NamedPipeServerStream pipeServerRead;//Read FROM HooksCPP
+		NamedPipeServerStream pipeServerWrite;//Writeen from HooksCPP
+
 		bool clientConnected = false;
 		IntPtr hWnd;
 
@@ -40,32 +45,39 @@ namespace UniversalSplitScreen.Piping
 
 		public NamedPipe(IntPtr hWnd)
 		{
-			pipeName = GenerateName();
+			pipeNameRead = GenerateName();
+			pipeNameWrite = GenerateName();
 
 			this.hWnd = hWnd;
 
 			serverThread = new Thread(Start);
 			serverThread.Start();
+
+			receiveThread = new Thread(ReceiveMessages);
+			receiveThread.IsBackground = true;
+			receiveThread.Start();
 		}
 
 		private void Start()
 		{
-			Logger.WriteLine($"Starting pipe {pipeName}");
-			pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.WriteThrough);
-			Logger.WriteLine($"Created pipe {pipeName}");
+			Logger.WriteLine($"Starting read pipe {pipeNameRead}");
+			pipeServerRead = new NamedPipeServerStream(pipeNameRead, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.WriteThrough);
+			Logger.WriteLine($"Created read pipe {pipeNameRead}");
 
 			try
 			{
-				pipeServer.WaitForConnection();
+				pipeServerRead.WaitForConnection();
 			}
 			catch(Exception e)
 			{
-				Logger.WriteLine($"Exception while waiting for pipe client to connect: {e}");
+				Logger.WriteLine($"Exception while waiting for pipe client to connect (read): {e}");
 				return;
 			}
 
 			clientConnected = true;
-			Logger.WriteLine($"Client connected to pipe {pipeName}");
+			Logger.WriteLine($"Client connected to (read) pipe {pipeNameRead}");
+
+			
 
 			// If legacy input is enabled, HooksCPP needs to know 
 			// - Delta changes in mouse position (since last input). There is no bounding on this as it is used for first person camera movement.
@@ -90,6 +102,33 @@ namespace UniversalSplitScreen.Piping
 					xyResetEvent.Reset();//Reset the event (or WaitOne passes immediately)
 				}
 			}
+		}
+
+		private void ReceiveMessages()
+		{
+			Logger.WriteLine($"Starting write pipe {pipeNameWrite}");
+			pipeServerWrite = new NamedPipeServerStream(pipeNameWrite, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.WriteThrough);
+			Logger.WriteLine($"Created write pipe {pipeNameWrite}");
+
+			try
+			{
+				pipeServerWrite.WaitForConnection();
+			}
+			catch (Exception e)
+			{
+				Logger.WriteLine($"Exception while waiting for pipe client to connect (write): {e}");
+				return;
+			}
+			
+			Logger.WriteLine($"Client connected to (write) pipe {pipeNameWrite}");
+
+			while (clientConnected)
+			{
+				byte[] buffer = new byte[9];
+				pipeServerWrite.Read(buffer, 0, 9);
+				Console.WriteLine($"Receive msg, Msg={buffer[0]}, param1={buffer[4]}");
+			}
+			Console.WriteLine("ReceiveMessages END");
 		}
 
 		/// <summary>
@@ -128,7 +167,7 @@ namespace UniversalSplitScreen.Piping
 
 					try
 					{
-						pipeServer?.Write(bytes, 0, 9);
+						pipeServerRead?.Write(bytes, 0, 9);
 					}
 					catch (Exception)
 					{
@@ -154,7 +193,7 @@ namespace UniversalSplitScreen.Piping
 
 			try
 			{
-				pipeServer.Write(bytes, 0, 9);
+				pipeServerRead.Write(bytes, 0, 9);
 			}
 			catch (Exception)
 			{
@@ -164,10 +203,15 @@ namespace UniversalSplitScreen.Piping
 
 		public void Close()
 		{
-			Logger.WriteLine($"Closing pipe {pipeName}");
+			Logger.WriteLine($"Closing read pipe {pipeNameRead} and write pipe {pipeNameWrite}");
 			WriteMessageNow(0x03, 0, 0);//Close pipe message.
-			pipeServer?.Dispose();
-			pipeServer = null;
+
+			pipeServerRead?.Dispose();
+			pipeServerRead = null;
+
+			pipeServerWrite?.Dispose();
+			pipeServerWrite = null;
+
 			clientConnected = false;
 			xyResetEvent.Close();
 		}

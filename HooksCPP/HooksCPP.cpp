@@ -14,8 +14,11 @@ using namespace std;
 extern HMODULE DllHandle;
 
 HWND hWnd = 0;
-string _ipcChannelName;//The name of the named pipe.
+string _ipcChannelNameRead;//The name of the named pipe.
+string _ipcChannelNameWrite;
 
+HANDLE hPipeRead;
+HANDLE hPipeWrite;
 
 CRITICAL_SECTION mcs;
 int fakeX;//Delta X
@@ -108,6 +111,11 @@ HWND WINAPI GetForegroundWindow_Hook()
 	return hWnd;
 }
 
+HWND WINAPI WindowFromPoint_Hook()
+{
+	return hWnd;
+}
+
 inline int getBitShiftForVKey(int VKey)
 {
 	int shift = 0;
@@ -169,10 +177,11 @@ inline int bytesToInt(BYTE* bytes)
 
 void startPipeListen()
 {	
+	//Read pipe
 	char _pipeNameChars[256];
-	sprintf_s(_pipeNameChars, "\\\\.\\pipe\\%s", _ipcChannelName.c_str());
+	sprintf_s(_pipeNameChars, "\\\\.\\pipe\\%s", _ipcChannelNameRead.c_str());
 
-	HANDLE pipe = CreateFile(
+	hPipeRead = CreateFile(
 		_pipeNameChars,
 		GENERIC_READ,
 		FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -182,13 +191,36 @@ void startPipeListen()
 		NULL
 	);
 
-	if (pipe == INVALID_HANDLE_VALUE)
+	if (hPipeRead == INVALID_HANDLE_VALUE)
 	{
-		std::cout << "Failed to connect to pipe\n";
+		std::cout << "Failed to connect to pipe (read)\n";
 		return;
 	}
 
-	std::cout << "Connected to pipe\n";
+	std::cout << "Connected to pipe (read)\n";
+
+	//Write pipe
+	char _pipeNameCharsWrite[256];
+	sprintf_s(_pipeNameCharsWrite, "\\\\.\\pipe\\%s", _ipcChannelNameWrite.c_str());
+
+	hPipeWrite = CreateFile(
+		_pipeNameCharsWrite,
+		GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		NULL,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL
+	);
+
+	if (hPipeWrite == INVALID_HANDLE_VALUE)
+	{
+		std::cout << "Failed to connect to pipe (write)\n";
+	}
+	else
+	{
+		std::cout << "Connected to pipe (write)\n";
+	}
 
 	//Loop until pipe close message is received
 	for (;;)
@@ -197,7 +229,7 @@ void startPipeListen()
 		DWORD bytesRead = 0;
 
 		BOOL result = ReadFile(
-			pipe,
+			hPipeRead,
 			buffer,
 			9 * sizeof(BYTE),
 			&bytesRead,
@@ -296,7 +328,8 @@ NTSTATUS installHook(LPCSTR moduleHandle, LPCSTR lpProcName, void* InCallback)
 struct UserData
 {
 	HWND hWnd;
-	char ipcChannelName[256];//Name will be 30 characters
+	char ipcChannelNameRead[256];//Name will be 30 characters
+	char ipcChannelNameWrite[256];//Name will be 30 characters
 	int controllerIndex;
 	int allowedMouseHandle;
 	bool HookGetCursorPos;
@@ -379,6 +412,52 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 	return CallNextHookEx(NULL, code, wParam, lParam);//Pass
 }
 
+void SetCursorVisibility(bool show)
+{
+	BYTE buffer[9] = { 0x06,  0,0,0, (show ? 1 : 0),  0,0,0,0 };
+
+	DWORD bytesRead = 0;
+
+	BOOL result = WriteFile(
+		hPipeWrite,
+		buffer,
+		9 * sizeof(BYTE),
+		&bytesRead,
+		NULL
+	);
+
+	if (result == FALSE)
+	{
+		cout << "scv fail, err=" << GetLastError() << endl;
+	}
+
+	//std::cout << "scvr, b="<<show << endl;
+}
+
+int WINAPI ShowCursor_Hook(BOOL bShow)
+{
+	/*std::cout << "ShowCursor, bShow=" << bShow << endl;
+	std::ofstream logging;
+	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+	logging << "ShowCursor, bShow=" << bShow << endl;
+	logging.close();*/
+	SetCursorVisibility(bShow == TRUE);
+	return (bShow == TRUE) ? 0 : -1;
+	//return ShowCursor(bShow);
+}
+
+HCURSOR WINAPI SetCursor_Hook(HCURSOR hCursor)
+{
+	/*std::cout << "SetCursor, hCursor==null=" << (hCursor == NULL) << endl;
+	std::ofstream logging;
+	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
+	logging << "SetCursor, hCursor==null=" << (hCursor == NULL) << endl;
+	logging.close();*/
+	SetCursorVisibility(hCursor != NULL);
+	return hCursor;
+	//return SetCursor(hCursor);
+}
+
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
 	//Cout will go to the games console (test easily with SMAPI/Minecraft)
@@ -398,9 +477,13 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		hWnd = userData.hWnd;
 		std::cout << "Received hWnd: " << hWnd << endl;
 
-		string ipcChannelName(userData.ipcChannelName);
-		_ipcChannelName = ipcChannelName;
-		std::cout << "Received IPC channel: " << ipcChannelName << endl;
+		string ipcChannelName(userData.ipcChannelNameRead);
+		_ipcChannelNameRead = ipcChannelName;
+		std::cout << "Received IPC channel read: " << ipcChannelName << endl;
+
+		string ipcChannelNameWrite(userData.ipcChannelNameWrite);
+		_ipcChannelNameWrite = ipcChannelNameWrite;
+		std::cout << "Received IPC channel write: " << ipcChannelNameWrite << endl;
 
 		controllerIndex = userData.controllerIndex;
 		std::cout << "Received controller index: " << controllerIndex << endl;
@@ -411,9 +494,17 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		enableLegacyInput = userData.useLegacyInput;
 		std::cout << "Use legacy input: " << enableLegacyInput << endl;
 
+		installHook(TEXT("user32"), "ShowCursor", ShowCursor_Hook);
+		installHook(TEXT("user32"), "SetCursor", SetCursor_Hook);
+
 		//Install hooks
-		if (userData.HookGetCursorPos)				installHook(TEXT("user32"),	"GetCursorPos",				GetCursorPos_Hook);
-		if (userData.HookGetForegroundWindow)		installHook(TEXT("user32"),	"GetForegroundWindow",		GetForegroundWindow_Hook);
+		if (userData.HookGetForegroundWindow) 
+		{
+			installHook(TEXT("user32"), "GetForegroundWindow", GetForegroundWindow_Hook);
+			//installHook(TEXT("user32"), "WindowFromPoint", WindowFromPoint_Hook);
+		}
+
+		if (userData.HookGetCursorPos)				installHook(TEXT("user32"), "GetCursorPos", GetCursorPos_Hook);
 		if (userData.HookGetAsyncKeyState)			installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
 		if (userData.HookGetKeyState)				installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
 		if (userData.HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
