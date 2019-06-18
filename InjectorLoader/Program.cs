@@ -77,7 +77,7 @@ namespace InjectorLoader
 
 			bool useLegacyInput = args[7].ToLower().Equals("true");
 
-			int i = 7;
+			int i = 8;//DONT FORGET TO INCREMENT THIS ALSO
 			bool nextBool() => args[i++].ToLower().Equals("true");
 
 			bool HookGetCursorPos = nextBool();
