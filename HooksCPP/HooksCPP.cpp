@@ -412,23 +412,30 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 	return CallNextHookEx(NULL, code, wParam, lParam);//Pass
 }
 
+bool sentVisibility = true; //the visibility stored in C#
+
 void SetCursorVisibility(bool show)
 {
-	BYTE buffer[9] = { 0x06,  0,0,0, (show ? 1 : 0),  0,0,0,0 };
-
-	DWORD bytesRead = 0;
-
-	BOOL result = WriteFile(
-		hPipeWrite,
-		buffer,
-		9 * sizeof(BYTE),
-		&bytesRead,
-		NULL
-	);
-
-	if (result == FALSE)
+	if (show != sentVisibility)
 	{
-		cout << "scv fail, err=" << GetLastError() << endl;
+		BYTE buffer[9] = { 0x06,  0,0,0, (show ? 1 : 0),  0,0,0,0 };
+
+		DWORD bytesRead = 0;
+
+		BOOL result = WriteFile(
+			hPipeWrite,
+			buffer,
+			9 * sizeof(BYTE),
+			&bytesRead,
+			NULL
+		);
+
+		if (result == FALSE)
+		{
+			cout << "scv fail, err=" << GetLastError() << endl;
+		}
+
+		sentVisibility = show;
 	}
 
 	//std::cout << "scvr, b="<<show << endl;

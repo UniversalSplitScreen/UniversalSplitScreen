@@ -39,16 +39,18 @@ namespace UniversalSplitScreen.Piping
 
 		bool clientConnected = false;
 		IntPtr hWnd;
+		Window window;
 
 		int			toSendDeltaX,	toSendDeltaY,	toSendAbsX,	toSendAbsY;
 		private ManualResetEvent xyResetEvent = new ManualResetEvent(false);
 
-		public NamedPipe(IntPtr hWnd)
+		public NamedPipe(IntPtr hWnd, Window window)
 		{
 			pipeNameRead = GenerateName();
 			pipeNameWrite = GenerateName();
 
 			this.hWnd = hWnd;
+			this.window = window;
 
 			serverThread = new Thread(Start);
 			serverThread.Start();
@@ -126,7 +128,14 @@ namespace UniversalSplitScreen.Piping
 			{
 				byte[] buffer = new byte[9];
 				pipeServerWrite.Read(buffer, 0, 9);
-				Console.WriteLine($"Receive msg, Msg={buffer[0]}, param1={buffer[4]}");
+				int msg = buffer[0];
+				Console.WriteLine($"Receive msg, Msg={msg}, param1={buffer[4]}");
+				if (msg == 0x06)
+				{
+					window.CursorVisibility = (buffer[4] == 1);
+				}
+
+				
 			}
 			Console.WriteLine("ReceiveMessages END");
 		}

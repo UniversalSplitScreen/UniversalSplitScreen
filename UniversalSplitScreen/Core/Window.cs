@@ -37,6 +37,8 @@ namespace UniversalSplitScreen.Core
 			public int x;
 			public int y;
 
+			public bool visible = true;
+
 			private int oldX;
 			private int oldY;
 
@@ -75,7 +77,8 @@ namespace UniversalSplitScreen.Core
 				paintBkgMethod.Invoke(this, new object[]{e, new System.Drawing.Rectangle(oldX, oldY, 20, 20)});
 				//var graphics = System.Drawing.Graphics.FromHwnd(this.Handle);
 				//var graphics = System.Drawing.Graphics.FromHwnd(hWnd);
-				WinApi.DrawIcon(h, x,y, hicon);
+				if (visible)
+					WinApi.DrawIcon(h, x,y, hicon);
 
 				oldX = x;
 				oldY = y;
@@ -109,6 +112,8 @@ namespace UniversalSplitScreen.Core
 		}
 
 		private PointerForm pointerForm = null;
+		public bool CursorVisibility { get => pointerForm.visible; set { if (pointerForm != null) pointerForm.visible = value; } }
+
 
 		public void CreateCursor()
 		{

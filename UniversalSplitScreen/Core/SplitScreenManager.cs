@@ -150,7 +150,7 @@ namespace UniversalSplitScreen.Core
 
 					//bool needPipe = options.Hook_GetCursorPos || options.Hook_GetAsyncKeyState || options.Hook_GetKeyState;
 					bool needPipe = true;
-					NamedPipe pipe = needPipe ? new NamedPipe(hWnd) : null;
+					NamedPipe pipe = needPipe ? new NamedPipe(hWnd, window) : null;
 					window.HooksCPPNamedPipe = pipe;
 						
 					string hooksLibrary32 = Path.Combine(Path.GetDirectoryName(
