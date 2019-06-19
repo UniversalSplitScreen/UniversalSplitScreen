@@ -17,5 +17,6 @@
   "Hook_GetAsyncKeyState": true,
   "Hook_GetKeyState": true,
   "Hook_XInput": true,
+  "Hook_MouseVisibility": true,
   "EndVKey": 35
 }

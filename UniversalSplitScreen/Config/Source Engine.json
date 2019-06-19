@@ -18,5 +18,6 @@
   "Hook_GetKeyState": false,
   "Hook_XInput": true,
   "Hook_UseLegacyInput": true,
+  "Hook_MouseVisibility": true,
   "EndVKey": 35
 }
