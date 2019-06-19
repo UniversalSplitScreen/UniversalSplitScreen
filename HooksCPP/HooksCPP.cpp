@@ -445,6 +445,7 @@ void SetCursorVisibility(bool show)
 int WINAPI ShowCursor_Hook(BOOL bShow)
 {
 	SetCursorVisibility(bShow == TRUE);
+	if (bShow == FALSE) ShowCursor(FALSE);
 	return (bShow == TRUE) ? 0 : -1;
 	//return ShowCursor(bShow);
 }
@@ -452,6 +453,7 @@ int WINAPI ShowCursor_Hook(BOOL bShow)
 HCURSOR WINAPI SetCursor_Hook(HCURSOR hCursor)
 {
 	SetCursorVisibility(hCursor != NULL);
+	if (hCursor == NULL) SetCursor(NULL);
 	return hCursor;
 	//return SetCursor(hCursor);
 }
