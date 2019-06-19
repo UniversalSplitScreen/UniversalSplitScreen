@@ -135,7 +135,7 @@ namespace UniversalSplitScreen.Core
 				if (pointerForm.visible)
 				{
 					hasRepaintedSinceLastInvisible = false;
-					var p = new System.Drawing.Point(Math.Min(MousePosition.x,Width), Math.Min(MousePosition.y,Height));//needs to be bound to width/height
+					var p = new System.Drawing.Point(MousePosition.x, MousePosition.y);//needs to be bound to width/height
 					WinApi.ClientToScreen(hWnd, ref p);
 
 					pointerForm.screenX = p.X;
