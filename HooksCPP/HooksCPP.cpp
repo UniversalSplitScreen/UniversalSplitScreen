@@ -469,6 +469,10 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 	
 	InitializeCriticalSection(&mcs);
 
+	int i = 0;
+	while (ShowCursor(FALSE) >= -10 || i++ > 20);
+	SetCursor(NULL);
+
 	if (inRemoteInfo->UserDataSize == sizeof(UserData))
 	{
 		//Get UserData

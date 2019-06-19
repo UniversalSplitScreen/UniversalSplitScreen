@@ -21,6 +21,9 @@ namespace UniversalSplitScreen.SendInput
 		[DllImport("user32.dll")]
 		static extern int ShowCursor(bool bShow);
 
+		[DllImport("user32.dll")]
+		static extern IntPtr SetCursor(IntPtr handle);
+
 		//TODO: move to start of program in separate thread so it doesnt cause delay when start is first clicked
 
 		public static void Init()
@@ -73,6 +76,10 @@ namespace UniversalSplitScreen.SendInput
 			ahk?.UnSuspend();
 			
 			if (ahk != null) System.Windows.Forms.Cursor.Hide();//Only works if the form window in the top left corner (0,0)
+			int i = 0;
+			while (ShowCursor(false) >= 0 || i++ > 30);
+			SetCursor(IntPtr.Zero);
+
 
 			SendInput.WinApi.BlockInput(true);
 		}
