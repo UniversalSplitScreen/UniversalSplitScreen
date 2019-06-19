@@ -18,7 +18,6 @@ namespace UniversalSplitScreen.Core
 		public bool RefreshWindowBoundsOnMouseClick	{ get; set; } = false;
 
 		public bool DrawMouse						{ get; set; } = true;
-		public int DrawMouseEveryXMilliseconds		{ get; set; } = 15;
 
 		public bool Hook_FilterRawInput				{ get; set; } = false;
 		public bool Hook_FilterWindowsMouseInput	{ get; set; } = false;

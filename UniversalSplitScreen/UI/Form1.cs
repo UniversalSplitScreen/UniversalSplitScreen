@@ -63,8 +63,6 @@ namespace UniversalSplitScreen.UI
 			RefCheckbox_Hook_XInput.RefType						= new RefType<bool>("Hook_XInput");
 			RefCheckbox_Hook_UseLegacyInput.RefType				= new RefType<bool>("Hook_UseLegacyInput");
 			RefCheckbox_Hook_MouseVisibility.RefType			= new RefType<bool>("Hook_MouseVisibility");
-
-			drawMouseEveryXmsField.Value						= Options.CurrentOptions.DrawMouseEveryXMilliseconds;
 		}
 		
 
@@ -128,10 +126,6 @@ namespace UniversalSplitScreen.UI
 		#endregion
 
 		#region Option page events
-		private void drawMouseEveryXmsField_ValueChanged(object sender, EventArgs e)
-		{
-			Core.Options.CurrentOptions.DrawMouseEveryXMilliseconds = (int)drawMouseEveryXmsField.Value;
-		}
 		
 		public void SetEndButtonText(string text)
 		{

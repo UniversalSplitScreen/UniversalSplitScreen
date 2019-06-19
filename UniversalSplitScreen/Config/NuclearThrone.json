@@ -9,7 +9,6 @@
   "SendWM_SETFOCUS": false,
   "RefreshWindowBoundsOnMouseClick": false,
   "DrawMouse": false,
-  "DrawMouseEveryXMilliseconds": 15,
   "Hook_FilterRawInput": false,
   "Hook_FilterWindowsMouseInput": false,
   "Hook_GetForegroundWindow": false,
