@@ -218,6 +218,8 @@ namespace UniversalSplitScreen.Piping
 			pipeServerRead?.Dispose();
 			pipeServerRead = null;
 
+			receiveThread.Abort();
+
 			pipeServerWrite?.Dispose();
 			pipeServerWrite = null;
 

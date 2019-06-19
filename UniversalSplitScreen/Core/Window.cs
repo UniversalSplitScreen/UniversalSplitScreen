@@ -34,13 +34,16 @@ namespace UniversalSplitScreen.Core
 		{
 			IntPtr hicon;
 
-			public int x;
-			public int y;
+			public int screenX;
+			public int screenY;
 
 			public bool visible = true;
 
-			private int oldX;
-			private int oldY;
+			private int oldScreenX;
+			private int oldScreenY;
+
+			private int oldLocationX;
+			private int oldLocationY;
 
 			IntPtr hWnd;
 
@@ -57,34 +60,74 @@ namespace UniversalSplitScreen.Core
 				hicon = Cursors.Default.Handle;
 
 				//g = System.Drawing.Graphics.FromHwnd(hWnd);
-				g = System.Drawing.Graphics.FromHwnd(this.Handle);
-				h = g.GetHdc();
+				//g = System.Drawing.Graphics.FromHwnd(this.Handle);
+				//h = g.GetHdc();
+				//h = System.Drawing.Graphics.FromHwnd(this.Handle).GetHdc();
 
 				paintBkgMethod = typeof(Control).GetMethod("PaintBackground", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(PaintEventArgs), typeof(System.Drawing.Rectangle) }, null);
 			}
-			System.Drawing.Graphics g;
+			System.Drawing.Graphics g = null;
 			IntPtr h;
 			bool hasDrawn = false;
+
+			const int cursorWidthHeight = 30;
+
 			protected override void OnPaintBackground(PaintEventArgs e)
 			{
+				/*base.OnPaintBackground(e);
+				
+				var g = System.Drawing.Graphics.FromHwnd(this.Handle);
+				//Cursors.Default.Draw(g, new System.Drawing.Rectangle(new System.Drawing.Point(0, 0), Cursors.Default.Size));
+				WinApi.DrawIcon(g.GetHdc(), 0, 0, hicon);*/
+
 				//base.OnPaintBackground(e);
+
+				
+
 				if (!hasDrawn)
 				{ 
 					hasDrawn = true;
 					base.OnPaintBackground(e);
 					return;
 				}
-				paintBkgMethod.Invoke(this, new object[]{e, new System.Drawing.Rectangle(oldX, oldY, 20, 20)});
+
+				/*if (oldLocationX != Location.X || oldLocationY != Location.Y)
+				{
+					base.OnPaintBackground(e);
+					paintBkgMethod.Invoke(this, new object[]{e,
+						new System.Drawing.Rectangle(oldScreenX - oldLocationX, oldScreenY - oldLocationY, cursorWidthHeight, cursorWidthHeight) });
+
+					oldLocationX = Location.X;
+					oldLocationY = Location.Y;
+				}
+				else*/
+				{
+					paintBkgMethod.Invoke(this, new object[]{e,
+						new System.Drawing.Rectangle(oldScreenX - Location.X, oldScreenY - Location.Y, cursorWidthHeight, cursorWidthHeight) });
+				}
+
 				//var graphics = System.Drawing.Graphics.FromHwnd(this.Handle);
 				//var graphics = System.Drawing.Graphics.FromHwnd(hWnd);
-				if (visible)
-					WinApi.DrawIcon(h, x,y, hicon);
 
-				oldX = x;
-				oldY = y;
+				//WinApi.DrawIcon(h, 0, 0, hicon);
+
+				//var g = System.Drawing.Graphics.FromHwnd(this.Handle);
+				if (g == null)
+				{
+					g = System.Drawing.Graphics.FromHwnd(this.Handle);
+					h = g.GetHdc();
+				}
+				if (visible)
+					WinApi.DrawIcon(h, screenX - Location.X, screenY - Location.Y, hicon);
+
+
+				oldScreenX = screenX;
+				oldScreenY = screenY;
 
 				//Greatly reduces cpu usage, doesn't lock any input. Insignificant delay. Mouse cursor is only used in menus, not first person.
-				System.Threading.Thread.Sleep(5);
+				//System.Threading.Thread.Sleep(5);
+
+				System.Threading.Thread.Sleep(1);
 
 				/*Console.WriteLine("a");
 				if (!Bounds.Contains(x, y))
@@ -105,9 +148,14 @@ namespace UniversalSplitScreen.Core
 				//WinApi.DrawIcon(graphics.GetHdc(), x - Location.X, y - Location.Y, hicon);*/
 			}
 
-			public void InvalidateMouse(int oldX, int oldY)
+			public void InvalidateMouse()
 			{
-				Invalidate(new System.Drawing.Rectangle(oldX, oldY, 30, 30));
+				Invalidate(new System.Drawing.Rectangle(oldScreenX - Location.X, oldScreenY - Location.Y, cursorWidthHeight, cursorWidthHeight));
+			}
+
+			public void RepaintAll()
+			{
+				base.OnPaintBackground(new PaintEventArgs(System.Drawing.Graphics.FromHwnd(this.Handle), Bounds));
 			}
 		}
 
@@ -119,26 +167,56 @@ namespace UniversalSplitScreen.Core
 		{
 			pointerForm = new PointerForm(hWnd)
 			{
-				Width = 1000,
-				Height = 1000,
+				Width = 2000,
+				Height = 2000,
 				FormBorderStyle = FormBorderStyle.None,
 				Text = "",
 				StartPosition = FormStartPosition.Manual,
-				//Location = new System.Drawing.Point(0, 0),
-				Location = new System.Drawing.Point(Bounds.Left + 7, Bounds.Top + 31),
+				Location = new System.Drawing.Point(0, 0),
+				//Location = new System.Drawing.Point(Bounds.Left + 7, Bounds.Top + 31),
 				TopMost = true
 			};
 
 			pointerForm.Show();
 		}
-		
+
+		bool hasRepaintedSinceLastInvisible = false;
+
 		public void UpdateCursorPosition()
 		{
 			if (pointerForm != null)
 			{
-				//var p = new System.Drawing.Point(MousePosition.x, MousePosition.y);
-				//WinApi.ClientToScreen(hWnd, ref p);
+				
 
+				if (pointerForm.visible)
+				{
+					hasRepaintedSinceLastInvisible = false;
+					var p = new System.Drawing.Point(MousePosition.x, MousePosition.y);
+					WinApi.ClientToScreen(hWnd, ref p);
+					//pointerForm.Location = p;
+
+					pointerForm.screenX = p.X;
+					pointerForm.screenY = p.Y;
+
+
+
+					const int padding = 35;
+					if (p.X <= pointerForm.Location.X + padding || p.Y <= pointerForm.Location.Y + padding ||
+						p.X >= pointerForm.Location.X + pointerForm.Width - padding || p.Y >= pointerForm.Location.Y + pointerForm.Height - padding)
+					{
+						pointerForm.RepaintAll();
+						pointerForm.Location = new System.Drawing.Point(p.X - pointerForm.Width / 2, p.Y - pointerForm.Height / 2);
+
+					}
+
+					pointerForm.InvalidateMouse();
+				}
+				else if (!hasRepaintedSinceLastInvisible)
+				{
+					Logger.WriteLine("REPAINT");
+					pointerForm.RepaintAll();
+					hasRepaintedSinceLastInvisible = true;
+				}
 
 				//if (!pointerForm.Bounds.Contains(p.X, p.Y))
 				//{
@@ -147,14 +225,14 @@ namespace UniversalSplitScreen.Core
 				//}
 
 
-				int oldX = pointerForm.x;
+				/*int oldX = pointerForm.x;
 				int oldY = pointerForm.y;
 				pointerForm.x = MousePosition.x;
 				pointerForm.y = MousePosition.y;
-				pointerForm.InvalidateMouse(oldX, oldY);
+				pointerForm.InvalidateMouse(oldX, oldY);*/
 
-				//pointerForm.Location = p;
-				
+
+
 			}
 		}
 
