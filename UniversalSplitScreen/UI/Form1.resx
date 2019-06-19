@@ -143,7 +143,8 @@ Use this if a game is not responding to mouse input.</value>
   </data>
   <data name="RefCheckbox_Hook_MouseVisibility.ToolTip" xml:space="preserve">
     <value>Detects when the game wants to show/hide the mouse cursor, and adjusts the fake mouse cursor accordingly.
-Use this for a first person game, where the cursor should be shown in UI menus, but not in first person.</value>
+Use this for a first person game, where the cursor should be shown in UI menus, but not in first person.
+This will also help if the real Windows mouse cursor keeps moving about the screen.</value>
   </data>
   <data name="RefCheckbox_Hook_UseLegacyInput.ToolTip" xml:space="preserve">
     <value>Some games will use SetCursorPos frequently to set the cursor position to the center of its window, and GetCursorPos to calculate any mouse movement.
