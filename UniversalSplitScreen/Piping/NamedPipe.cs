@@ -44,10 +44,10 @@ namespace UniversalSplitScreen.Piping
 		int			toSendDeltaX,	toSendDeltaY,	toSendAbsX,	toSendAbsY;
 		private ManualResetEvent xyResetEvent = new ManualResetEvent(false);
 
-		public NamedPipe(IntPtr hWnd, Window window)
+		public NamedPipe(IntPtr hWnd, Window window, bool needWritePipe)
 		{
 			pipeNameRead = GenerateName();
-			pipeNameWrite = GenerateName();
+			if (needWritePipe) pipeNameWrite = GenerateName();
 
 			this.hWnd = hWnd;
 			this.window = window;
@@ -55,9 +55,12 @@ namespace UniversalSplitScreen.Piping
 			serverThread = new Thread(Start);
 			serverThread.Start();
 
-			receiveThread = new Thread(ReceiveMessages);
-			receiveThread.IsBackground = true;
-			receiveThread.Start();
+			if (needWritePipe)
+			{
+				receiveThread = new Thread(ReceiveMessages);
+				receiveThread.IsBackground = true;
+				receiveThread.Start();
+			}
 		}
 
 		private void Start()
@@ -218,7 +221,7 @@ namespace UniversalSplitScreen.Piping
 			pipeServerRead?.Dispose();
 			pipeServerRead = null;
 
-			receiveThread.Abort();
+			receiveThread?.Abort();
 
 			pipeServerWrite?.Dispose();
 			pipeServerWrite = null;

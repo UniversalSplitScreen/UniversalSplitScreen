@@ -341,6 +341,7 @@ struct UserData
 	bool HookSetCursorPos;
 	bool HookXInput;
 	bool useLegacyInput;
+	bool hookMouseVisibility;
 };
 
 LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
@@ -443,11 +444,6 @@ void SetCursorVisibility(bool show)
 
 int WINAPI ShowCursor_Hook(BOOL bShow)
 {
-	/*std::cout << "ShowCursor, bShow=" << bShow << endl;
-	std::ofstream logging;
-	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-	logging << "ShowCursor, bShow=" << bShow << endl;
-	logging.close();*/
 	SetCursorVisibility(bShow == TRUE);
 	return (bShow == TRUE) ? 0 : -1;
 	//return ShowCursor(bShow);
@@ -455,11 +451,6 @@ int WINAPI ShowCursor_Hook(BOOL bShow)
 
 HCURSOR WINAPI SetCursor_Hook(HCURSOR hCursor)
 {
-	/*std::cout << "SetCursor, hCursor==null=" << (hCursor == NULL) << endl;
-	std::ofstream logging;
-	logging.open("C:\\Projects\\UniversalSplitScreen\\UniversalSplitScreen\\bin\\x86\\Debug\\HooksCPP_Output.txt", std::ios_base::app);
-	logging << "SetCursor, hCursor==null=" << (hCursor == NULL) << endl;
-	logging.close();*/
 	SetCursorVisibility(hCursor != NULL);
 	return hCursor;
 	//return SetCursor(hCursor);
@@ -501,14 +492,17 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		enableLegacyInput = userData.useLegacyInput;
 		std::cout << "Use legacy input: " << enableLegacyInput << endl;
 
-		installHook(TEXT("user32"), "ShowCursor", ShowCursor_Hook);
-		installHook(TEXT("user32"), "SetCursor", SetCursor_Hook);
-
 		//Install hooks
 		if (userData.HookGetForegroundWindow) 
 		{
 			installHook(TEXT("user32"), "GetForegroundWindow", GetForegroundWindow_Hook);
-			//installHook(TEXT("user32"), "WindowFromPoint", WindowFromPoint_Hook);
+			installHook(TEXT("user32"), "WindowFromPoint", WindowFromPoint_Hook);
+		}
+
+		if (userData.hookMouseVisibility)
+		{
+			installHook(TEXT("user32"), "ShowCursor", ShowCursor_Hook);
+			installHook(TEXT("user32"), "SetCursor", SetCursor_Hook);
 		}
 
 		if (userData.HookGetCursorPos)				installHook(TEXT("user32"), "GetCursorPos", GetCursorPos_Hook);
@@ -516,16 +510,6 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (userData.HookGetKeyState)				installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
 		if (userData.HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
 		//if (filterRawInput)						installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
-
-		filterRawInput = userData.HookRegisterRawInputDevices;
-		filterMouseMessages = userData.HookCallWindowProcW;
-		//if (filterRawInput || filterMouseMessages)	installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
-		
-		if (filterRawInput || filterMouseMessages || enableLegacyInput)
-		{
-			HHOOK hhook = SetWindowsHookEx(WH_GETMESSAGE, CallMsgProc, DllHandle, 0);
-			std::cout << "hhook = " << hhook << ", GetLastError=" << GetLastError() << endl;
-		}
 
 		//Hook XInput dll
 		if (userData.HookXInput)
@@ -537,6 +521,16 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			{
 				ntResult = installHook(xinputNames[xi++], "XInputGetState", XInputGetState_Hook);
 			}
+		}
+
+		filterRawInput = userData.HookRegisterRawInputDevices;
+		filterMouseMessages = userData.HookCallWindowProcW;
+		//if (filterRawInput || filterMouseMessages)	installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
+		
+		if (filterRawInput || filterMouseMessages || enableLegacyInput)
+		{
+			HHOOK hhook = SetWindowsHookEx(WH_GETMESSAGE, CallMsgProc, DllHandle, 0);
+			std::cout << "hhook = " << hhook << ", GetLastError=" << GetLastError() << endl;
 		}
 
 		//Start named pipe client

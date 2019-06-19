@@ -62,6 +62,7 @@ namespace UniversalSplitScreen.UI
 			RefCheckbox_Hook_GetKeyState.RefType				= new RefType<bool>("Hook_GetKeyState");
 			RefCheckbox_Hook_XInput.RefType						= new RefType<bool>("Hook_XInput");
 			RefCheckbox_Hook_UseLegacyInput.RefType				= new RefType<bool>("Hook_UseLegacyInput");
+			RefCheckbox_Hook_MouseVisibility.RefType			= new RefType<bool>("Hook_MouseVisibility");
 
 			drawMouseEveryXmsField.Value						= Options.CurrentOptions.DrawMouseEveryXMilliseconds;
 		}

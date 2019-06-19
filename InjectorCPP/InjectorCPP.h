@@ -20,4 +20,6 @@ extern "C" __declspec(dllexport) int Inject(
 	bool HookCallWindowProcW, 
 	bool HookRegisterRawInputDevices,
 	bool HookSetCursorPos, 
-	bool HookXInput);
+	bool HookXInput,
+	bool hookMouseVisibility
+);

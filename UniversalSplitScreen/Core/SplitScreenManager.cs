@@ -144,13 +144,15 @@ namespace UniversalSplitScreen.Core
 					options.Hook_GetAsyncKeyState ||
 					options.Hook_SetCursorPos ||
 					options.Hook_XInput ||
-					options.Hook_UseLegacyInput)
+					options.Hook_UseLegacyInput ||
+					options.Hook_MouseVisibility)
 				{
 
 
 					//bool needPipe = options.Hook_GetCursorPos || options.Hook_GetAsyncKeyState || options.Hook_GetKeyState;
-					bool needPipe = true;
-					NamedPipe pipe = needPipe ? new NamedPipe(hWnd, window) : null;
+					bool needPipe = true;//Need it for shutting down, etc.
+					bool needWritePipe = options.Hook_MouseVisibility;
+					NamedPipe pipe = needPipe ? new NamedPipe(hWnd, window, needWritePipe) : null;
 					window.HooksCPPNamedPipe = pipe;
 						
 					string hooksLibrary32 = Path.Combine(Path.GetDirectoryName(
@@ -174,8 +176,8 @@ namespace UniversalSplitScreen.Core
 							window.pid,
 							$"\"{(is64 ? hooksLibrary64 : hooksLibrary32)}\"",
 							window.hWnd,
-							needPipe ? pipe.pipeNameRead : "USS_NO_PIPE_NEEDED",
-							pipe.pipeNameWrite,//TODO: only if needed!
+							needPipe		? pipe.pipeNameRead	 : "USS_NO_READ_PIPE_NEEDED",
+							needWritePipe	? pipe.pipeNameWrite : "USS_NO_WRITE_PIPE_NEEDED",
 							window.ControllerIndex,
 							(int)window.MouseAttached,
 							options.Hook_UseLegacyInput,
@@ -186,7 +188,8 @@ namespace UniversalSplitScreen.Core
 							options.Hook_FilterWindowsMouseInput,
 							options.Hook_FilterRawInput,
 							options.Hook_SetCursorPos,
-							options.Hook_XInput
+							options.Hook_XInput,
+							options.Hook_MouseVisibility
 						};
 
 						StringBuilder sb = new StringBuilder();

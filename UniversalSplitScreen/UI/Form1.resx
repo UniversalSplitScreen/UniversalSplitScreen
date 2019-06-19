@@ -141,6 +141,10 @@ Very few games use raw keyboard input, so this will likely have no effect.</valu
 Useful if the game doesn't listen to raw input unless it is in the foreground.
 Use this if a game is not responding to mouse input.</value>
   </data>
+  <data name="RefCheckbox_Hook_MouseVisibility.ToolTip" xml:space="preserve">
+    <value>Detects when the game wants to show/hide the mouse cursor, and adjusts the fake mouse cursor accordingly.
+Use this for a first person game, where the cursor should be shown in UI menus, but not in first person.</value>
+  </data>
   <data name="RefCheckbox_Hook_UseLegacyInput.ToolTip" xml:space="preserve">
     <value>Some games will use SetCursorPos frequently to set the cursor position to the center of its window, and GetCursorPos to calculate any mouse movement.
 This hook will automatically switch between delta mouse input (ie first person camera movement) and absolute mouse movement (ie in a UI menu).

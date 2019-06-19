@@ -27,6 +27,7 @@ struct UserData
 	bool HookSetCursorPos;
 	bool HookXInput;
 	bool useLegacyInput;
+	bool hookMouseVisibility;
 };
 
 extern "C" __declspec(dllexport) int Inject(
@@ -46,7 +47,8 @@ extern "C" __declspec(dllexport) int Inject(
 	bool HookCallWindowProcW, 
 	bool HookRegisterRawInputDevices, 
 	bool HookSetCursorPos, 
-	bool HookXInput)
+	bool HookXInput,
+	bool hookMouseVisibility)
 {	
 	UserData* data = new UserData();
 	data->hWnd = hWnd;
@@ -64,6 +66,7 @@ extern "C" __declspec(dllexport) int Inject(
 	data->HookSetCursorPos = HookSetCursorPos;
 	data->HookXInput = HookXInput;
 	data->useLegacyInput = useLegacyInput;
+	data->hookMouseVisibility = hookMouseVisibility;
 		
 	NTSTATUS nt = RhInjectLibrary(
 		pid,

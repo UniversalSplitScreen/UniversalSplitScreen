@@ -25,7 +25,8 @@ namespace InjectorLoader
 					bool HookCallWindowProcW,
 					bool HookRegisterRawInputDevices,
 					bool HookSetCursorPos,
-					bool HookXInput);
+					bool HookXInput,
+					bool hookMouseVisibility);
 		}
 
 		class Injector64
@@ -48,16 +49,17 @@ namespace InjectorLoader
 					bool HookCallWindowProcW,
 					bool HookRegisterRawInputDevices,
 					bool HookSetCursorPos,
-					bool HookXInput);
+					bool HookXInput,
+					bool hookMouseVisibility);
 		}
 
 		public static void Main(string[] args)
 		{
-			const int argsL = 16;
+			const int argsLength = 17;
 
-			if (args.Length != argsL)
+			if (args.Length != argsLength)
 			{
-				throw new ArgumentException($"Need exactly {argsL} arguments");
+				throw new ArgumentException($"Need exactly {argsLength} arguments");
 			}
 
 			//Arguments
@@ -88,6 +90,7 @@ namespace InjectorLoader
 			bool HookRegisterRawInputDevices = nextBool();
 			bool HookSetCursorPos = nextBool();
 			bool HookXInput = nextBool();
+			bool hookMouseVisibility = nextBool();
 
 			//InjectorCPP function
 			uint nt;
@@ -109,7 +112,8 @@ namespace InjectorLoader
 					HookCallWindowProcW,
 					HookRegisterRawInputDevices,
 					HookSetCursorPos,
-					HookXInput);
+					HookXInput,
+					hookMouseVisibility);
 			}
 			else
 			{
@@ -129,7 +133,8 @@ namespace InjectorLoader
 					HookCallWindowProcW,
 					HookRegisterRawInputDevices,
 					HookSetCursorPos,
-					HookXInput);
+					HookXInput,
+					hookMouseVisibility);
 			}
 
 			//Set exit code
