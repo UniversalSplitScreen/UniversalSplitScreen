@@ -121,6 +121,11 @@ HWND WINAPI GetActiveWindow_Hook()
 	return hWnd;
 }
 
+BOOL WINAPI IsWindowEnabled_Hook(HWND hWnd)
+{
+	return TRUE;
+}
+
 inline int getBitShiftForVKey(int VKey)
 {
 	int shift = 0;
@@ -510,6 +515,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			installHook(TEXT("user32"), "GetForegroundWindow", GetForegroundWindow_Hook);
 			installHook(TEXT("user32"), "WindowFromPoint", WindowFromPoint_Hook);
 			installHook(TEXT("user32"), "GetActiveWindow", GetActiveWindow_Hook);
+			installHook(TEXT("user32"), "IsWindowEnabled", IsWindowEnabled_Hook);
 		}
 
 		if (userData.hookMouseVisibility)
