@@ -18,11 +18,11 @@ namespace UniversalSplitScreen.SendInput
 		/// <param name="lParam"></param>
 		/// <returns></returns>
 		[return: MarshalAs(UnmanagedType.Bool)]
-		[DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		[DllImport("User32.dll", CharSet = CharSet.Auto)]
 		public static extern bool PostMessageA(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
 		[return: MarshalAs(UnmanagedType.Bool)]
-		[DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		[DllImport("User32.dll", CharSet = CharSet.Auto)]
 		public static extern bool PostMessageA(HandleRef hWnd, uint Msg, IntPtr wParam, UIntPtr lParam);
 
 		/// <summary>
@@ -43,7 +43,7 @@ namespace UniversalSplitScreen.SendInput
 		}*/
 
 		[return: MarshalAs(UnmanagedType.Bool)]
-		[DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		[DllImport("User32.dll", CharSet = CharSet.Auto)]
 		public static extern bool PostMessageA(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
 		/// <summary>
@@ -97,7 +97,7 @@ namespace UniversalSplitScreen.SendInput
 		/// <param name="wParam"></param>
 		/// <param name="lParam"></param>
 		/// <returns></returns>
-		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		[DllImport("user32.dll", CharSet = CharSet.Auto)]
 		public static extern bool SendNotifyMessage(IntPtr hWnd, uint Msg, UIntPtr wParam, IntPtr lParam);
 
 		//https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setcapture
