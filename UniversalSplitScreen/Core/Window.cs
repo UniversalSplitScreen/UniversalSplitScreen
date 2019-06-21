@@ -78,14 +78,14 @@ namespace UniversalSplitScreen.Core
 				BackColor = System.Drawing.Color.Green;
 				TransparencyKey = BackColor;
 				ShowInTaskbar = false;
-				
+
 				hicon = Cursors.Arrow.Handle;
 
 				paintBkgMethod = typeof(Control).GetMethod("PaintBackground", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(PaintEventArgs), typeof(System.Drawing.Rectangle) }, null);
 			}
 			
 
-			const int cursorWidthHeight = 25;
+			const int cursorWidthHeight = 19;
 
 			protected override void OnPaintBackground(PaintEventArgs e)
 			{			
@@ -125,7 +125,14 @@ namespace UniversalSplitScreen.Core
 			//Wipes the entire window
 			public void RepaintAll()
 			{
-				base.OnPaintBackground(new PaintEventArgs(System.Drawing.Graphics.FromHwnd(this.Handle), Bounds));
+				try
+				{
+					base.OnPaintBackground(new PaintEventArgs(System.Drawing.Graphics.FromHwnd(this.Handle), Bounds));
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine($"Error in RepaintAll: {e}");
+				}
 			}
 		}
 
@@ -136,7 +143,7 @@ namespace UniversalSplitScreen.Core
 				if (pointerForm != null)
 				{
 					pointerForm.visible = value;
-					UpdateCursorPosition();
+					//UpdateCursorPosition();
 				}
 			}
 		}
@@ -162,7 +169,7 @@ namespace UniversalSplitScreen.Core
 					pointerForm.screenX = p.X;
 					pointerForm.screenY = p.Y;
 									   
-					const int padding = 35;
+					const int padding = 32;
 					if (p.X <= pointerForm.Location.X + padding || p.Y <= pointerForm.Location.Y + padding ||
 						p.X >= pointerForm.Location.X + pointerForm.Width - padding || p.Y >= pointerForm.Location.Y + pointerForm.Height - padding)
 					{
