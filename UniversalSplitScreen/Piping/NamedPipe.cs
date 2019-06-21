@@ -132,7 +132,7 @@ namespace UniversalSplitScreen.Piping
 				byte[] buffer = new byte[9];
 				pipeServerWrite.Read(buffer, 0, 9);
 				int msg = buffer[0];
-				Console.WriteLine($"Receive msg, Msg={msg}, param1={buffer[4]}");
+
 				if (msg == 0x06)
 				{
 					window.CursorVisibility = (buffer[4] == 1);
