@@ -30,6 +30,16 @@ namespace UniversalSplitScreen.Core
 
 		public NamedPipe HooksCPPNamedPipe { get; set; }
 
+		#region Mouse Cursor
+		/* How drawing the fake mouse cursor works:
+		 * A transparent window (PointerForm) is created over the game window.
+		 * When the mouse is moved, UpdateCursorPosition will tell the window to paint over the old cursor (wiping it) and draw the new one.
+		 * If the mouse moves out of bounds of PointerForm, the centre of the window is moved to the mouse position.
+		 * (Depends if Hook mouse visibility is enabled) In HooksCPP, SetCursor(NULL or not NULL) and ShowCursor(TRUE/FALSE) is monitored to show/hide cursor.
+		 * When this is detected, it sends a message via a named pipe to set CursorVisibility, which which will wipe/draw the cursor.
+		 * 
+		 */
+
 		private class PointerForm : Form
 		{
 			IntPtr hicon;
@@ -48,9 +58,9 @@ namespace UniversalSplitScreen.Core
 
 			System.Drawing.Graphics g = null;
 			IntPtr h;
-			bool hasDrawn = false;
+			bool hasDrawn = false;//We need to paint the entire window once at the start.
 
-			const int windowWidth = 1300;
+			const int windowWidth = 1300;//Minimum width
 			const int windowHeight = 800;
 
 			public PointerForm(IntPtr hWnd, int gameWindowWidth, int gameWindowHeight, int gameWindowX, int gameWindowY) : base()
@@ -69,7 +79,7 @@ namespace UniversalSplitScreen.Core
 				TransparencyKey = BackColor;
 				ShowInTaskbar = false;
 				
-				hicon = Cursors.Default.Handle;
+				hicon = Cursors.Arrow.Handle;
 
 				paintBkgMethod = typeof(Control).GetMethod("PaintBackground", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(PaintEventArgs), typeof(System.Drawing.Rectangle) }, null);
 			}
@@ -86,6 +96,7 @@ namespace UniversalSplitScreen.Core
 					return;
 				}
 				
+				//This only wipes a small area, which reduces CPU usage.
 				paintBkgMethod.Invoke(this, new object[]{e,
 					new System.Drawing.Rectangle(oldScreenX - Location.X, oldScreenY - Location.Y, cursorWidthHeight, cursorWidthHeight) });
 				
@@ -94,21 +105,24 @@ namespace UniversalSplitScreen.Core
 					g = System.Drawing.Graphics.FromHwnd(this.Handle);
 					h = g.GetHdc();
 				}
+
 				if (visible)
-					WinApi.DrawIcon(h, screenX - Location.X, screenY - Location.Y, hicon);
+					WinApi.DrawIcon(h, screenX - Location.X, screenY - Location.Y, hicon);//Coordinates are relative to Location of PointerForm
 				
 				oldScreenX = screenX;
 				oldScreenY = screenY;
 
-				//Greatly reduces cpu usage, doesn't lock any input. Insignificant delay. Mouse cursor is only used in menus, not first person.
+				//Greatly reduces CPU usage, doesn't lock any input. Insignificant delay. Mouse cursor is only used in menus, not first person.
 				System.Threading.Thread.Sleep(1);
 			}
 
 			public void InvalidateMouse()
 			{
+				//Causes this region to be re-drawn
 				Invalidate(new System.Drawing.Rectangle(oldScreenX - Location.X, oldScreenY - Location.Y, cursorWidthHeight, cursorWidthHeight));
 			}
 
+			//Wipes the entire window
 			public void RepaintAll()
 			{
 				base.OnPaintBackground(new PaintEventArgs(System.Drawing.Graphics.FromHwnd(this.Handle), Bounds));
@@ -116,13 +130,20 @@ namespace UniversalSplitScreen.Core
 		}
 
 		private PointerForm pointerForm = null;
-		public bool CursorVisibility { get => pointerForm.visible; set { if (pointerForm != null) pointerForm.visible = value; } }
-
-
+		public bool CursorVisibility {
+			get => pointerForm.visible;
+			set {
+				if (pointerForm != null)
+				{
+					pointerForm.visible = value;
+					UpdateCursorPosition();
+				}
+			}
+		}
+		
 		public void CreateCursor()
 		{
 			pointerForm = new PointerForm(hWnd, Width, Height, Bounds.Left, Bounds.Top);
-
 			pointerForm.Show();
 		}
 
@@ -130,12 +151,12 @@ namespace UniversalSplitScreen.Core
 
 		public void UpdateCursorPosition()
 		{
-			if (pointerForm != null)
+			if (pointerForm != null)//If Draw Mouse is selected
 			{
 				if (pointerForm.visible)
 				{
 					hasRepaintedSinceLastInvisible = false;
-					var p = new System.Drawing.Point(MousePosition.x, MousePosition.y);//needs to be bound to width/height
+					var p = new System.Drawing.Point(MousePosition.x, MousePosition.y);
 					WinApi.ClientToScreen(hWnd, ref p);
 
 					pointerForm.screenX = p.X;
@@ -153,6 +174,7 @@ namespace UniversalSplitScreen.Core
 				}
 				else if (!hasRepaintedSinceLastInvisible)
 				{
+					//If the cursor should be invisible, make sure the last cursor has been wiped.
 					pointerForm.RepaintAll();
 					hasRepaintedSinceLastInvisible = true;
 				}
@@ -165,7 +187,7 @@ namespace UniversalSplitScreen.Core
 			pointerForm?.Dispose();
 			pointerForm = null;
 		}
-
+		#endregion
 
 		public Window(IntPtr hWnd)
 		{
