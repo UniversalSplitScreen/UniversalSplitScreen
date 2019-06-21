@@ -143,7 +143,7 @@ namespace UniversalSplitScreen.RawInput
 											if (keyDown)
 											{
 												//bit 30 : The previous key state. The value is 1 if the key is down before the message is sent, or it is zero if the key is up.
-												if (keysDown.TryGetValue(VKey, out bool wasDown) && wasDown)
+												if (keysDown[VKey])
 												{
 													code |= 0x40000000;
 												}

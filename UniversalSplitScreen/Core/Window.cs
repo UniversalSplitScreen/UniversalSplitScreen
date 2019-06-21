@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -20,7 +21,7 @@ namespace UniversalSplitScreen.Core
 		public byte WASD_State { get; set; } = 0;
 
 		public IntPtr KeyboardAttached { get; set; } = new IntPtr(0);
-		public readonly Dictionary<ushort, bool> keysDown = new Dictionary<ushort, bool>();//TODO: make this with 8 ints? (bool takes 1 byte, so 8x more memory than needed)
+		public readonly BitArray keysDown = new BitArray(0xFF);
 
 		public int ControllerIndex { get; set; } = 0;//0 = none, 1234 = 1234
 
