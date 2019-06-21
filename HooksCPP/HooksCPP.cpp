@@ -116,6 +116,11 @@ HWND WINAPI WindowFromPoint_Hook()
 	return hWnd;
 }
 
+HWND WINAPI GetActiveWindow_Hook()
+{
+	return hWnd;
+}
+
 inline int getBitShiftForVKey(int VKey)
 {
 	int shift = 0;
@@ -499,10 +504,12 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		std::cout << "Use legacy input: " << enableLegacyInput << endl;
 
 		//Install hooks
+
 		if (userData.HookGetForegroundWindow) 
 		{
 			installHook(TEXT("user32"), "GetForegroundWindow", GetForegroundWindow_Hook);
 			installHook(TEXT("user32"), "WindowFromPoint", WindowFromPoint_Hook);
+			installHook(TEXT("user32"), "GetActiveWindow", GetActiveWindow_Hook);
 		}
 
 		if (userData.hookMouseVisibility)
