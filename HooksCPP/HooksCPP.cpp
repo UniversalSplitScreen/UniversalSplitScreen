@@ -9,6 +9,7 @@
 #include <fstream>
 #include <thread>
 #include <time.h>
+//#include <Xinput.h>
 using namespace std;
 
 extern HMODULE DllHandle;
@@ -185,6 +186,14 @@ DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE *pState)
 		return ERROR_DEVICE_NOT_CONNECTED;
 	else
 		return XInputGetState(controllerIndex - 1, pState);
+}
+
+DWORD WINAPI XInputSetState_Hook(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration)
+{
+	if (controllerIndex == 0)
+		return ERROR_DEVICE_NOT_CONNECTED;
+	else
+		return XInputSetState(controllerIndex - 1, pVibration);
 }
 
 inline int bytesToInt(BYTE* bytes)
@@ -531,7 +540,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			installHook(TEXT("user32"), "SetCursor", SetCursor_Hook);
 		}
 
-		if (userData.HookGetCursorPos)				installHook(TEXT("user32"), "GetCursorPos", GetCursorPos_Hook);
+		if (userData.HookGetCursorPos)				installHook(TEXT("user32"), "GetCursorPos",				GetCursorPos_Hook);
 		if (userData.HookGetAsyncKeyState)			installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
 		if (userData.HookGetKeyState)				installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
 		if (userData.HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
@@ -541,11 +550,11 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (userData.HookXInput)
 		{
 			LPCSTR xinputNames[] = { "xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll" };
-			NTSTATUS ntResult = 1;//0 = success
-			int xi = 0;
-			while (ntResult != 0)
+
+			for (int xi = 0; xi < 5; xi++)
 			{
-				ntResult = installHook(xinputNames[xi++], "XInputGetState", XInputGetState_Hook);
+				installHook(xinputNames[xi], "XInputGetState", XInputGetState_Hook);
+				installHook(xinputNames[xi], "XInputSetState", XInputSetState_Hook);
 			}
 		}
 
