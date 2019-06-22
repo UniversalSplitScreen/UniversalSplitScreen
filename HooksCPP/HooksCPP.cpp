@@ -92,13 +92,20 @@ BOOL WINAPI SetCursorPos_Hook(int X, int Y)
 	//SetCursorPos require screen coordinates (relative to 0,0 of monitor)
 	ScreenToClient(hWnd, &p);
 
-	EnterCriticalSection(&mcs);
-	fakeX = p.x;
-	fakeY = p.y;
-	LeaveCriticalSection(&mcs);
-
-	if (enableLegacyInput)
+	if (!enableLegacyInput)
 	{
+		EnterCriticalSection(&mcs);
+		absoluteX = p.x;
+		absoluteY = p.y;
+		LeaveCriticalSection(&mcs);
+	}
+	else
+	{
+		EnterCriticalSection(&mcs);
+		fakeX = p.x;
+		fakeY = p.y;
+		LeaveCriticalSection(&mcs);
+
 		time(&timeSinceLastSetCursorPos);
 		useAbsoluteCursorPos = FALSE;
 	}
