@@ -154,6 +154,8 @@ namespace UniversalSplitScreen.RawInput
 												code |= 0x000000000000001;
 											}
 
+											code |= 1;
+
 											if (VKey < keysDown.Length) keysDown[VKey] = keyDown;
 											
 											if (Options.CurrentOptions.Hook_GetKeyState)
