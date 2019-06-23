@@ -132,7 +132,7 @@ namespace UniversalSplitScreen.RawInput
 										{
 											uint scanCode = rawBuffer.data.keyboard.MakeCode;
 											ushort VKey = rawBuffer.data.keyboard.VKey;
-
+											
 											bool keyDown = keyboardMessage == (uint)KeyboardMessages.WM_KEYDOWN;
 
 											//uint code = 0x000000000000001 | (scanCode << 16);//32-bit
@@ -143,7 +143,7 @@ namespace UniversalSplitScreen.RawInput
 											if (keyDown)
 											{
 												//bit 30 : The previous key state. The value is 1 if the key is down before the message is sent, or it is zero if the key is up.
-												if (keysDown[VKey])
+												if (VKey < keysDown.Length && keysDown[VKey])
 												{
 													code |= 0x40000000;
 												}
@@ -154,7 +154,7 @@ namespace UniversalSplitScreen.RawInput
 												code |= 0x000000000000001;
 											}
 
-											keysDown[VKey] = keyDown;
+											if (VKey < keysDown.Length) keysDown[VKey] = keyDown;
 											
 											if (Options.CurrentOptions.Hook_GetKeyState)
 											{
