@@ -120,7 +120,8 @@ namespace UniversalSplitScreen.Core
 			public void InvalidateMouse()
 			{
 				//Causes this region to be re-drawn
-				Invalidate(new System.Drawing.Rectangle(oldScreenX - Location.X, oldScreenY - Location.Y, cursorWidthHeight, cursorWidthHeight));
+				//Invalidate(new System.Drawing.Rectangle(oldScreenX - Location.X, oldScreenY - Location.Y, cursorWidthHeight, cursorWidthHeight)); (Seems to work inconsistently)
+				Invalidate();
 			}
 
 			//Wipes the entire window
