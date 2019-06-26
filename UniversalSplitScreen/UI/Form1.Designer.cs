@@ -86,6 +86,10 @@
 			this.GroupBoxLicense = new System.Windows.Forms.GroupBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this.groupBoxHandleUnlocker = new System.Windows.Forms.GroupBox();
+			this.textBoxHandleName = new System.Windows.Forms.TextBox();
+			this.labelHandleName = new System.Windows.Forms.Label();
+			this.UnlockHandleButton = new System.Windows.Forms.Button();
 			this.RefCheckbox_SendScrollwheel = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_DrawMouse = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_RefreshWindowBoundsOnMouseClick = new UniversalSplitScreen.UI.RefCheckbox();
@@ -134,6 +138,7 @@
 			this.tabPage5.SuspendLayout();
 			this.tabPage6.SuspendLayout();
 			this.GroupBoxLicense.SuspendLayout();
+			this.groupBoxHandleUnlocker.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -221,12 +226,13 @@
 			// 
 			// GroupBox_Utilities
 			// 
+			this.GroupBox_Utilities.Controls.Add(this.groupBoxHandleUnlocker);
 			this.GroupBox_Utilities.Controls.Add(this.Button_ToggleWindowBorders);
 			this.GroupBox_Utilities.Controls.Add(this.Button_EnableWindowResize);
 			this.GroupBox_Utilities.Controls.Add(this.Button_UnlockSourceEngine);
 			this.GroupBox_Utilities.Location = new System.Drawing.Point(3, 214);
 			this.GroupBox_Utilities.Name = "GroupBox_Utilities";
-			this.GroupBox_Utilities.Size = new System.Drawing.Size(245, 108);
+			this.GroupBox_Utilities.Size = new System.Drawing.Size(454, 140);
 			this.GroupBox_Utilities.TabIndex = 10;
 			this.GroupBox_Utilities.TabStop = false;
 			this.GroupBox_Utilities.Text = "Window utilities";
@@ -751,6 +757,47 @@
 			this.toolTip1.InitialDelay = 500;
 			this.toolTip1.ReshowDelay = 100;
 			// 
+			// groupBoxHandleUnlocker
+			// 
+			this.groupBoxHandleUnlocker.Controls.Add(this.UnlockHandleButton);
+			this.groupBoxHandleUnlocker.Controls.Add(this.labelHandleName);
+			this.groupBoxHandleUnlocker.Controls.Add(this.textBoxHandleName);
+			this.groupBoxHandleUnlocker.Location = new System.Drawing.Point(246, 14);
+			this.groupBoxHandleUnlocker.Name = "groupBoxHandleUnlocker";
+			this.groupBoxHandleUnlocker.Size = new System.Drawing.Size(200, 113);
+			this.groupBoxHandleUnlocker.TabIndex = 11;
+			this.groupBoxHandleUnlocker.TabStop = false;
+			this.groupBoxHandleUnlocker.Text = "Handle unlocker";
+			// 
+			// textBoxHandleName
+			// 
+			this.textBoxHandleName.Location = new System.Drawing.Point(6, 45);
+			this.textBoxHandleName.Name = "textBoxHandleName";
+			this.textBoxHandleName.Size = new System.Drawing.Size(188, 20);
+			this.textBoxHandleName.TabIndex = 0;
+			// 
+			// labelHandleName
+			// 
+			this.labelHandleName.AutoSize = true;
+			this.labelHandleName.Location = new System.Drawing.Point(6, 29);
+			this.labelHandleName.Name = "labelHandleName";
+			this.labelHandleName.Size = new System.Drawing.Size(99, 13);
+			this.labelHandleName.TabIndex = 1;
+			this.labelHandleName.Text = "Enter handle name:";
+			// 
+			// UnlockHandleButton
+			// 
+			this.UnlockHandleButton.Location = new System.Drawing.Point(6, 79);
+			this.UnlockHandleButton.Name = "UnlockHandleButton";
+			this.UnlockHandleButton.Size = new System.Drawing.Size(188, 23);
+			this.UnlockHandleButton.TabIndex = 2;
+			this.UnlockHandleButton.Text = "Unlock";
+			this.toolTip1.SetToolTip(this.UnlockHandleButton, "This will close the handle named above in the target game. \r\nUse this to run mult" +
+        "iple instances, similar to Unlock Source engine.\r\nYou will need to find the hand" +
+        "le name with Process Explorer.");
+			this.UnlockHandleButton.UseVisualStyleBackColor = true;
+			this.UnlockHandleButton.Click += new System.EventHandler(this.UnlockHandleButton_Click);
+			// 
 			// RefCheckbox_SendScrollwheel
 			// 
 			this.RefCheckbox_SendScrollwheel.AutoSize = true;
@@ -1141,6 +1188,8 @@
 			this.tabPage6.ResumeLayout(false);
 			this.GroupBoxLicense.ResumeLayout(false);
 			this.GroupBoxLicense.PerformLayout();
+			this.groupBoxHandleUnlocker.ResumeLayout(false);
+			this.groupBoxHandleUnlocker.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -1228,5 +1277,9 @@
 		private System.Windows.Forms.Label Label_CurrentVersion;
 		private System.Windows.Forms.Panel panel4;
 		private RefCheckbox RefCheckbox_Hook_MouseVisibility;
+		private System.Windows.Forms.GroupBox groupBoxHandleUnlocker;
+		private System.Windows.Forms.Button UnlockHandleButton;
+		private System.Windows.Forms.Label labelHandleName;
+		private System.Windows.Forms.TextBox textBoxHandleName;
 	}
 }

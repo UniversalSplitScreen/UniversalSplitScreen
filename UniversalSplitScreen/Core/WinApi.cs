@@ -73,8 +73,7 @@ namespace UniversalSplitScreen.Core
 		}
 
 		[DllImport("SourceEngineUnlocker.dll", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-		public static extern int SourceEngineUnlock(
-				int pid);
+		public static extern int SourceEngineUnlock(int pid, string targetName);
 
 		[DllImport("user32.dll")]
 		public static extern bool SetForegroundWindow(int hwnd);

@@ -197,7 +197,7 @@ namespace UniversalSplitScreen.UI
 
 		private void Button_UnlockSourceEngine_Click(object sender, EventArgs e)
 		{
-			Program.SplitScreenManager.UnlockSourceEngine();
+			Program.SplitScreenManager.UnlockHandle();
 		}
 
 		private void Button_EnableWindowResize_Click(object sender, EventArgs e)
@@ -219,6 +219,14 @@ namespace UniversalSplitScreen.UI
 		{
 			string versionName = await UpdateChecker.IsThereAnUpdate();
 			MessageBox.Show(string.IsNullOrWhiteSpace(versionName) ? "No new version found" : $"Found new version: {versionName}\nDownload the latest version from the website.");
+		}
+
+		private void UnlockHandleButton_Click(object sender, EventArgs e)
+		{
+			if (string.IsNullOrEmpty(textBoxHandleName.Text))
+				MessageBox.Show("Handle name cannot be empty.", "Error");
+			else
+				Program.SplitScreenManager.UnlockHandle(textBoxHandleName.Text);
 		}
 	}
 }

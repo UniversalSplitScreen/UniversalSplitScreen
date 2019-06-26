@@ -259,25 +259,25 @@ namespace UniversalSplitScreen.Core
 			Program.Form.WindowState = FormWindowState.Normal;
 		}
 
-		public void UnlockSourceEngine()
+		public void UnlockHandle(string targetName = "")
 		{
 			string title = "";
 			string msg = "";
 			try
 			{
 				WinApi.GetWindowThreadProcessId(active_hWnd, out int pid);
-				int seu = WinApi.SourceEngineUnlock(pid);
-				Logger.WriteLine($"Source engine unlock return = {seu}");
+				int seu = WinApi.SourceEngineUnlock(pid, targetName);//Defaults to source/goldsrc mutexes if targetName == ""
+				Logger.WriteLine($"SourceEngineUnlock return = {seu}");
 
 				msg = seu == 1 ?	"Successfully unlocked game. Launch another instance from the exe file." : 
-					(seu == 0 ?		"Couldn't find the source engine mutex" : 
-									$"Error while finding mutex: {seu}");
+					(seu == 0 ?		(targetName != "" ? "Couldn't find the target handle" : "Couldn't find the Source/Goldsrc engine mutex") : 
+									$"Error while finding mutex/handle: {seu}");
 
 				title = seu == 1 ? "Success" : "Error";
 			}
 			catch(Exception e)
 			{
-				msg = $"Exception while finding mutex: {e.GetType()}";
+				msg = $"Exception while finding mutex/handle: {e.GetType()}";
 				title = "Error";
 			}
 

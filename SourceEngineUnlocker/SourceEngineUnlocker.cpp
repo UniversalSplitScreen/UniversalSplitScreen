@@ -90,7 +90,7 @@ typedef NTSTATUS(NTAPI* lpNtDuplicateObject)(HANDLE SourceProcessHandle, HANDLE 
 static lpNtDuplicateObject NtDuplicateObject = nullptr;
 
 //https://www.codeguru.com/cpp/w-p/system/processesmodules/article.php/c2827/Examine-Information-on-Windows-NT-System-Level-Primitives.htm
-int Close(DWORD m_processId)
+int Close(DWORD m_processId, LPCSTR targetName)
 {
 	DWORD size = 0x2000;
 	DWORD needed = 0;
@@ -151,7 +151,8 @@ int Close(DWORD m_processId)
 			if (_ret == 0)
 			{
 				if (path.Find("hl2_singleton_mutex") != -1 || //source engine
-					path.Find("ValveHalfLifeLauncherMutex") != -1)//goldsrc
+					path.Find("ValveHalfLifeLauncherMutex") != -1 ||//goldsrc
+					(targetName != NULL && targetName[0] != 0 && path.Find(targetName) != -1))
 				{
 					pSysHandleInformation->Handles[i].HandleType = (WORD)(pSysHandleInformation->Handles[i].HandleType % 256);
 						
@@ -174,7 +175,7 @@ int Close(DWORD m_processId)
 	return ret;
 }
 
-extern "C" __declspec(dllexport) int SourceEngineUnlock(int pid)
+extern "C" __declspec(dllexport) int SourceEngineUnlock(int pid, LPCSTR targetName)
 {
-	return Close(pid);
+	return Close(pid, targetName);
 }
