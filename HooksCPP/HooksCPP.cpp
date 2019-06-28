@@ -10,6 +10,7 @@
 #include <thread>
 #include <time.h>
 //#include <Xinput.h>
+#include <windowsx.h>
 using namespace std;
 
 extern HMODULE DllHandle;
@@ -37,7 +38,7 @@ time_t timeSinceLastSetCursorPos;
 
 //Time since the last SetCursorPos that we will assume the game is in a UI menu and needs absolute mouse position
 //(Technically one second since it records as an time_t).
-const double minTimeForAbs = 0.5;
+const double minTimeForAbs = 3;//TODO: set back to 0.5
 
 
 UINT16 vkey_state;//Stores the mouse keys (5 of them) and the WASD keys. (1=on, 0=off)
@@ -88,14 +89,21 @@ BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 	return true;
 }
 
+int originX, originY;
+
 BOOL WINAPI SetCursorPos_Hook(int X, int Y)
 {
 	POINT p;
 	p.x = X;
 	p.y = Y;
 
+	std::cout << "SetCursorPos" << endl;
+
 	//SetCursorPos require screen coordinates (relative to 0,0 of monitor)
 	ScreenToClient(hWnd, &p);
+
+	originX = p.x;
+	originY = p.y;
 		
 	if (!enableLegacyInput)
 	{
@@ -453,17 +461,21 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 
 			//if (((int)_wParam & 0b10000000) > 0)
 
-			if (useAbsoluteCursorPos == TRUE)
+			if (useAbsoluteCursorPos == FALSE || Msg == WM_LBUTTONDOWN || Msg == WM_LBUTTONUP)
 			{
-				pMsg->lParam = MAKELPARAM(absoluteX, absoluteY);
-				return CallNextHookEx(NULL, code, wParam, pMsg->lParam);//This is from USS. We should pass this as it is the absolute pos.
-			}
-			else
-			{
-				UpdateAbsoluteCursorCheck();
+				if (Msg == WM_MOUSEMOVE && GET_X_LPARAM(pMsg->lParam) != originX && GET_Y_LPARAM(pMsg->wParam))
+				{
+					
+					UpdateAbsoluteCursorCheck();
+				}
 
 				pMsg->lParam = MAKELPARAM(fakeX, fakeY);
 				return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
+			}
+			else
+			{
+				pMsg->lParam = MAKELPARAM(absoluteX, absoluteY);
+				return CallNextHookEx(NULL, code, wParam, pMsg->lParam);//This is from USS. We should pass this as it is the absolute pos.
 			}
 		}
 	}
