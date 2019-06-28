@@ -38,7 +38,7 @@ time_t timeSinceLastSetCursorPos;
 
 //Time since the last SetCursorPos that we will assume the game is in a UI menu and needs absolute mouse position
 //(Technically one second since it records as an time_t).
-const double minTimeForAbs = 3;//TODO: set back to 0.5
+const double minTimeForAbs = 0.5;
 
 
 UINT16 vkey_state;//Stores the mouse keys (5 of them) and the WASD keys. (1=on, 0=off)
@@ -59,6 +59,7 @@ void UpdateAbsoluteCursorCheck()
 		{
 			//It's been minTimeForAbs since last SetCursorPos, so we assume we're in a menu and need absolute cursor pos
 			useAbsoluteCursorPos = TRUE;
+			std::cout << "AbsoluteCursorPos: ON" << endl;
 		}
 	}
 }
@@ -382,6 +383,8 @@ struct UserData
 	bool hookMouseVisibility;
 };
 
+int lastX, lastY;
+
 LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
 	MSG* pMsg = (MSG*)lParam;
@@ -437,37 +440,27 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 		}
 	}
 
-	if (enableLegacyInput)//(Msg >= 0x0200 && Msg <= 0x020D))
+	if (enableLegacyInput)
 	{
-		//if ((Msg >= 0x0200 && Msg <= 0x020D) || (Msg >= 0x02A0 && Msg <= 0x02A3) || (Msg >= 0x00A0 && Msg <= 0x00AD))
-		//if ((Msg >= 0x0200 && Msg <= 0x020D))
-		if (Msg == WM_MOUSEMOVE || Msg == WM_LBUTTONDOWN || Msg == WM_LBUTTONUP)
+		if (Msg == WM_MOUSEMOVE)
 		{
-			std::cout << "Msg=" << Msg << endl;
-			/*if (useAbsoluteCursorPos && ((int)_wParam & 0b10000000) > 0)
-				return CallNextHookEx(NULL, code, wParam, lParam);//This is from USS. We should pass this as it is the absolute pos.
-			else
-			{
-				pMsg->message = WM_NULL;
-				return blockRet;
-			}*/
-
-			/*POINT p;
-			GetCursorPos_Hook(&p);
-			ScreenToClient(hWnd, &p);//TODO: good?
-			return CallNextHookEx(NULL, code, wParam, (fakeY * 0x10000) + fakeX);
-
-			return CallNextHookEx(NULL, code, wParam, ((fakeY - originY) * 0x10000) + (fakeX - originX));*/
-
-			//if (((int)_wParam & 0b10000000) > 0)
-
-			if (useAbsoluteCursorPos == FALSE || Msg == WM_LBUTTONDOWN || Msg == WM_LBUTTONUP)
-			{
-				if (Msg == WM_MOUSEMOVE && GET_X_LPARAM(pMsg->lParam) != originX && GET_Y_LPARAM(pMsg->wParam))
+			if (useAbsoluteCursorPos == FALSE)
+			{	
+				int x = GET_X_LPARAM(pMsg->lParam);
+				int y = GET_Y_LPARAM(pMsg->lParam);				
+				
+				if (!(x == 0 && y == 0) &&  !(x == lastX && y == lastY))
+				// - Minecraft (GLFW/LWJGL) will create a WM_MOUSEMOVE message with (0,0) AND another with (lastX, lastY) 
+					  //whenever a mouse button is clicked, WITHOUT calling SetCursorPos
+				// - This would cause absoluteCursorPos to be turned on when it shouldn't.
 				{
-					
 					UpdateAbsoluteCursorCheck();
 				}
+
+				if (x != 0)
+					lastX = x;
+				if (y != 0)
+					lastY = y;
 
 				pMsg->lParam = MAKELPARAM(fakeX, fakeY);
 				return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
@@ -475,7 +468,7 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 			else
 			{
 				pMsg->lParam = MAKELPARAM(absoluteX, absoluteY);
-				return CallNextHookEx(NULL, code, wParam, pMsg->lParam);//This is from USS. We should pass this as it is the absolute pos.
+				return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
 			}
 		}
 	}
