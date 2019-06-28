@@ -18,6 +18,7 @@ struct UserData
 	char ipcChannelNameWrite[256];//Name will be 30 characters
 	int controllerIndex;
 	int allowedMouseHandle;
+	bool updateAbsoluteFlagInMouseMessage;
 	bool HookGetCursorPos;
 	bool HookGetForegroundWindow;
 	bool HookGetAsyncKeyState;
@@ -39,6 +40,7 @@ extern "C" __declspec(dllexport) int Inject(
 	char* ipcChannelNameWrite, 
 	int controllerIndex, 
 	int allowedMouseHandle,
+	bool updateAbsoluteFlagInMouseMessage,
 	bool useLegacyInput,
 	bool HookGetCursorPos, 
 	bool HookGetForegroundWindow, 
@@ -56,6 +58,7 @@ extern "C" __declspec(dllexport) int Inject(
 	strcpy_s(data->ipcChannelNameWrite, ipcChannelNameWrite);
 	data->controllerIndex = controllerIndex;
 	data->allowedMouseHandle = allowedMouseHandle;
+	data->updateAbsoluteFlagInMouseMessage = updateAbsoluteFlagInMouseMessage;
 
 	data->HookGetCursorPos = HookGetCursorPos;
 	data->HookGetForegroundWindow = HookGetForegroundWindow;

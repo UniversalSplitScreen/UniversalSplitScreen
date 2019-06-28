@@ -29,6 +29,7 @@ int fakeY;
 int absoluteX;
 int absoluteY;
 
+bool updateAbsoluteFlagInMouseMessage;
 
 // If enabled, will alternate between absolute mouse position (bound to 0,0 and width,height) and delta mouse position (returns the changes, without bounding)
 bool enableLegacyInput = true; 
@@ -371,6 +372,7 @@ struct UserData
 	char ipcChannelNameWrite[256];//Name will be 30 characters
 	int controllerIndex;
 	int allowedMouseHandle;
+	bool updateAbsoluteFlagInMouseMessage;
 	bool HookGetCursorPos;
 	bool HookGetForegroundWindow;
 	bool HookGetAsyncKeyState;
@@ -445,25 +447,28 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 	{
 		if (Msg == WM_MOUSEMOVE)
 		{
-			if (((int)_wParam & 0b10000000) > 0)
+			if (((int)_wParam & 0b10000000) > 0)//TODO: re-enable?
 			{
 				if (useAbsoluteCursorPos == FALSE)
 				{
-					int x = GET_X_LPARAM(pMsg->lParam);
-					int y = GET_Y_LPARAM(pMsg->lParam);
-
-					if (!(x == 0 && y == 0) && !(x == lastX && y == lastY))
-						// - Minecraft (GLFW/LWJGL) will create a WM_MOUSEMOVE message with (0,0) AND another with (lastX, lastY) 
-							  //whenever a mouse button is clicked, WITHOUT calling SetCursorPos
-						// - This would cause absoluteCursorPos to be turned on when it shouldn't.
+					if (updateAbsoluteFlagInMouseMessage)
 					{
-						UpdateAbsoluteCursorCheck();
-					}
+						int x = GET_X_LPARAM(pMsg->lParam);
+						int y = GET_Y_LPARAM(pMsg->lParam);
 
-					if (x != 0)
-						lastX = x;
-					if (y != 0)
-						lastY = y;
+						if (!(x == 0 && y == 0) && !(x == lastX && y == lastY))
+							// - Minecraft (GLFW/LWJGL) will create a WM_MOUSEMOVE message with (0,0) AND another with (lastX, lastY) 
+								  //whenever a mouse button is clicked, WITHOUT calling SetCursorPos
+							// - This would cause absoluteCursorPos to be turned on when it shouldn't.
+						{
+							UpdateAbsoluteCursorCheck();
+						}
+
+						if (x != 0)
+							lastX = x;
+						if (y != 0)
+							lastY = y;
+					}
 
 					pMsg->lParam = MAKELPARAM(fakeX, fakeY);
 					return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
@@ -569,6 +574,9 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		
 		enableLegacyInput = userData.useLegacyInput;
 		std::cout << "Use legacy input: " << enableLegacyInput << endl;
+
+		updateAbsoluteFlagInMouseMessage = userData.updateAbsoluteFlagInMouseMessage;
+		std::cout << "Update absolute flag in mouse message: " << updateAbsoluteFlagInMouseMessage << endl;
 
 		//Install hooks
 

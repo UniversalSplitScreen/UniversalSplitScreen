@@ -17,6 +17,7 @@ namespace InjectorLoader
 					string ipcChannelNameWrite,
 					int controllerIndex,
 					int allowedMouseHandle,
+					bool updateAbsoluteFlagInMouseMessage,
 					bool useLegacyInput,
 					bool HookGetCursorPos,
 					bool HookGetForegroundWindow,
@@ -41,6 +42,7 @@ namespace InjectorLoader
 					string ipcChannelNameWrite,
 					int controllerIndex,
 					int allowedMouseHandle,
+					bool updateAbsoluteFlagInMouseMessage,
 					bool useLegacyInput,
 					bool HookGetCursorPos,
 					bool HookGetForegroundWindow,
@@ -55,7 +57,7 @@ namespace InjectorLoader
 
 		public static void Main(string[] args)
 		{
-			const int argsLength = 17;
+			const int argsLength = 18;
 
 			if (args.Length != argsLength)
 			{
@@ -63,23 +65,25 @@ namespace InjectorLoader
 			}
 
 			//Arguments
-			int.TryParse(args[0], out int pid);
+			int i = 0;
+			int.TryParse(args[i++], out int pid);
 
-			string injectionDllPath = args[1];
+			string injectionDllPath = args[i++];
 
-			int.TryParse(args[2], out int _hWnd);
+			int.TryParse(args[i++], out int _hWnd);
 			IntPtr hWnd = (IntPtr)_hWnd;
 
-			string ipcChannelNameRead = args[3];
-			string ipcChannelNameWrite = args[4];
+			string ipcChannelNameRead = args[i++];
+			string ipcChannelNameWrite = args[i++];
 
-			int.TryParse(args[5], out int controllerIndex);
+			int.TryParse(args[i++], out int controllerIndex);
 
-			int.TryParse(args[6], out int allowedMouseHandle);
+			int.TryParse(args[i++], out int allowedMouseHandle);
 
-			bool useLegacyInput = args[7].ToLower().Equals("true");
+			bool updateAbsoluteFlagInMouseMessage = args[i++].ToLower().Equals("true");
 
-			int i = 8;//DONT FORGET TO INCREMENT THIS ALSO
+			bool useLegacyInput = args[i++].ToLower().Equals("true");
+			
 			bool nextBool() => args[i++].ToLower().Equals("true");
 
 			bool HookGetCursorPos = nextBool();
@@ -104,6 +108,7 @@ namespace InjectorLoader
 					ipcChannelNameWrite,
 					controllerIndex,
 					allowedMouseHandle,
+					updateAbsoluteFlagInMouseMessage,
 					useLegacyInput,
 					HookGetCursorPos,
 					HookGetForegroundWindow,
@@ -125,6 +130,7 @@ namespace InjectorLoader
 					ipcChannelNameWrite,
 					controllerIndex,
 					allowedMouseHandle,
+					updateAbsoluteFlagInMouseMessage,
 					useLegacyInput,
 					HookGetCursorPos,
 					HookGetForegroundWindow,
