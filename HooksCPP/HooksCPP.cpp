@@ -49,6 +49,19 @@ bool filterMouseMessages;
 
 bool pipeClosed = false;
 
+void UpdateAbsoluteCursorCheck()
+{
+	if (enableLegacyInput && useAbsoluteCursorPos == FALSE)
+	{
+		double dt = difftime(time(NULL), timeSinceLastSetCursorPos);
+		if (dt >= minTimeForAbs)
+		{
+			//It's been minTimeForAbs since last SetCursorPos, so we assume we're in a menu and need absolute cursor pos
+			useAbsoluteCursorPos = TRUE;
+		}
+	}
+}
+
 BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 {
 	if (lpPoint)
@@ -70,16 +83,7 @@ BOOL WINAPI GetCursorPos_Hook(LPPOINT lpPoint)
 		LeaveCriticalSection(&mcs);
 		ClientToScreen(hWnd, lpPoint);
 
-		if (enableLegacyInput && useAbsoluteCursorPos == FALSE)
-		{
-			double dt = difftime(time(NULL), timeSinceLastSetCursorPos);
-			if (dt >= minTimeForAbs)
-			{
-				//It's been minTimeForAbs since last SetCursorPos, so we assume we're in a menu and need absolute cursor pos
-				useAbsoluteCursorPos = TRUE;
-			}
-		}
-		
+		UpdateAbsoluteCursorCheck();
 	}
 	return true;
 }
@@ -92,7 +96,7 @@ BOOL WINAPI SetCursorPos_Hook(int X, int Y)
 
 	//SetCursorPos require screen coordinates (relative to 0,0 of monitor)
 	ScreenToClient(hWnd, &p);
-
+		
 	if (!enableLegacyInput)
 	{
 		EnterCriticalSection(&mcs);
@@ -425,14 +429,42 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 		}
 	}
 
-	if (enableLegacyInput && Msg == WM_MOUSEMOVE)
+	if (enableLegacyInput)//(Msg >= 0x0200 && Msg <= 0x020D))
 	{
-		if (useAbsoluteCursorPos && ((int)_wParam & 0b10000000) > 0)
-			return CallNextHookEx(NULL, code, wParam, lParam);//This is from USS. We should pass this as it is the absolute pos.
-		else
+		//if ((Msg >= 0x0200 && Msg <= 0x020D) || (Msg >= 0x02A0 && Msg <= 0x02A3) || (Msg >= 0x00A0 && Msg <= 0x00AD))
+		//if ((Msg >= 0x0200 && Msg <= 0x020D))
+		if (Msg == WM_MOUSEMOVE || Msg == WM_LBUTTONDOWN || Msg == WM_LBUTTONUP)
 		{
-			pMsg->message = WM_NULL;
-			return blockRet;
+			std::cout << "Msg=" << Msg << endl;
+			/*if (useAbsoluteCursorPos && ((int)_wParam & 0b10000000) > 0)
+				return CallNextHookEx(NULL, code, wParam, lParam);//This is from USS. We should pass this as it is the absolute pos.
+			else
+			{
+				pMsg->message = WM_NULL;
+				return blockRet;
+			}*/
+
+			/*POINT p;
+			GetCursorPos_Hook(&p);
+			ScreenToClient(hWnd, &p);//TODO: good?
+			return CallNextHookEx(NULL, code, wParam, (fakeY * 0x10000) + fakeX);
+
+			return CallNextHookEx(NULL, code, wParam, ((fakeY - originY) * 0x10000) + (fakeX - originX));*/
+
+			//if (((int)_wParam & 0b10000000) > 0)
+
+			if (useAbsoluteCursorPos == TRUE)
+			{
+				pMsg->lParam = MAKELPARAM(absoluteX, absoluteY);
+				return CallNextHookEx(NULL, code, wParam, pMsg->lParam);//This is from USS. We should pass this as it is the absolute pos.
+			}
+			else
+			{
+				UpdateAbsoluteCursorCheck();
+
+				pMsg->lParam = MAKELPARAM(fakeX, fakeY);
+				return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
+			}
 		}
 	}
 
