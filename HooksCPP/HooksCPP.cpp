@@ -440,35 +440,44 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 		}
 	}
 
+	//TODO: place before mouse filter
 	if (enableLegacyInput)
 	{
 		if (Msg == WM_MOUSEMOVE)
 		{
-			if (useAbsoluteCursorPos == FALSE)
-			{	
-				int x = GET_X_LPARAM(pMsg->lParam);
-				int y = GET_Y_LPARAM(pMsg->lParam);				
-				
-				if (!(x == 0 && y == 0) &&  !(x == lastX && y == lastY))
-				// - Minecraft (GLFW/LWJGL) will create a WM_MOUSEMOVE message with (0,0) AND another with (lastX, lastY) 
-					  //whenever a mouse button is clicked, WITHOUT calling SetCursorPos
-				// - This would cause absoluteCursorPos to be turned on when it shouldn't.
+			if (((int)_wParam & 0b10000000) > 0)
+			{
+				if (useAbsoluteCursorPos == FALSE)
 				{
-					UpdateAbsoluteCursorCheck();
+					int x = GET_X_LPARAM(pMsg->lParam);
+					int y = GET_Y_LPARAM(pMsg->lParam);
+
+					if (!(x == 0 && y == 0) && !(x == lastX && y == lastY))
+						// - Minecraft (GLFW/LWJGL) will create a WM_MOUSEMOVE message with (0,0) AND another with (lastX, lastY) 
+							  //whenever a mouse button is clicked, WITHOUT calling SetCursorPos
+						// - This would cause absoluteCursorPos to be turned on when it shouldn't.
+					{
+						UpdateAbsoluteCursorCheck();
+					}
+
+					if (x != 0)
+						lastX = x;
+					if (y != 0)
+						lastY = y;
+
+					pMsg->lParam = MAKELPARAM(fakeX, fakeY);
+					return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
 				}
-
-				if (x != 0)
-					lastX = x;
-				if (y != 0)
-					lastY = y;
-
-				pMsg->lParam = MAKELPARAM(fakeX, fakeY);
-				return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
+				else
+				{
+					pMsg->lParam = MAKELPARAM(absoluteX, absoluteY);
+					return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
+				}
 			}
 			else
 			{
-				pMsg->lParam = MAKELPARAM(absoluteX, absoluteY);
-				return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
+				pMsg->message = WM_NULL;
+				return blockRet;
 			}
 		}
 	}
