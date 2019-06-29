@@ -78,6 +78,8 @@ namespace UniversalSplitScreen.RawInput
 			return;
 		}
 
+		int iii = 0;
+
 		private void Process(IntPtr hRawInput)
 		{
 			uint pbDataSize = 0;
@@ -188,6 +190,9 @@ namespace UniversalSplitScreen.RawInput
 						}
 					case HeaderDwType.RIM_TYPEMOUSE:
 						{
+							
+
+
 							RAWMOUSE mouse = rawBuffer.data.mouse;
 							IntPtr mouseHandle = rawBuffer.header.hDevice;
 
@@ -200,6 +205,11 @@ namespace UniversalSplitScreen.RawInput
 								}
 								break; 
 							}
+							iii = iii++ % 10;
+							if (iii != 0)
+								return;
+
+							Console.WriteLine("hello");
 
 							var windows = Program.SplitScreenManager.GetWindowsForDevice(mouseHandle);
 							for (int windowI = 0; windowI < windows.Length; windowI++)

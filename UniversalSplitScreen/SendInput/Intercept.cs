@@ -51,7 +51,7 @@ namespace UniversalSplitScreen.SendInput
 		{
 			Array.Sort(bannedVkeysList);
 
-			mouseHookID = SetHook(mouseProc, WH_MOUSE_LL);
+			//mouseHookID = SetHook(mouseProc, WH_MOUSE_LL);
 			keyboardHookID = SetHook(keyboardProc, WH_KEYBOARD_LL);
 			Logger.WriteLine("Intercept keyboard and mouse activated");
 		}

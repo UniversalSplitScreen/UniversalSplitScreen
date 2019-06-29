@@ -393,6 +393,9 @@ int lastX, lastY;
 
 LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
+	const UINT sorh = sizeof(RAWINPUTHEADER);
+	static RAWINPUT raw[sorh];
+
 	MSG* pMsg = (MSG*)lParam;
 	UINT Msg = pMsg->message;
 	LPARAM _lParam = pMsg->lParam;
@@ -402,11 +405,11 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 
 	if ((filterRawInput) && (Msg == WM_INPUT) && (allowedMouseHandle != 0))
 	{
-		UINT dwSize = sizeof(RAWINPUTHEADER);
+		UINT dwSize = 0;
+		
+		if ((0 == GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, NULL, &dwSize, sorh)) && (dwSize == sorh))
 		{
-			RAWINPUT raw[sizeof(RAWINPUTHEADER)];
-
-			if (GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, raw, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
+			if (dwSize == GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, raw, &dwSize, sorh))
 			{
 				if (raw->header.dwType == RIM_TYPEMOUSE)
 				{
@@ -417,9 +420,11 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 					else
 					{
 						pMsg->message = WM_NULL;
-						return blockRet;
+						return CallNextHookEx(NULL, code, wParam, lParam);
+						//return blockRet;
 					}
 				}
+				//TODO: else for filtering keyboard?
 			}
 		}
 	}

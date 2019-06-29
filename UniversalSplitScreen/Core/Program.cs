@@ -26,20 +26,6 @@ namespace UniversalSplitScreen
 
 		static void Main(string[] args)
 		{
-			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-
-			TaskScheduler.UnobservedTaskException +=
-			(object sender, UnobservedTaskExceptionEventArgs excArgs) =>
-			{
-				Logger.WriteLine("Exception occured. Task terminated! + " + excArgs.Exception);
-				excArgs.SetObserved();
-			};
-
-			//ThreadPool.GetMaxThreads(out int workerThreads, out int completionPortThreads);
-			//Logger.WriteLine($"ThreadPool: max worker threads = {workerThreads}, completion port threads = {completionPortThreads}");
-			//bool smt = ThreadPool.SetMaxThreads(100 * workerThreads, 100 * completionPortThreads);
-			//Console.WriteLine($"SetMaxTheads*100 success = {smt}");
-
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
@@ -55,7 +41,7 @@ namespace UniversalSplitScreen
 
 			MessageProcessor = new MessageProcessor();
 
-			i = new Intercept();
+			//i = new Intercept();
 			var x = new RawInputManager(Form_hWnd);
 			
 			InputDisabler.Init();
@@ -66,15 +52,6 @@ namespace UniversalSplitScreen
 
 			Logger.WriteLine("Exiting application");
 			Environment.Exit(0);
-		}
-
-		static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-		{
-			Logger.WriteLine("Error: CurrentDomain_UnhandledException entered.");
-			string message = (e.ExceptionObject as Exception).Message;
-			Logger.WriteLine(message);
-			System.Diagnostics.Trace.WriteLine(message, "Unhandled UI Exception");
-			Logger.WriteLine(message);
 		}
 	}
 }
