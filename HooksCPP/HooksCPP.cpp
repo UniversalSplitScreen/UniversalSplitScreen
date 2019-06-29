@@ -35,6 +35,8 @@ bool updateAbsoluteFlagInMouseMessage;
 bool enableLegacyInput = true; 
 
 BOOL useAbsoluteCursorPos = TRUE;
+int useAbsoluteCursorPosCounter = 0;// 0/1/2/3 : FALSE, 4 : TRUE
+const int requiredAbsCount = 4;
 time_t timeSinceLastSetCursorPos;
 
 //Time since the last SetCursorPos that we will assume the game is in a UI menu and needs absolute mouse position
@@ -59,8 +61,11 @@ void UpdateAbsoluteCursorCheck()
 		if (dt >= minTimeForAbs)
 		{
 			//It's been minTimeForAbs since last SetCursorPos, so we assume we're in a menu and need absolute cursor pos
-			useAbsoluteCursorPos = TRUE;
-			std::cout << "AbsoluteCursorPos: ON" << endl;
+			useAbsoluteCursorPosCounter++;
+			if (useAbsoluteCursorPosCounter == requiredAbsCount)
+			{
+				useAbsoluteCursorPos = TRUE;
+			}
 		}
 	}
 }
@@ -98,9 +103,7 @@ BOOL WINAPI SetCursorPos_Hook(int X, int Y)
 	POINT p;
 	p.x = X;
 	p.y = Y;
-
-	std::cout << "SetCursorPos" << endl;
-
+	
 	//SetCursorPos require screen coordinates (relative to 0,0 of monitor)
 	ScreenToClient(hWnd, &p);
 
@@ -122,6 +125,7 @@ BOOL WINAPI SetCursorPos_Hook(int X, int Y)
 		LeaveCriticalSection(&mcs);
 
 		time(&timeSinceLastSetCursorPos);
+		useAbsoluteCursorPosCounter = 0;
 		useAbsoluteCursorPos = FALSE;
 	}
 
@@ -468,15 +472,22 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 							lastX = x;
 						if (y != 0)
 							lastY = y;
-					}
 
-					pMsg->lParam = MAKELPARAM(fakeX, fakeY);
-					return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
+
+						pMsg->lParam = MAKELPARAM(fakeX, fakeY);
+						return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
+					}
+					else
+					{
+						pMsg->message = WM_NULL;
+						return blockRet;
+					}
 				}
 				else
 				{
-					pMsg->lParam = MAKELPARAM(absoluteX, absoluteY);
-					return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
+					//pMsg->lParam = MAKELPARAM(absoluteX, absoluteY);
+					//return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
+					return CallNextHookEx(NULL, code, wParam, lParam);
 				}
 			}
 			else
