@@ -141,6 +141,11 @@ Very few games use raw keyboard input, so this will likely have no effect.</valu
 Useful if the game doesn't listen to raw input unless it is in the foreground.
 Use this if a game is not responding to mouse input.</value>
   </data>
+  <data name="RefCheckbox_UpdateAbsoluteFlagInMouseMessage.ToolTip" xml:space="preserve">
+    <value>If checked, the absolute cursor position (ie the cursor position in UI menus) will be updated when the game processes a mouse move message.
+This will only have an effect if legacy input is enabled.
+Use this if the mouse isn't working correctly with legacy input.</value>
+  </data>
   <data name="RefCheckbox_Hook_MouseVisibility.ToolTip" xml:space="preserve">
     <value>Detects when the game wants to show/hide the mouse cursor, and adjusts the fake mouse cursor accordingly.
 Use this for a first person game, where the cursor should be shown in UI menus, but not in first person.
