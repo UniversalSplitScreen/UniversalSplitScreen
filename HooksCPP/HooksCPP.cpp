@@ -391,131 +391,6 @@ struct UserData
 
 int lastX, lastY;
 
-LRESULT CALLBACK CallMsgProc(int code, WPARAM wParam, LPARAM lParam)
-{
-	const UINT sorh = sizeof(RAWINPUTHEADER);
-	static RAWINPUT raw[sorh];
-
-	MSG* pMsg = (MSG*)lParam;
-	UINT Msg = pMsg->message;
-	LPARAM _lParam = pMsg->lParam;
-	WPARAM _wParam = pMsg->wParam;
-	
-	const LRESULT blockRet = 0;
-
-	if ((filterRawInput) && (Msg == WM_INPUT) && (allowedMouseHandle != 0))
-	{
-		UINT dwSize = 0;
-		
-		if ((0 == GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, NULL, &dwSize, sorh)) && (dwSize == sorh))
-		{
-			if (dwSize == GetRawInputData((HRAWINPUT)_lParam, RID_HEADER, raw, &dwSize, sorh))
-			{
-				if (raw->header.dwType == RIM_TYPEMOUSE)
-				{
-					if (raw->header.hDevice == allowedMouseHandle)
-					{
-						return CallNextHookEx(NULL, code, wParam, lParam);//Wastes CPU (?)
-					}
-			 		else
-					{						
-						//IMPORTANT: setting message to WM_NULL or lParam to -1 will eventually cause everything to freeze (bl2) after about 2 min of mouse movement.
-						//pMsg->message = WM_NULL;
-
-						//pMsg->lParam = -1;
-						
-						//https://docs.microsoft.com/en-gb/windows/desktop/winmsg/about-hooks
-						//remove _In_ ??
-
-						//return CallNextHookEx(NULL, -1, wParam, lParam);
-
-						//return blockRet;
-
-						return CallNextHookEx(NULL, code, wParam, lParam);
-					}
-				}
-				//TODO: else for filtering keyboard?
-			}
-		}
-	}
-
-	//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
-	if (filterMouseMessages)
-	{
-		if (Msg == WM_MOUSEMOVE && ((int)_wParam & 0b10000000) > 0)
-			return CallNextHookEx(NULL, code, wParam, lParam);
-
-		// || Msg == 0x00FF
-		else if ((Msg >= WM_XBUTTONDOWN && Msg <= WM_XBUTTONDBLCLK) || Msg == WM_MOUSEMOVE || Msg == WM_MOUSEACTIVATE || Msg == WM_MOUSEHOVER || Msg == WM_MOUSELEAVE || Msg == WM_MOUSEWHEEL || Msg == WM_SETCURSOR || Msg == WM_NCMOUSELEAVE)//Other mouse events. 
-		{
-			//pCwp->message = WM_NULL;
-			pMsg->message = WM_NULL;
-			return blockRet;
-		}
-		else
-		{
-			if (Msg == WM_ACTIVATE) //0x0006 is WM_ACTIVATE, which resets the mouse position for starbound [citation needed]
-				return CallNextHookEx(NULL, code, 1, 0);
-			else
-				return CallNextHookEx(NULL, code, wParam, lParam);
-		}
-	}
-
-	//TODO: place before mouse filter
-	if (enableLegacyInput)
-	{
-		if (Msg == WM_MOUSEMOVE)
-		{
-			if (((int)_wParam & 0b10000000) > 0)//TODO: re-enable?
-			{
-				if (useAbsoluteCursorPos == FALSE)
-				{
-					if (updateAbsoluteFlagInMouseMessage)
-					{
-						int x = GET_X_LPARAM(pMsg->lParam);
-						int y = GET_Y_LPARAM(pMsg->lParam);
-
-						if (!(x == 0 && y == 0) && !(x == lastX && y == lastY))
-							// - Minecraft (GLFW/LWJGL) will create a WM_MOUSEMOVE message with (0,0) AND another with (lastX, lastY) 
-								  //whenever a mouse button is clicked, WITHOUT calling SetCursorPos
-							// - This would cause absoluteCursorPos to be turned on when it shouldn't.
-						{
-							UpdateAbsoluteCursorCheck();
-						}
-
-						if (x != 0)
-							lastX = x;
-						if (y != 0)
-							lastY = y;
-
-
-						pMsg->lParam = MAKELPARAM(fakeX, fakeY);
-						return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
-					}
-					else
-					{
-						pMsg->message = WM_NULL;
-						return blockRet;
-					}
-				}
-				else
-				{
-					//pMsg->lParam = MAKELPARAM(absoluteX, absoluteY);
-					//return CallNextHookEx(NULL, code, wParam, pMsg->lParam);
-					return CallNextHookEx(NULL, code, wParam, lParam);
-				}
-			}
-			else
-			{
-				pMsg->message = WM_NULL;
-				return blockRet;
-			}
-		}
-	}
-
-	return CallNextHookEx(NULL, code, wParam, lParam);//Pass
-}
-
 bool sentVisibility = true; //the visibility stored in C#
 
 void SetCursorVisibility(bool show)
@@ -563,38 +438,113 @@ HCURSOR WINAPI SetCursor_Hook(HCURSOR hCursor)
 
 BOOL FilterMessage(LPMSG lpMsg)
 {
-	if (lpMsg->message == WM_INPUT)
-	{
-		if ((filterRawInput) && (allowedMouseHandle != 0))
-		{
-			UINT dwSize = 0;
-			const UINT sorh = sizeof(RAWINPUTHEADER);
-			static RAWINPUT raw[sorh];
+	UINT Msg = lpMsg->message;
+	WPARAM _wParam = lpMsg->wParam;
+	LPARAM _lParam = lpMsg->lParam;
 
-			if ((0 == GetRawInputData((HRAWINPUT)lpMsg->lParam, RID_HEADER, NULL, &dwSize, sorh)) && (dwSize == sorh))
+	//Filter raw input
+	if (Msg == WM_INPUT && filterRawInput && (allowedMouseHandle != 0))
+	{
+		UINT dwSize = 0;
+		const UINT sorh = sizeof(RAWINPUTHEADER);
+		static RAWINPUT raw[sorh];
+
+		if ((0 == GetRawInputData((HRAWINPUT)lpMsg->lParam, RID_HEADER, NULL, &dwSize, sorh)) && 
+			(dwSize == sorh) &&
+			(dwSize == GetRawInputData((HRAWINPUT)lpMsg->lParam, RID_HEADER, raw, &dwSize, sorh)) &&
+			(raw->header.dwType == RIM_TYPEMOUSE))
+		{
+			if (raw->header.hDevice == allowedMouseHandle)
 			{
-				if (dwSize == GetRawInputData((HRAWINPUT)lpMsg->lParam, RID_HEADER, raw, &dwSize, sorh))
-				{
-					if (raw->header.dwType == RIM_TYPEMOUSE)
-					{
-						if (raw->header.hDevice == allowedMouseHandle)
-						{
-							return 1;
-						}
-						else
-						{
-							memset(lpMsg, 0, dwSize);
-							return -1;
-						}
-					}
-				}
+				return 1;
+			}
+			else
+			{
+				memset(lpMsg, 0, sizeof(MSG));
+				return -1;
 			}
 		}
 	}
-	else
+
+	//Legacy input filter
+	if (enableLegacyInput)
 	{
-		return 1;
+		if (Msg == WM_MOUSEMOVE)
+		{
+			if (((int)_wParam & 0b10000000) > 0)//Signature for message sent from USS (C#)
+			{
+				if (useAbsoluteCursorPos == FALSE)
+				{
+					if (updateAbsoluteFlagInMouseMessage)
+					{
+						int x = GET_X_LPARAM(_lParam);
+						int y = GET_Y_LPARAM(_lParam);
+
+						if (!(x == 0 && y == 0) && !(x == lastX && y == lastY))
+							// - Minecraft (GLFW/LWJGL) will create a WM_MOUSEMOVE message with (0,0) AND another with (lastX, lastY) 
+								  //whenever a mouse button is clicked, WITHOUT calling SetCursorPos
+							// - This would cause absoluteCursorPos to be turned on when it shouldn't.
+						{
+							UpdateAbsoluteCursorCheck();
+						}
+
+						if (x != 0)
+							lastX = x;
+
+						if (y != 0)
+							lastY = y;
+
+						lpMsg->lParam = MAKELPARAM(fakeX, fakeY);
+						return 1;
+					}
+					else
+					{
+						memset(lpMsg, 0, sizeof(MSG));
+						return -1;
+					}
+				}
+				else
+				{
+					//pMsg->lParam = MAKELPARAM(absoluteX, absoluteY);
+					return 1;
+				}
+			}
+			else
+			{
+				memset(lpMsg, 0, sizeof(MSG));
+				return -1;
+			}
+		}
 	}
+
+	//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
+	if (filterMouseMessages)
+	{
+		if (Msg == WM_MOUSEMOVE && ((int)_wParam & 0b10000000) > 0)
+			return 1;
+
+		// || Msg == 0x00FF
+		else if ((Msg >= WM_XBUTTONDOWN && Msg <= WM_XBUTTONDBLCLK) || Msg == WM_MOUSEMOVE || Msg == WM_MOUSEACTIVATE || Msg == WM_MOUSEHOVER || Msg == WM_MOUSELEAVE || Msg == WM_MOUSEWHEEL || Msg == WM_SETCURSOR || Msg == WM_NCMOUSELEAVE)//Other mouse events. 
+		{
+			memset(lpMsg, 0, sizeof(MSG));
+			return -1;
+		}
+		else
+		{
+			//if (Msg == WM_ACTIVATE) //0x0006 is WM_ACTIVATE, which resets the mouse position for starbound [citation needed]
+			//	return CallNextHookEx(NULL, code, 1, 0);
+			//else
+			//	return CallNextHookEx(NULL, code, wParam, lParam);
+			if (Msg == WM_ACTIVATE)
+			{
+				lpMsg->lParam = 1;
+				lpMsg->wParam = 0;
+			}
+			return 1;
+		}
+	}
+
+	return 1;
 }
 
 BOOL WINAPI GetMessageA_Hook(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
@@ -669,9 +619,6 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		std::cout << "Update absolute flag in mouse message: " << updateAbsoluteFlagInMouseMessage << endl;
 
 		//Install hooks
-
-		
-
 		if (userData.HookGetForegroundWindow) 
 		{
 			installHook(TEXT("user32"), "GetForegroundWindow", GetForegroundWindow_Hook);
@@ -679,8 +626,6 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			installHook(TEXT("user32"), "GetActiveWindow", GetActiveWindow_Hook);
 			installHook(TEXT("user32"), "IsWindowEnabled", IsWindowEnabled_Hook);
 		}
-
-
 
 		if (userData.hookMouseVisibility)
 		{
@@ -712,14 +657,12 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		
 		if (filterRawInput || filterMouseMessages || enableLegacyInput)
 		{
-			//HHOOK hhook = SetWindowsHookEx(WH_GETMESSAGE, CallMsgProc, DllHandle, 0);
-			//std::cout << "hhook = " << hhook << ", GetLastError=" << GetLastError() << endl;
-		}
-		installHook(TEXT("user32"), "GetMessageA", GetMessageA_Hook);
-		installHook(TEXT("user32"), "GetMessageW", GetMessageW_Hook);
+			installHook(TEXT("user32"), "GetMessageA", GetMessageA_Hook);
+			installHook(TEXT("user32"), "GetMessageW", GetMessageW_Hook);
 
-		installHook(TEXT("user32"), "PeekMessageA", PeekMessageA_Hook);
-		installHook(TEXT("user32"), "PeekMessageW", PeekMessageW_Hook);
+			installHook(TEXT("user32"), "PeekMessageA", PeekMessageA_Hook);
+			installHook(TEXT("user32"), "PeekMessageW", PeekMessageW_Hook);
+		}
 
 		//Start named pipe client
 		startPipeListen();
