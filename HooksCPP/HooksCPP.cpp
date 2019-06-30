@@ -391,7 +391,7 @@ struct UserData
 
 int lastX, lastY;
 
-LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lParam)
+LRESULT CALLBACK CallMsgProc(int code, WPARAM wParam, LPARAM lParam)
 {
 	const UINT sorh = sizeof(RAWINPUTHEADER);
 	static RAWINPUT raw[sorh];
@@ -417,11 +417,21 @@ LRESULT CALLBACK CallMsgProc(_In_ int code, _In_ WPARAM wParam, _In_ LPARAM lPar
 					{
 						return CallNextHookEx(NULL, code, wParam, lParam);//Wastes CPU (?)
 					}
-					else
-					{
-						pMsg->message = WM_NULL;
-						return CallNextHookEx(NULL, code, wParam, lParam);
+			 		else
+					{						
+						//IMPORTANT: setting message to WM_NULL or lParam to -1 will eventually cause everything to freeze (bl2) after about 2 min of mouse movement.
+						//pMsg->message = WM_NULL;
+
+						//pMsg->lParam = -1;
+						
+						//https://docs.microsoft.com/en-gb/windows/desktop/winmsg/about-hooks
+						//remove _In_ ??
+
+						//return CallNextHookEx(NULL, -1, wParam, lParam);
+
 						//return blockRet;
+
+						return CallNextHookEx(NULL, code, wParam, lParam);
 					}
 				}
 				//TODO: else for filtering keyboard?
@@ -551,6 +561,70 @@ HCURSOR WINAPI SetCursor_Hook(HCURSOR hCursor)
 	//return SetCursor(hCursor);
 }
 
+BOOL FilterMessage(LPMSG lpMsg)
+{
+	if (lpMsg->message == WM_INPUT)
+	{
+		if ((filterRawInput) && (allowedMouseHandle != 0))
+		{
+			UINT dwSize = 0;
+			const UINT sorh = sizeof(RAWINPUTHEADER);
+			static RAWINPUT raw[sorh];
+
+			if ((0 == GetRawInputData((HRAWINPUT)lpMsg->lParam, RID_HEADER, NULL, &dwSize, sorh)) && (dwSize == sorh))
+			{
+				if (dwSize == GetRawInputData((HRAWINPUT)lpMsg->lParam, RID_HEADER, raw, &dwSize, sorh))
+				{
+					if (raw->header.dwType == RIM_TYPEMOUSE)
+					{
+						if (raw->header.hDevice == allowedMouseHandle)
+						{
+							return 1;
+						}
+						else
+						{
+							memset(lpMsg, 0, dwSize);
+							return -1;
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+BOOL WINAPI GetMessageA_Hook(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
+{
+	BOOL ret = GetMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+
+	return ret == -1 ? -1 : FilterMessage(lpMsg);
+}
+
+BOOL WINAPI GetMessageW_Hook(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
+{
+	BOOL ret = GetMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+
+	return ret == -1 ? -1 : FilterMessage(lpMsg);
+}
+
+BOOL WINAPI PeekMessageA_Hook(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
+{
+	BOOL ret = PeekMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
+
+	return ret == FALSE ? FALSE : FilterMessage(lpMsg);
+}
+
+BOOL WINAPI PeekMessageW_Hook(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
+{
+	BOOL ret = PeekMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
+
+	return ret == FALSE ? FALSE : FilterMessage(lpMsg);
+}
+
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
 	//Cout will go to the games console (test easily with SMAPI/Minecraft)
@@ -596,6 +670,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 		//Install hooks
 
+		
+
 		if (userData.HookGetForegroundWindow) 
 		{
 			installHook(TEXT("user32"), "GetForegroundWindow", GetForegroundWindow_Hook);
@@ -603,6 +679,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			installHook(TEXT("user32"), "GetActiveWindow", GetActiveWindow_Hook);
 			installHook(TEXT("user32"), "IsWindowEnabled", IsWindowEnabled_Hook);
 		}
+
+
 
 		if (userData.hookMouseVisibility)
 		{
@@ -634,9 +712,14 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		
 		if (filterRawInput || filterMouseMessages || enableLegacyInput)
 		{
-			HHOOK hhook = SetWindowsHookEx(WH_GETMESSAGE, CallMsgProc, DllHandle, 0);
-			std::cout << "hhook = " << hhook << ", GetLastError=" << GetLastError() << endl;
+			//HHOOK hhook = SetWindowsHookEx(WH_GETMESSAGE, CallMsgProc, DllHandle, 0);
+			//std::cout << "hhook = " << hhook << ", GetLastError=" << GetLastError() << endl;
 		}
+		installHook(TEXT("user32"), "GetMessageA", GetMessageA_Hook);
+		installHook(TEXT("user32"), "GetMessageW", GetMessageW_Hook);
+
+		installHook(TEXT("user32"), "PeekMessageA", PeekMessageA_Hook);
+		installHook(TEXT("user32"), "PeekMessageW", PeekMessageW_Hook);
 
 		//Start named pipe client
 		startPipeListen();
