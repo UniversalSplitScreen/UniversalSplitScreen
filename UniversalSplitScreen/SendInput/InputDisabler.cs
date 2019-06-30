@@ -81,7 +81,7 @@ namespace UniversalSplitScreen.SendInput
 			SetCursor(IntPtr.Zero);
 
 
-			//SendInput.WinApi.BlockInput(true);
+			SendInput.WinApi.BlockInput(true);
 		}
 
 		public static void Unlock()

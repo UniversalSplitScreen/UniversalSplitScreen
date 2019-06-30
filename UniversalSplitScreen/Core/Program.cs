@@ -41,7 +41,7 @@ namespace UniversalSplitScreen
 
 			MessageProcessor = new MessageProcessor();
 
-			//i = new Intercept();
+			i = new Intercept();
 			var x = new RawInputManager(Form_hWnd);
 			
 			InputDisabler.Init();
