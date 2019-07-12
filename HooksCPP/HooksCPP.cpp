@@ -368,27 +368,6 @@ NTSTATUS installHook(LPCSTR moduleHandle, LPCSTR lpProcName, void* InCallback)
 	return hookResult;
 }
 
-//Passed as a void* from InjectorCPP
-struct UserData
-{
-	char ipcChannelNameRead[256];//Name will be 30 characters
-	char ipcChannelNameWrite[256];//Name will be 30 characters
-	HWND hWnd;
-	int controllerIndex;
-	int allowedMouseHandle;
-	bool updateAbsoluteFlagInMouseMessage;
-	bool HookGetCursorPos;
-	bool HookGetForegroundWindow;
-	bool HookGetAsyncKeyState;
-	bool HookGetKeyState;
-	bool HookCallWindowProcW;
-	bool HookRegisterRawInputDevices;
-	bool HookSetCursorPos;
-	bool HookXInput;
-	bool useLegacyInput;
-	bool hookMouseVisibility;
-};
-
 int lastX, lastY;
 
 bool sentVisibility = true; //the visibility stored in C#
