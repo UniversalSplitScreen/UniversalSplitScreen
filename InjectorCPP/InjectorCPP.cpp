@@ -13,9 +13,9 @@ using namespace std;
 
 struct UserData
 {
-	HWND hWnd;
 	char ipcChannelNameRead[256];//Name will be 30 characters
 	char ipcChannelNameWrite[256];//Name will be 30 characters
+	HWND hWnd;
 	int controllerIndex;
 	int allowedMouseHandle;
 	bool updateAbsoluteFlagInMouseMessage;

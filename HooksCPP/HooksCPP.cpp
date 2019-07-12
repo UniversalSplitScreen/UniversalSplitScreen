@@ -371,9 +371,9 @@ NTSTATUS installHook(LPCSTR moduleHandle, LPCSTR lpProcName, void* InCallback)
 //Passed as a void* from InjectorCPP
 struct UserData
 {
-	HWND hWnd;
 	char ipcChannelNameRead[256];//Name will be 30 characters
 	char ipcChannelNameWrite[256];//Name will be 30 characters
+	HWND hWnd;
 	int controllerIndex;
 	int allowedMouseHandle;
 	bool updateAbsoluteFlagInMouseMessage;
@@ -669,7 +669,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 	}
 	else
 	{
-		std::cout << "Failed getting user data\n";
+		std::cout << "Failed getting user data\nExpected size "<<sizeof(UserData)<<", Received "<< (inRemoteInfo->UserDataSize)<<"\n";
+
 	}
 
 	return;
