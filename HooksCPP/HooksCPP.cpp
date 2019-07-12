@@ -590,36 +590,46 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 	while (ShowCursor(FALSE) >= -10 || i++ > 20);
 	SetCursor(NULL);
 
-	if (inRemoteInfo->UserDataSize == sizeof(UserData))
+	if (inRemoteInfo->UserDataSize == 1024)
 	{
 		//Get UserData
-		UserData userData = *reinterpret_cast<UserData *>(inRemoteInfo->UserData);
+		BYTE* data = inRemoteInfo->UserData;
 
-		hWnd = userData.hWnd;
-		std::cout << "Received hWnd: " << hWnd << endl;
-
-		string ipcChannelName(userData.ipcChannelNameRead);
+		string ipcChannelName = string(reinterpret_cast<char*>(data), 256);
 		_ipcChannelNameRead = ipcChannelName;
 		std::cout << "Received IPC channel read: " << ipcChannelName << endl;
 
-		string ipcChannelNameWrite(userData.ipcChannelNameWrite);
+		string ipcChannelNameWrite = string(reinterpret_cast<char*>(data+256), 256);
 		_ipcChannelNameWrite = ipcChannelNameWrite;
 		std::cout << "Received IPC channel write: " << ipcChannelNameWrite << endl;
+		
+		hWnd = (HWND)bytesToInt(data + 512);
+		std::cout << "Received hWnd: " << hWnd << endl;
 
-		controllerIndex = userData.controllerIndex;
+		controllerIndex = bytesToInt(data + 512 + 4);
 		std::cout << "Received controller index: " << controllerIndex << endl;
 
-		allowedMouseHandle = (HANDLE)userData.allowedMouseHandle;
+		allowedMouseHandle = (HANDLE)bytesToInt(data + 512 + 8);
 		std::cout << "Allowed mouse handle: " << allowedMouseHandle << endl;
 		
-		enableLegacyInput = userData.useLegacyInput;
-		std::cout << "Use legacy input: " << enableLegacyInput << endl;
-
-		updateAbsoluteFlagInMouseMessage = userData.updateAbsoluteFlagInMouseMessage;
+		updateAbsoluteFlagInMouseMessage = *(data + 512 + 12) == 1;
 		std::cout << "Update absolute flag in mouse message: " << updateAbsoluteFlagInMouseMessage << endl;
 
+		BYTE* _p =data +  512 + 12 + 1;
+
+		bool HookGetCursorPos				= *(_p++) == 1;
+		bool HookGetForegroundWindow		= *(_p++) == 1;
+		bool HookGetAsyncKeyState			= *(_p++) == 1;
+		bool HookGetKeyState				= *(_p++) == 1;
+		bool HookCallWindowProcW			= *(_p++) == 1;
+		bool HookRegisterRawInputDevices	= *(_p++) == 1;
+		bool HookSetCursorPos				= *(_p++) == 1;
+		bool HookXInput						= *(_p++) == 1;
+		bool useLegacyInput					= *(_p++) == 1;
+		bool hookMouseVisibility			= *(_p++) == 1;
+
 		//Install hooks
-		if (userData.HookGetForegroundWindow) 
+		if (HookGetForegroundWindow) 
 		{
 			installHook(TEXT("user32"), "GetForegroundWindow", GetForegroundWindow_Hook);
 			installHook(TEXT("user32"), "WindowFromPoint", WindowFromPoint_Hook);
@@ -627,20 +637,20 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			installHook(TEXT("user32"), "IsWindowEnabled", IsWindowEnabled_Hook);
 		}
 
-		if (userData.hookMouseVisibility)
+		if (hookMouseVisibility)
 		{
 			installHook(TEXT("user32"), "ShowCursor", ShowCursor_Hook);
 			installHook(TEXT("user32"), "SetCursor", SetCursor_Hook);
 		}
 
-		if (userData.HookGetCursorPos)				installHook(TEXT("user32"), "GetCursorPos",				GetCursorPos_Hook);
-		if (userData.HookGetAsyncKeyState)			installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
-		if (userData.HookGetKeyState)				installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
-		if (userData.HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
+		if (HookGetCursorPos)				installHook(TEXT("user32"), "GetCursorPos",				GetCursorPos_Hook);
+		if (HookGetAsyncKeyState)			installHook(TEXT("user32"), "GetAsyncKeyState",			GetAsyncKeyState_Hook);
+		if (HookGetKeyState)				installHook(TEXT("user32"), "GetKeyState",				GetKeyState_Hook);
+		if (HookSetCursorPos)				installHook(TEXT("user32"), "SetCursorPos",				SetCursorPos_Hook);
 		//if (filterRawInput)						installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 
 		//Hook XInput dll
-		if (userData.HookXInput)
+		if (HookXInput)
 		{
 			LPCSTR xinputNames[] = { "xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll" };
 
@@ -651,8 +661,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			}
 		}
 
-		filterRawInput = userData.HookRegisterRawInputDevices;
-		filterMouseMessages = userData.HookCallWindowProcW;
+		filterRawInput = HookRegisterRawInputDevices;
+		filterMouseMessages = HookCallWindowProcW;
 		//if (filterRawInput || filterMouseMessages)	installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
 		
 		if (filterRawInput || filterMouseMessages || enableLegacyInput)
@@ -669,7 +679,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 	}
 	else
 	{
-		std::cout << "Failed getting user data\nExpected size "<<sizeof(UserData)<<", Received "<< (inRemoteInfo->UserDataSize)<<"\n";
+		std::cout << "Failed getting user data\nExpected size 1024, Received "<< (inRemoteInfo->UserDataSize)<<"\n";
 
 	}
 

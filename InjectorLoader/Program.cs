@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace InjectorLoader
 {
+	/* Unused, but shows the layout we use in the byte array
 	[StructLayout(LayoutKind.Explicit, CharSet = CharSet.Ansi, Size = 536)]
 	struct UserData
 	{
@@ -18,14 +19,6 @@ namespace InjectorLoader
 
 		[FieldOffset(512)]
 		public int hWnd;
-
-		//[FieldOffset(4)]
-		//[MarshalAsAttribute(UnmanagedType.ByValTStr, SizeConst = 256)]
-		//public string ipcChannelNameRead;
-
-		//[FieldOffset(260)]
-		//[MarshalAsAttribute(UnmanagedType.ByValTStr, SizeConst = 256)]
-		//public string ipcChannelNameWrite;
 
 		[FieldOffset(516)]
 		public int controllerIndex;
@@ -55,7 +48,7 @@ namespace InjectorLoader
 		public bool useLegacyInput;
 		[FieldOffset(534)]
 		public bool hookMouseVisibility;
-	};
+	};*/
 
 	static class Program
 	{
@@ -86,14 +79,7 @@ namespace InjectorLoader
 				uint InPassThruSize
 				);
 		}
-
-
 		
-
-
-
-
-
 		public static void Main(string[] args)
 		{
 			const int argsLength = 18;
@@ -122,7 +108,7 @@ namespace InjectorLoader
 			bool updateAbsoluteFlagInMouseMessage = args[i++].ToLower().Equals("true");
 
 			bool useLegacyInput = args[i++].ToLower().Equals("true");
-			
+
 			bool nextBool() => args[i++].ToLower().Equals("true");
 
 			bool HookGetCursorPos = nextBool();
@@ -134,89 +120,60 @@ namespace InjectorLoader
 			bool HookSetCursorPos = nextBool();
 			bool HookXInput = nextBool();
 			bool hookMouseVisibility = nextBool();
+			
 
-			//InjectorCPP function
-			/*uint nt;
-			if (Environment.Is64BitProcess)
-			{
-				nt = Injector64.Inject(pid,
-					"",
-					injectionDllPath,
-					hWnd,
-					ipcChannelNameRead,
-					ipcChannelNameWrite,
-					controllerIndex,
-					allowedMouseHandle,
-					updateAbsoluteFlagInMouseMessage,
-					useLegacyInput,
-					HookGetCursorPos,
-					HookGetForegroundWindow,
-					HookGetAsyncKeyState,
-					HookGetKeyState,
-					HookCallWindowProcW,
-					HookRegisterRawInputDevices,
-					HookSetCursorPos,
-					HookXInput,
-					hookMouseVisibility);
-			}
-			else
-			{
-				nt = Injector32.Inject(pid,
-					injectionDllPath,
-					"",
-					hWnd,
-					ipcChannelNameRead,
-					ipcChannelNameWrite,
-					controllerIndex,
-					allowedMouseHandle,
-					updateAbsoluteFlagInMouseMessage,
-					useLegacyInput,
-					HookGetCursorPos,
-					HookGetForegroundWindow,
-					HookGetAsyncKeyState,
-					HookGetKeyState,
-					HookCallWindowProcW,
-					HookRegisterRawInputDevices,
-					HookSetCursorPos,
-					HookXInput,
-					hookMouseVisibility);
-			}*/
+
+			const int size = 1024;
+			byte[] data = new byte[size];
 
 			byte[] toByteArray(string str)
 			{
-				List<byte> c = str.ToCharArray().Select(x => (byte)x).ToList();
+				List<byte> c = str.ToCharArray().Select(_x => (byte)_x).ToList();
 				for (int _i = c.Count; _i < 256; _i++)
 					c.Add(0);
 				return c.ToArray();
 			}
 
-			UserData data = new UserData()
+			void writeInt(int num, int offset)
 			{
-				hWnd = (int)hWnd,
-				ipcChannelNameRead = toByteArray(ipcChannelNameRead),
-				ipcChannelNameWrite = toByteArray(ipcChannelNameWrite),
-				//ipcChannelNameRead = ipcChannelNameRead,
-				//ipcChannelNameWrite = ipcChannelNameWrite,
-				controllerIndex = controllerIndex,
-				allowedMouseHandle = allowedMouseHandle,
-				updateAbsoluteFlagInMouseMessage = updateAbsoluteFlagInMouseMessage,
+				data[offset]   = (byte)(num >> 24);
+				data[offset+1] = (byte)(num >> 16);
+				data[offset+2] = (byte)(num >> 8);
+				data[offset+3] = (byte)(num);
+			}
 
-				HookGetCursorPos = HookGetCursorPos,
-				HookGetForegroundWindow = HookGetForegroundWindow,
-				HookGetAsyncKeyState = HookGetAsyncKeyState,
-				HookGetKeyState = HookGetKeyState,
-				HookCallWindowProcW = HookCallWindowProcW,
-				HookRegisterRawInputDevices = HookRegisterRawInputDevices,
-				HookSetCursorPos = HookSetCursorPos,
-				HookXInput = HookXInput,
-				useLegacyInput = useLegacyInput,
-				hookMouseVisibility = hookMouseVisibility
-			};
+			void writeBool(bool b, int offset)
+			{
+				data[offset] = b == true ? (byte)1 : (byte)0;
+			}
+			
+			var str1 = toByteArray(ipcChannelNameRead);
+			for (int j = 0; j < str1.Length; j++)
+				data[j] = str1[j];
 
-			int size = Marshal.SizeOf(data);//538
+			var str2 = toByteArray(ipcChannelNameWrite);
+			for (int j = 0; j < str1.Length; j++)
+				data[256 + j] = str2[j];
+
+			writeInt((int)hWnd, 512);
+			writeInt(controllerIndex, 516);
+			writeInt(allowedMouseHandle, 520);
+
+			int x = 524;
+			writeBool(updateAbsoluteFlagInMouseMessage, x++);
+			writeBool(HookGetCursorPos, x++);
+			writeBool(HookGetForegroundWindow, x++);
+			writeBool(HookGetAsyncKeyState, x++);
+			writeBool(HookGetKeyState, x++);
+			writeBool(HookCallWindowProcW, x++);
+			writeBool(HookRegisterRawInputDevices, x++);
+			writeBool(HookSetCursorPos, x++);
+			writeBool(HookXInput, x++);
+			writeBool(useLegacyInput, x++);
+			writeBool(hookMouseVisibility, x++);
 
 			IntPtr ptr = Marshal.AllocHGlobal(size);
-			Marshal.StructureToPtr(data, ptr, false);
+			Marshal.Copy(data, 0, ptr, size);
 
 			int nt = 0;
 
