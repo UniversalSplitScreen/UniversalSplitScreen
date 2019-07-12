@@ -443,7 +443,7 @@ BOOL FilterMessage(LPMSG lpMsg)
 	LPARAM _lParam = lpMsg->lParam;
 
 	//Filter raw input
-	if (Msg == WM_INPUT && filterRawInput && (allowedMouseHandle != 0))
+	if (Msg == WM_INPUT && filterRawInput)
 	{
 		UINT dwSize = 0;
 		const UINT sorh = sizeof(RAWINPUTHEADER);
