@@ -321,7 +321,7 @@ void startPipeListen()
 				}
 				case 0x03://Close named pipe
 				{
-					std::cout << "Received pipe closed message. Closing pipe..." << endl;
+					std::cout << "Received pipe closed message. Closing pipe..." << "\n";
 					pipeClosed = true;
 					return;
 				}
@@ -390,13 +390,13 @@ void SetCursorVisibility(bool show)
 
 		if (result == FALSE)
 		{
-			cout << "scv fail, err=" << GetLastError() << endl;
+			cout << "scv fail, err=" << GetLastError() << "\n";
 		}
 
 		sentVisibility = show;
 	}
 
-	//std::cout << "scvr, b="<<show << endl;
+	//std::cout << "scvr, b="<<show << "\n";
 }
 
 int WINAPI ShowCursor_Hook(BOOL bShow)
@@ -561,7 +561,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 	std::cout << "Injected by host process ID: " << inRemoteInfo->HostPID << "\n";
 	std::cout << "Passed in data size:" << inRemoteInfo->UserDataSize << "\n";
 	
-	std::cout << "DllHandle=" << DllHandle << endl;
+	std::cout << "DllHandle=" << DllHandle << "\n";
 	
 	InitializeCriticalSection(&mcs);
 
@@ -576,25 +576,25 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 		string ipcChannelName = string(reinterpret_cast<char*>(data), 256);
 		_ipcChannelNameRead = ipcChannelName;
-		std::cout << "Received IPC channel read: " << ipcChannelName << endl;
+		std::cout << "Received IPC channel read: " << ipcChannelName << "\n";
 
 		string ipcChannelNameWrite = string(reinterpret_cast<char*>(data+256), 256);
 		_ipcChannelNameWrite = ipcChannelNameWrite;
-		std::cout << "Received IPC channel write: " << ipcChannelNameWrite << endl;
+		std::cout << "Received IPC channel write: " << ipcChannelNameWrite << "\n";
 		
 		hWnd = (HWND)bytesToInt(data + 512);
-		std::cout << "Received hWnd: " << hWnd << endl;
+		std::cout << "Received hWnd: " << hWnd << "\n";
 
 		controllerIndex = bytesToInt(data + 512 + 4);
-		std::cout << "Received controller index: " << controllerIndex << endl;
+		std::cout << "Received controller index: " << controllerIndex << "\n";
 
 		allowedMouseHandle = (HANDLE)bytesToInt(data + 512 + 8);
-		std::cout << "Allowed mouse handle: " << allowedMouseHandle << endl;
+		std::cout << "Allowed mouse handle: " << allowedMouseHandle << "\n";
 		
 		updateAbsoluteFlagInMouseMessage = *(data + 512 + 12) == 1;
-		std::cout << "Update absolute flag in mouse message: " << updateAbsoluteFlagInMouseMessage << endl;
+		std::cout << "Update absolute flag in mouse message: " << updateAbsoluteFlagInMouseMessage << "\n";
 
-		BYTE* _p =data +  512 + 12 + 1;
+		BYTE* _p = data +  512 + 12 + 1;
 
 		bool HookGetCursorPos				= *(_p++) == 1;
 		bool HookGetForegroundWindow		= *(_p++) == 1;
@@ -606,6 +606,17 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		bool HookXInput						= *(_p++) == 1;
 		bool useLegacyInput					= *(_p++) == 1;
 		bool hookMouseVisibility			= *(_p++) == 1;
+
+		std::cout << "HookGetCursorPos: " << HookGetCursorPos << "\n";
+		std::cout << "HookGetForegroundWindow: " << HookGetForegroundWindow << "\n";
+		std::cout << "HookGetAsyncKeyState: " << HookGetAsyncKeyState << "\n";
+		std::cout << "HookGetKeyState: " << HookGetKeyState << "\n";
+		std::cout << "HookCallWindowProcW: " << HookCallWindowProcW << "\n";
+		std::cout << "HookRegisterRawInputDevices: " << HookRegisterRawInputDevices << "\n";
+		std::cout << "HookSetCursorPos: " << HookSetCursorPos << "\n";
+		std::cout << "HookXInput: " << HookXInput << "\n";
+		std::cout << "useLegacyInput: " << useLegacyInput << "\n";
+		std::cout << "hookMouseVisibility: " << hookMouseVisibility << "\n";
 
 		//Install hooks
 		if (HookGetForegroundWindow) 
