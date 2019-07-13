@@ -4,7 +4,7 @@
   "SendRawKeyboardInput": false,
   "SendNormalMouseInput": true,
   "SendNormalKeyboardInput": true,
-  "SendScrollwheel": false,
+  "SendScrollwheel": true,
   "SendWM_ACTIVATE": true,
   "SendWM_SETFOCUS": false,
   "RefreshWindowBoundsOnMouseClick": false,
