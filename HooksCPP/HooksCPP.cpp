@@ -36,12 +36,11 @@ bool enableLegacyInput = true;
 
 BOOL useAbsoluteCursorPos = TRUE;
 int useAbsoluteCursorPosCounter = 0;// 0/1/2/3 : FALSE, 4 : TRUE
-const int requiredAbsCount = 4;
+const int requiredAbsCount = 40;//Requires higher number for higher mouse polling rate
 time_t timeSinceLastSetCursorPos;
 
 //Time since the last SetCursorPos that we will assume the game is in a UI menu and needs absolute mouse position
-//(Technically one second since it records as an time_t).
-const double minTimeForAbs = 0.5;
+const double minTimeForAbs = 0;
 
 
 UINT16 vkey_state;//Stores the mouse keys (5 of them) and the WASD keys. (1=on, 0=off)
