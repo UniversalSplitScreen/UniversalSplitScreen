@@ -388,8 +388,6 @@ namespace UniversalSplitScreen.Core
 		{
 			while (true)
 			{
-				Thread.Sleep(3000);
-
 				WinApi.SetForegroundWindow((int)WinApi.GetDesktopWindow());
 
 				foreach (Window window in windows.Values)
@@ -400,6 +398,7 @@ namespace UniversalSplitScreen.Core
 				if (token.IsCancellationRequested)
 					return;
 
+				Thread.Sleep(3000);
 			}
 		}
 		#endregion
