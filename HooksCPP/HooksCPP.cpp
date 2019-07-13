@@ -35,12 +35,12 @@ bool updateAbsoluteFlagInMouseMessage;
 bool enableLegacyInput = true; 
 
 BOOL useAbsoluteCursorPos = TRUE;
-int useAbsoluteCursorPosCounter = 0;// 0/1/2/3 : FALSE, 4 : TRUE
+int useAbsoluteCursorPosCounter = 0;// 0/1/2/3/... : FALSE, requiredAbsCount : TRUE
 const int requiredAbsCount = 40;//Requires higher number for higher mouse polling rate
-time_t timeSinceLastSetCursorPos;
 
+//time_t timeSinceLastSetCursorPos;
 //Time since the last SetCursorPos that we will assume the game is in a UI menu and needs absolute mouse position
-const double minTimeForAbs = 0;
+//const double minTimeForAbs = 0;
 
 
 UINT16 vkey_state;//Stores the mouse keys (5 of them) and the WASD keys. (1=on, 0=off)
@@ -56,16 +56,18 @@ void UpdateAbsoluteCursorCheck()
 {
 	if (enableLegacyInput && useAbsoluteCursorPos == FALSE)
 	{
-		double dt = difftime(time(NULL), timeSinceLastSetCursorPos);
-		if (dt >= minTimeForAbs)
+		//double dt = difftime(time(NULL), timeSinceLastSetCursorPos);
+		//if (dt >= minTimeForAbs)
+		//{
+
+		//We assume we're in a menu and need absolute cursor pos
+		useAbsoluteCursorPosCounter++;
+		if (useAbsoluteCursorPosCounter == requiredAbsCount)
 		{
-			//It's been minTimeForAbs since last SetCursorPos, so we assume we're in a menu and need absolute cursor pos
-			useAbsoluteCursorPosCounter++;
-			if (useAbsoluteCursorPosCounter == requiredAbsCount)
-			{
-				useAbsoluteCursorPos = TRUE;
-			}
+			useAbsoluteCursorPos = TRUE;
 		}
+
+		//}
 	}
 }
 
@@ -123,7 +125,7 @@ BOOL WINAPI SetCursorPos_Hook(int X, int Y)
 		fakeY = p.y;
 		LeaveCriticalSection(&mcs);
 
-		time(&timeSinceLastSetCursorPos);
+		//time(&timeSinceLastSetCursorPos);
 		useAbsoluteCursorPosCounter = 0;
 		useAbsoluteCursorPos = FALSE;
 	}
