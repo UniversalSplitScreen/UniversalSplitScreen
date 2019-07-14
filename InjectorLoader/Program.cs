@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
+//Output file is named IJ not InjectorLoader because "InjectorLoader" is picked up by some antiviruses
+
 namespace InjectorLoader
 {
 	/* Unused, but shows the layout we use in the byte array

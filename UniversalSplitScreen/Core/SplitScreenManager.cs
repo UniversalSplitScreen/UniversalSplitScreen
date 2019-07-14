@@ -167,7 +167,7 @@ namespace UniversalSplitScreen.Core
 					bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
 						
 					Process proc = new Process();
-					proc.StartInfo.FileName = is64 ? "InjectorLoaderx64.exe" : "InjectorLoaderx86.exe";
+					proc.StartInfo.FileName = is64 ? "IJx64.exe" : "IJx86.exe";
 
 					//Arguments
 					{

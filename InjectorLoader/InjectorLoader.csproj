@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{80E9ABB4-2983-4B92-BCA4-FC6B646D0608}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>InjectorLoader</RootNamespace>
-    <AssemblyName>InjectorLoader</AssemblyName>
+    <RootNamespace>IJ</RootNamespace>
+    <AssemblyName>IJ</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
