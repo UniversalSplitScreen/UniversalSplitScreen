@@ -669,10 +669,11 @@
 			this.hooksWarningLabel.Location = new System.Drawing.Point(6, 16);
 			this.hooksWarningLabel.MaximumSize = new System.Drawing.Size(280, 0);
 			this.hooksWarningLabel.Name = "hooksWarningLabel";
-			this.hooksWarningLabel.Size = new System.Drawing.Size(265, 39);
+			this.hooksWarningLabel.Size = new System.Drawing.Size(278, 52);
 			this.hooksWarningLabel.TabIndex = 0;
-			this.hooksWarningLabel.Text = "Warning: Hooks inject code into the target game. This may be detected by an anti-" +
-    "cheat system or anti-virus software. See the documentation for more info.";
+			this.hooksWarningLabel.Text = "Warning: Hooks run code in the target game process. This may be detected as a fal" +
+    "se positive by an anti-cheat system or anti-virus software. See the documentatio" +
+    "n for more info.";
 			// 
 			// tabPage3
 			// 
@@ -920,7 +921,7 @@
 			// RefCheckbox_UpdateAbsoluteFlagInMouseMessage
 			// 
 			this.RefCheckbox_UpdateAbsoluteFlagInMouseMessage.AutoSize = true;
-			this.RefCheckbox_UpdateAbsoluteFlagInMouseMessage.Location = new System.Drawing.Point(9, 209);
+			this.RefCheckbox_UpdateAbsoluteFlagInMouseMessage.Location = new System.Drawing.Point(9, 215);
 			this.RefCheckbox_UpdateAbsoluteFlagInMouseMessage.Name = "RefCheckbox_UpdateAbsoluteFlagInMouseMessage";
 			this.RefCheckbox_UpdateAbsoluteFlagInMouseMessage.RefType = null;
 			this.RefCheckbox_UpdateAbsoluteFlagInMouseMessage.Size = new System.Drawing.Size(237, 30);
@@ -932,7 +933,7 @@
 			// RefCheckbox_Hook_MouseVisibility
 			// 
 			this.RefCheckbox_Hook_MouseVisibility.AutoSize = true;
-			this.RefCheckbox_Hook_MouseVisibility.Location = new System.Drawing.Point(9, 315);
+			this.RefCheckbox_Hook_MouseVisibility.Location = new System.Drawing.Point(9, 321);
 			this.RefCheckbox_Hook_MouseVisibility.Name = "RefCheckbox_Hook_MouseVisibility";
 			this.RefCheckbox_Hook_MouseVisibility.RefType = null;
 			this.RefCheckbox_Hook_MouseVisibility.Size = new System.Drawing.Size(124, 17);
@@ -944,7 +945,7 @@
 			// RefCheckbox_Hook_UseLegacyInput
 			// 
 			this.RefCheckbox_Hook_UseLegacyInput.AutoSize = true;
-			this.RefCheckbox_Hook_UseLegacyInput.Location = new System.Drawing.Point(9, 186);
+			this.RefCheckbox_Hook_UseLegacyInput.Location = new System.Drawing.Point(9, 192);
 			this.RefCheckbox_Hook_UseLegacyInput.Name = "RefCheckbox_Hook_UseLegacyInput";
 			this.RefCheckbox_Hook_UseLegacyInput.RefType = null;
 			this.RefCheckbox_Hook_UseLegacyInput.Size = new System.Drawing.Size(194, 17);
@@ -956,7 +957,7 @@
 			// RefCheckbox_Hook_XInput
 			// 
 			this.RefCheckbox_Hook_XInput.AutoSize = true;
-			this.RefCheckbox_Hook_XInput.Location = new System.Drawing.Point(9, 291);
+			this.RefCheckbox_Hook_XInput.Location = new System.Drawing.Point(9, 297);
 			this.RefCheckbox_Hook_XInput.Name = "RefCheckbox_Hook_XInput";
 			this.RefCheckbox_Hook_XInput.RefType = null;
 			this.RefCheckbox_Hook_XInput.Size = new System.Drawing.Size(153, 17);
@@ -969,7 +970,7 @@
 			// RefCheckbox_Hook_SetCursorPos
 			// 
 			this.RefCheckbox_Hook_SetCursorPos.AutoSize = true;
-			this.RefCheckbox_Hook_SetCursorPos.Location = new System.Drawing.Point(9, 163);
+			this.RefCheckbox_Hook_SetCursorPos.Location = new System.Drawing.Point(9, 169);
 			this.RefCheckbox_Hook_SetCursorPos.Name = "RefCheckbox_Hook_SetCursorPos";
 			this.RefCheckbox_Hook_SetCursorPos.RefType = null;
 			this.RefCheckbox_Hook_SetCursorPos.Size = new System.Drawing.Size(119, 17);
@@ -982,7 +983,7 @@
 			// RefCheckbox_Hook_GetKeyState
 			// 
 			this.RefCheckbox_Hook_GetKeyState.AutoSize = true;
-			this.RefCheckbox_Hook_GetKeyState.Location = new System.Drawing.Point(9, 245);
+			this.RefCheckbox_Hook_GetKeyState.Location = new System.Drawing.Point(9, 251);
 			this.RefCheckbox_Hook_GetKeyState.Name = "RefCheckbox_Hook_GetKeyState";
 			this.RefCheckbox_Hook_GetKeyState.RefType = null;
 			this.RefCheckbox_Hook_GetKeyState.Size = new System.Drawing.Size(191, 17);
@@ -995,7 +996,7 @@
 			// RefCheckbox_Hook_GetAsyncKeyState
 			// 
 			this.RefCheckbox_Hook_GetAsyncKeyState.AutoSize = true;
-			this.RefCheckbox_Hook_GetAsyncKeyState.Location = new System.Drawing.Point(9, 268);
+			this.RefCheckbox_Hook_GetAsyncKeyState.Location = new System.Drawing.Point(9, 274);
 			this.RefCheckbox_Hook_GetAsyncKeyState.Name = "RefCheckbox_Hook_GetAsyncKeyState";
 			this.RefCheckbox_Hook_GetAsyncKeyState.RefType = null;
 			this.RefCheckbox_Hook_GetAsyncKeyState.Size = new System.Drawing.Size(144, 17);
@@ -1009,7 +1010,7 @@
 			// RefCheckbox_Hook_GetCursorPos
 			// 
 			this.RefCheckbox_Hook_GetCursorPos.AutoSize = true;
-			this.RefCheckbox_Hook_GetCursorPos.Location = new System.Drawing.Point(9, 140);
+			this.RefCheckbox_Hook_GetCursorPos.Location = new System.Drawing.Point(9, 146);
 			this.RefCheckbox_Hook_GetCursorPos.Name = "RefCheckbox_Hook_GetCursorPos";
 			this.RefCheckbox_Hook_GetCursorPos.RefType = null;
 			this.RefCheckbox_Hook_GetCursorPos.Size = new System.Drawing.Size(120, 17);
@@ -1022,7 +1023,7 @@
 			// RefCheckbox_Hook_GetForegroundWindow
 			// 
 			this.RefCheckbox_Hook_GetForegroundWindow.AutoSize = true;
-			this.RefCheckbox_Hook_GetForegroundWindow.Location = new System.Drawing.Point(9, 117);
+			this.RefCheckbox_Hook_GetForegroundWindow.Location = new System.Drawing.Point(9, 123);
 			this.RefCheckbox_Hook_GetForegroundWindow.Name = "RefCheckbox_Hook_GetForegroundWindow";
 			this.RefCheckbox_Hook_GetForegroundWindow.RefType = null;
 			this.RefCheckbox_Hook_GetForegroundWindow.Size = new System.Drawing.Size(165, 17);
@@ -1035,7 +1036,7 @@
 			// RefCheckbox_Hook_FilterMouseInputMessages
 			// 
 			this.RefCheckbox_Hook_FilterMouseInputMessages.AutoSize = true;
-			this.RefCheckbox_Hook_FilterMouseInputMessages.Location = new System.Drawing.Point(9, 94);
+			this.RefCheckbox_Hook_FilterMouseInputMessages.Location = new System.Drawing.Point(9, 100);
 			this.RefCheckbox_Hook_FilterMouseInputMessages.Name = "RefCheckbox_Hook_FilterMouseInputMessages";
 			this.RefCheckbox_Hook_FilterMouseInputMessages.RefType = null;
 			this.RefCheckbox_Hook_FilterMouseInputMessages.Size = new System.Drawing.Size(228, 17);
@@ -1048,7 +1049,7 @@
 			// RefCheckbox_Hook_FilterRawInput
 			// 
 			this.RefCheckbox_Hook_FilterRawInput.AutoSize = true;
-			this.RefCheckbox_Hook_FilterRawInput.Location = new System.Drawing.Point(9, 71);
+			this.RefCheckbox_Hook_FilterRawInput.Location = new System.Drawing.Point(9, 77);
 			this.RefCheckbox_Hook_FilterRawInput.Name = "RefCheckbox_Hook_FilterRawInput";
 			this.RefCheckbox_Hook_FilterRawInput.RefType = null;
 			this.RefCheckbox_Hook_FilterRawInput.Size = new System.Drawing.Size(214, 17);
