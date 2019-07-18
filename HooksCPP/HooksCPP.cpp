@@ -647,8 +647,15 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 			for (int xi = 0; xi < 5; xi++)
 			{
-				installHook(xinputNames[xi], "XInputGetState", XInputGetState_Hook);
-				installHook(xinputNames[xi], "XInputSetState", XInputSetState_Hook);
+				if (GetModuleHandleA(xinputNames[xi]) != NULL)
+				{
+					installHook(xinputNames[xi], "XInputGetState", XInputGetState_Hook);
+					installHook(xinputNames[xi], "XInputSetState", XInputSetState_Hook);
+				}
+				else
+				{
+					std::cout << "Not hooking " << xinputNames[xi] << " because not loaded\n";
+				}
 			}
 		}
 
