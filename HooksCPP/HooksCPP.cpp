@@ -11,6 +11,7 @@
 #include <time.h>
 //#include <Xinput.h>
 #include <windowsx.h>
+#include <dinput.h>
 using namespace std;
 
 extern HMODULE DllHandle;
@@ -51,6 +52,28 @@ bool filterRawInput;
 bool filterMouseMessages;
 
 bool pipeClosed = false;
+
+IDirectInput8* pDinput;
+
+class dinput_deleter {
+	
+public:
+	dinput_deleter()
+	{
+		pDinput = 0;
+	}
+	
+	~dinput_deleter()
+	{
+		if (pDinput != 0)
+		{
+			pDinput->Release();
+			pDinput = 0;
+		}
+	}
+  };
+
+dinput_deleter pDinput_deleter;
 
 void UpdateAbsoluteCursorCheck()
 {
@@ -555,6 +578,12 @@ BOOL WINAPI PeekMessageW_Hook(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT w
 	return ret == FALSE ? FALSE : FilterMessage(lpMsg);
 }
 
+static BOOL CALLBACK DIEnumDevicesCallback(LPCDIDEVICEINSTANCE  lpddi, LPVOID pvRef)
+{
+	std::cout << "device enumerate\n";
+	return DIENUM_CONTINUE;
+}
+
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
 	//Cout will go to the games console (test easily with SMAPI/Minecraft)
@@ -672,13 +701,27 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			installHook(TEXT("user32"), "PeekMessageW", PeekMessageW_Hook);
 		}
 
+		//DirectInput8
+		{
+			HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(pDinput), NULL);
+
+			if (DI_OK == dinput_ret)
+			{
+				std::cout << "Succeed dDirectInput8Create\n";
+				pDinput->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, 0, DIEDFL_ALLDEVICES);
+			}
+			else
+			{
+				std::cout << "Fail DirectInput8Create, dinput_ret=" << dinput_ret << "\n";
+			}
+		}
+
 		//Start named pipe client
 		startPipeListen();
 	}
 	else
 	{
 		std::cout << "Failed getting user data\nExpected size 1024, Received "<< (inRemoteInfo->UserDataSize)<<"\n";
-
 	}
 
 	return;
