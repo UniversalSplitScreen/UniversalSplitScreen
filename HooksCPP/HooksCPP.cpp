@@ -636,6 +636,38 @@ HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cb
 	//return 7;
 }
 
+void installDinputHooks()
+{
+	//https://kaisar-haque.blogspot.com/2008/07/c-accessing-virtual-table.html
+	int* vptr = *(int**)dinputDevice;
+
+	using GetDeviceStateFunc = HRESULT(__stdcall *)(DWORD, LPVOID);
+	GetDeviceStateFunc GetDeviceStatePointer = (GetDeviceStateFunc)vptr[9];
+
+	HOOK_TRACE_INFO hHook = { NULL };
+
+	NTSTATUS hookResult = LhInstallHook(
+		GetDeviceStatePointer,
+		Dinput_GetDeviceState_Hook,
+		NULL,
+		&hHook);
+
+	if (!FAILED(hookResult))
+	{
+		ULONG ACLEntries[1] = { 0 };
+		//LhSetExclusiveACL(ACLEntries, 1, &hHook);
+		LhSetInclusiveACL(ACLEntries, 1, &hHook);
+		std::cout << "Successfully installed dinput8 hook GetDeviceState\n";
+	}
+	else
+	{
+		std::cout << "Failed to install dinput8 hook GetDeviceState in module, NTSTATUS: " << hookResult << "\n";
+	}
+}
+
+
+
+
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
 	//Cout will go to the games console (test easily with SMAPI/Minecraft)
@@ -764,62 +796,31 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			dinputGuids_i = 0;
 			pDinput->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, 0, DIEDFL_ALLDEVICES);
 			//TODO: sort the array by guidInstance (important so order is same in all hooks in games)
-			if (controllerIndex > 0)
-			{
 
+			if (controllerIndex > 0 && controllerIndex <= maxDinputDevices)
+			{
 				HRESULT cdRes = pDinput->CreateDevice(dinputGuids[controllerIndex - 1], &dinputDevice, NULL);//TODO: will give out of bounds
 				std::cout << "cdRes = " << cdRes << "\n";
 				
 				//Dinput8 hook
-				{
-					//https://kaisar-haque.blogspot.com/2008/07/c-accessing-virtual-table.html
-					int* vptr = *(int**)dinputDevice;
+				installDinputHooks();
 
-					using GetDeviceStateFunc = HRESULT( __stdcall *)(DWORD, LPVOID);
-					GetDeviceStateFunc GetDeviceStatePointer = (GetDeviceStateFunc) vptr[9];
-					
-					HOOK_TRACE_INFO hHook = { NULL };
+				dinputDevice->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
 
-					NTSTATUS hookResult = LhInstallHook(
-						GetDeviceStatePointer,
-						Dinput_GetDeviceState_Hook,
-						NULL,
-						&hHook);
-
-					if (!FAILED(hookResult))
-					{
-						ULONG ACLEntries[1] = { 0 };
-						//LhSetExclusiveACL(ACLEntries, 1, &hHook);
-						LhSetInclusiveACL(ACLEntries, 1, &hHook);
-						std::cout << "Successfully installed dinput8 hook GetDeviceState\n";
-					}
-					else
-					{
-						std::cout << "Failed to install dinput8 hook GetDeviceState in module, NTSTATUS: " << hookResult << "\n";
-					}
-				}
-
-				HRESULT sclRes = dinputDevice->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
-				std::cout << "sclRes=" << sclRes << "\n";
-
-				HRESULT sdfRes  = dinputDevice->SetDataFormat(&c_dfDIJoystick);
-				std::cout << "sdfRes = " << sdfRes << "\n";
+				dinputDevice->SetDataFormat(&c_dfDIJoystick);
 
 				DIDEVCAPS caps;
 				caps.dwSize = sizeof(DIDEVCAPS);
 				HRESULT gcRes = dinputDevice->GetCapabilities(&caps);
-				std::cout << "gcRes=" << gcRes << "\n";
 					
 				std::cout << "dwButtons=" << caps.dwButtons << "\n";
 				std::cout << "dwAxes=" << caps.dwAxes << "\n";
 
 
-				HRESULT eoRes = dinputDevice->EnumObjects(&DIEnumDeviceObjectsCallback, dinputDevice, DIDFT_AXIS);
-				std::cout << "eoRes=" << eoRes << "\n";
+				dinputDevice->EnumObjects(&DIEnumDeviceObjectsCallback, dinputDevice, DIDFT_AXIS);
  
 
 				HRESULT aquireResult = dinputDevice->Acquire();
-				std::cout << "aquireResult=" << aquireResult << "\n";
 
 				if (aquireResult == DI_OK)
 				{
