@@ -626,11 +626,29 @@ static BOOL CALLBACK DIEnumDeviceObjectsCallback(LPCDIDEVICEOBJECTINSTANCE lpddo
 }
 
 #define THIS_
-__declspec(nothrow) HRESULT __stdcall Dinput_GetDeviceStates_Hook(THIS_ DWORD cbData, LPVOID lpvData)
+//__declspec(nothrow)
+
+/*class dummy
+{
+public:
+	virtual HRESULT __thiscall Dinput_GetDeviceStates_Hook(THIS_ DWORD cbData, LPVOID lpvData)
+	{
+		std::cout << "Dinput_GetDeviceStates_Hook, cbData=" << cbData << ", lpvData=" << lpvData << "\n";
+		return 7;
+		//return pDinput->GetDeviceStatus(dinputGuids[controllerIndex - 1]);
+	}
+};*/
+
+LPDIRECTINPUTDEVICE8 dinputDevice = 0;
+
+
+//First argument is a pointer to the COM object, required or application crashes after executing hook
+HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cbData, LPVOID lpvData)
 {
 	std::cout << "Dinput_GetDeviceStates_Hook, cbData=" << cbData << ", lpvData=" << lpvData << "\n";
-	return 7;
-	//return pDinput->GetDeviceStatus(dinputGuids[controllerIndex - 1]);
+	std::cout << "dinputDevice=" << dinputDevice << "\n";
+	return dinputDevice->GetDeviceState(cbData, lpvData);
+	//return 7;
 }
 
 /*__declspec(nothrow) HRESULT __stdcall Dinput_Aquire_Hook()
@@ -642,6 +660,8 @@ __declspec(nothrow) HRESULT __stdcall Dinput_GetDeviceStates_Hook(THIS_ DWORD cb
 
 //typedef HRESULT ( __stdcall IDirectInput:: *GetDeviceStatus_func)(REFGUID rguidInstance);
 //typedef HRESULT(__stdcall IDirectInput:: *RunControlPanel_func)(HWND hwndOwner,DWORD dwFlags);
+
+
 
 
 
@@ -767,7 +787,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		//std::cout << "dinputhmod=" << dinputhmod << "\n";
 
 		std::cout << "pwd=" << system("dir") << "\n";
-		LPDIRECTINPUTDEVICE8 dinputDevice = 0;
+		dinputDevice = 0;
 		
 		HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(pDinput), NULL);
 
@@ -846,7 +866,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 				  //auto fnp = ((HRESULT(*)(DWORD, LPVOID)) vptr[9]); (works, crashes after calling)
 
 				{
-					using fnpT = HRESULT(__clrcall  *)(DWORD, LPVOID);
+					using fnpT = HRESULT( __stdcall   *)(DWORD, LPVOID);
 					//auto fnp = ((HRESULT  (__stdcall  *)(DWORD, LPVOID)) vptr[9]);
 					fnpT fnp = (fnpT) vptr[9];
 
@@ -856,10 +876,19 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 					HOOK_TRACE_INFO hHook = { NULL };
 
+					//dummy* _dummy = new dummy();
+
+					//typedef  HRESULT(dummy::*aaa)(DWORD, LPVOID);
+				//	aaa dummypt = &dummy::Dinput_GetDeviceStates_Hook;
+
+					//fnpT targetP = (fnpT)((*(int**)_dummy)[0]);
+					//std::cout << "targetP=" << targetP << "\n";
+
 					NTSTATUS hookResult = LhInstallHook(
 						//&fp,
 						fnp,
-						Dinput_GetDeviceStates_Hook,
+						//targetP,
+						Dinput_GetDeviceState_Hook,
 						NULL,
 						&hHook);
 
