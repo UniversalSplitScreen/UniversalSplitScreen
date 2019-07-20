@@ -55,7 +55,11 @@ bool pipeClosed = false;
 
 IDirectInput8* pDinput;
 
-class dinput_deleter {
+const int maxDinputDevices = 16;
+GUID dinputGuids[maxDinputDevices];
+int dinputGuids_i = 0;
+
+/*class dinput_deleter {
 	
 public:
 	dinput_deleter()
@@ -67,13 +71,15 @@ public:
 	{
 		if (pDinput != 0)
 		{
+			//TODO: crashes game?
+			//TODO: move to pipe end?
 			pDinput->Release();
 			pDinput = 0;
 		}
 	}
   };
 
-dinput_deleter pDinput_deleter;
+dinput_deleter pDinput_deleter;*/
 
 void UpdateAbsoluteCursorCheck()
 {
@@ -578,11 +584,66 @@ BOOL WINAPI PeekMessageW_Hook(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT w
 	return ret == FALSE ? FALSE : FilterMessage(lpMsg);
 }
 
-static BOOL CALLBACK DIEnumDevicesCallback(LPCDIDEVICEINSTANCE  lpddi, LPVOID pvRef)
+static BOOL CALLBACK DIEnumDevicesCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
-	std::cout << "device enumerate\n";
+	DIDEVICEINSTANCE di = *lpddi;
+
+	bool adding = false;
+	
+	/* https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf page 26:
+		4 : Joystick
+		5 : Game Pad */
+
+	if (di.wUsage == 4 || di.wUsage == 5 && dinputGuids_i < maxDinputDevices)
+	{
+		dinputGuids[dinputGuids_i++] = di.guidInstance;
+		adding = true;
+	}
+
+	std::cout << "device enumerate, instanceName=" << di.tszInstanceName << ", productName=" << di.tszProductName << ", usage=" << di.wUsage 
+		<< ", usagePage=" << di.wUsagePage << ", adding to list = " << adding << "\n";
+	
 	return DIENUM_CONTINUE;
 }
+
+static BOOL CALLBACK DIEnumDeviceObjectsCallback(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
+{
+	LPDIRECTINPUTDEVICE8 did = (LPDIRECTINPUTDEVICE8)pvRef;
+	did->Unacquire();
+
+	DIPROPRANGE range;
+	range.lMax = 32767;
+	range.lMin = -32768;
+	range.diph.dwSize = sizeof(DIPROPRANGE);
+	range.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+	range.diph.dwHow = DIPH_BYID;
+	range.diph.dwObj = lpddoi->dwType;
+
+	if (FAILED(did->SetProperty(DIPROP_RANGE, &range.diph)))
+		return DIENUM_STOP;
+	else
+		return DIENUM_CONTINUE;
+}
+
+#define THIS_
+__declspec(nothrow) HRESULT __stdcall Dinput_GetDeviceStates_Hook(THIS_ DWORD cbData, LPVOID lpvData)
+{
+	std::cout << "Dinput_GetDeviceStates_Hook, cbData=" << cbData << ", lpvData=" << lpvData << "\n";
+	return 7;
+	//return pDinput->GetDeviceStatus(dinputGuids[controllerIndex - 1]);
+}
+
+/*__declspec(nothrow) HRESULT __stdcall Dinput_Aquire_Hook()
+{
+	std::cout << "AQUIRE HOOK\n";
+	return 8;
+	//return pDinput->GetDeviceStatus(dinputGuids[controllerIndex - 1]);
+}*/
+
+//typedef HRESULT ( __stdcall IDirectInput:: *GetDeviceStatus_func)(REFGUID rguidInstance);
+//typedef HRESULT(__stdcall IDirectInput:: *RunControlPanel_func)(HWND hwndOwner,DWORD dwFlags);
+
+
 
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
@@ -702,22 +763,256 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		}
 
 		//DirectInput8
-		{
-			HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(pDinput), NULL);
+		//HMODULE dinputhmod = LoadLibrary("Dinput8.dll");
+		//std::cout << "dinputhmod=" << dinputhmod << "\n";
 
-			if (DI_OK == dinput_ret)
+		std::cout << "pwd=" << system("dir") << "\n";
+		LPDIRECTINPUTDEVICE8 dinputDevice = 0;
+		
+		HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(pDinput), NULL);
+
+		/*int* vptr = *(int**)pDinput;
+		std::cout << "vptr=" << vptr << "\n";
+		std::cout << "*vptr=" << *vptr << "\n";
+			
+		for (int asdf = 0; asdf < 9; asdf++)
+		{
+			std::cout << "vptr[" << asdf << "] = 0x" << vptr[asdf] << "\n";
+		}
+
+		/*__asm
+		{
+			mov ecx, obj
+		}
+
+			( (void (*)()) vptr[0] )();
+
+		__asm
+		{
+			mov ecx, pDinput
+		}
+
+		auto fp1 = ((HRESULT(*)(DWORD, LPVOID)) vptr[5]);
+		std::cout << "fp1=" << fp1 << "\n";
+		HRESULT fp1o = fp1(0, 0);
+		std::cout << "fp1o=" << fp1o << "\n";
+
+		//DIERR_INPUTLOST, DIERR_INVALIDPARAM, DIERR_NOTACQUIRED, DIERR_NOTINITIALIZED, E_PENDING
+		std::cout << "DIERR_INPUTLOST=" << DIERR_INPUTLOST << "\n";
+		std::cout << "DIERR_INVALIDPARAM=" << DIERR_INVALIDPARAM << "\n";
+		std::cout << "DIERR_NOTACQUIRED=" << DIERR_NOTACQUIRED << "\n";
+		std::cout << "DIERR_NOTINITIALIZED=" << DIERR_NOTINITIALIZED << "\n";
+		std::cout << "E_PENDING=" << E_PENDING << "\n";*/
+		
+		/*auto vtb = reinterpret_cast<void **>(*reinterpret_cast<void **>(pDinput));
+		auto vtb_method = static_cast<HRESULT(*)(DWORD cbData, LPVOID lpvData)>(vtb[5]);
+		std::cout << "vtb=" << vtb << "\n";
+		std::cout << "vtb_method=" << vtb_method << "\n";*/
+
+		//HRESULT(WINAPI IDirectInputDevice8::*fp)(DWORD, LPVOID) = &IDirectInputDevice8::GetDeviceState;
+		//std::cout << "fp=" << fp << "\n";//Always 1
+		//std::cout << "&fp=" << &fp << "\n";
+			   		 	  	  	   
+
+
+		if (DI_OK == dinput_ret)
+		{
+			std::cout << "Succeed dDirectInput8Create\n";
+			dinputGuids_i = 0;
+			pDinput->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, 0, DIEDFL_ALLDEVICES);
+			//TODO: sort the array by guidInstance (important so order is same in all hooks in games)
+			if (controllerIndex > 0)
 			{
-				std::cout << "Succeed dDirectInput8Create\n";
-				pDinput->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, 0, DIEDFL_ALLDEVICES);
-			}
-			else
-			{
-				std::cout << "Fail DirectInput8Create, dinput_ret=" << dinput_ret << "\n";
+
+				HRESULT cdRes = pDinput->CreateDevice(dinputGuids[controllerIndex - 1], &dinputDevice, NULL);//TODO: will give out of bounds
+				std::cout << "cdRes = " << cdRes << "\n";
+
+
+
+
+
+				//https://kaisar-haque.blogspot.com/2008/07/c-accessing-virtual-table.html
+				int* vptr = *(int**)dinputDevice;
+
+
+				/*__asm
+				  {
+					   mov ecx, dinputDevice
+				  }*/
+
+
+				  //( (void (*)()) vptr[0] )
+
+				  //auto fnp = ((HRESULT(*)(DWORD, LPVOID)) vptr[9]); (works, crashes after calling)
+
+				{
+					using fnpT = HRESULT(__clrcall  *)(DWORD, LPVOID);
+					//auto fnp = ((HRESULT  (__stdcall  *)(DWORD, LPVOID)) vptr[9]);
+					fnpT fnp = (fnpT) vptr[9];
+
+
+					std::cout << "fnp=" << fnp << "\n";
+					//STDMETHOD(GetDeviceState)(THIS_ DWORD,LPVOID) PURE;
+
+					HOOK_TRACE_INFO hHook = { NULL };
+
+					NTSTATUS hookResult = LhInstallHook(
+						//&fp,
+						fnp,
+						Dinput_GetDeviceStates_Hook,
+						NULL,
+						&hHook);
+
+					std::cout << " hookResult=" << hookResult << "\n";
+					std::cout << " hhook.Link=" << hHook.Link << "\n";
+
+					if (!FAILED(hookResult))
+					{
+						ULONG ACLEntries[1] = { 0 };
+						//LhSetExclusiveACL(ACLEntries, 1, &hHook);
+						LhSetInclusiveACL(ACLEntries, 1, &hHook);
+						std::cout << "Successfully installed dinput8 hook GetDeviceStateX\n";
+					}
+					else
+					{
+						std::cout << "Failed to install dinput8 hook GetDeviceState in module, NTSTATUS: " << hookResult << "\n";
+					}
+				}
+
+				/*{
+					auto fnp = ((HRESULT(__stdcall *)()) vptr[7]);
+
+
+					std::cout << "fnp=" << fnp << "\n";
+					//STDMETHOD(GetDeviceState)(THIS_ DWORD,LPVOID) PURE;
+
+					HOOK_TRACE_INFO hHook = { NULL };
+
+					NTSTATUS hookResult = LhInstallHook(
+						//&fp,
+						fnp,
+						Dinput_Aquire_Hook,
+						NULL,
+						&hHook);
+
+					std::cout << " hookResult=" << hookResult << "\n";
+					std::cout << " hhook.Link=" << hHook.Link << "\n";
+
+					if (!FAILED(hookResult))
+					{
+						ULONG ACLEntries[1] = { 0 };
+						//LhSetExclusiveACL(ACLEntries, 1, &hHook);
+						LhSetInclusiveACL(ACLEntries, 1, &hHook);
+						std::cout << "Successfully installed dinput8 hook aquire\n";
+					}
+					else
+					{
+						std::cout << "Failed to install dinput8 hook aquire in module, NTSTATUS: " << hookResult << "\n";
+					}
+				}*/
+
+
+
+				HRESULT sclRes = dinputDevice->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
+				std::cout << "sclRes=" << sclRes << "\n";
+
+				HRESULT sdfRes  = dinputDevice->SetDataFormat(&c_dfDIJoystick);
+				std::cout << "sdfRes = " << sdfRes << "\n";
+
+				DIDEVCAPS caps;
+				caps.dwSize = sizeof(DIDEVCAPS);
+				HRESULT gcRes = dinputDevice->GetCapabilities(&caps);
+				std::cout << "gcRes=" << gcRes << "\n";
+					
+				std::cout << "dwButtons=" << caps.dwButtons << "\n";
+				std::cout << "dwAxes=" << caps.dwAxes << "\n";
+
+
+				HRESULT eoRes = dinputDevice->EnumObjects(&DIEnumDeviceObjectsCallback, dinputDevice, DIDFT_AXIS);
+				std::cout << "eoRes=" << eoRes << "\n";
+ 
+
+				HRESULT aquireResult = dinputDevice->Acquire();
+				std::cout << "aquireResult=" << aquireResult << "\n";
+
+				if (aquireResult == DI_OK)
+				{
+					/*LPDIJOYSTATE pState = new DIJOYSTATE();
+					dinputDevice->GetDeviceState(sizeof(DIJOYSTATE), pState);
+					BOOL POVCentered = (LOWORD(pState->rgdwPOV) == 0xFFFF);
+					std::cout << "pov centred = " << POVCentered << "\n";*/
+
+					for (int asdf = 0; asdf < 15; asdf++)
+					{
+						HRESULT pollRes = dinputDevice->Poll();
+						std::cout << "pollres=" << pollRes << "\n";
+
+
+						DIJOYSTATE state;
+
+#ifdef _DEBUG
+						std::cout << "DEBUG\n";
+#endif
+						HRESULT getDevStateRes = (dinputDevice)->GetDeviceState(sizeof(DIJOYSTATE), &state);
+
+
+
+						std::cout << "getDevStateRes = " << getDevStateRes << "\n";
+						BOOL POVCentered = (LOWORD(state.rgdwPOV) == 0xFFFF);
+						std::cout << "pov centred = " << POVCentered << "\n";
+
+						int xx = 0;
+						for (int ix = 0; ix < 32; ix++)
+						{
+							xx += (state.rgbButtons[ix] != 0 ? 1 : 0);
+						}
+
+						std::cout << "xx=" << xx << "\n";
+
+						std::cout << "LX=" << state.lX << "\n";
+						std::cout << "LY=" << state.lY << "\n";
+						std::cout << "LRX=" << state.lRx << "\n";
+						std::cout << "LRY=" << state.lRy << "\n";
+						std::cout << "lZ=" << state.lZ << "\n";
+						std::cout << "LRZ=" << state.lRz << "\n";
+
+
+						Sleep(1500);
+					}
+				}
 			}
 		}
+		else
+		{
+			std::cout << "Fail DirectInput8Create, dinput_ret=" << dinput_ret << "\n";
+		}
+		
+
+		//installHook(TEXT("Dinput8"), "IDirectInput8::GetDeviceStatus", GetDeviceStatus_Hook);
+
+		//GetDeviceStatus_func* gdp = pDinput->GetDeviceStatus;
+		//GetProcAdd
+		//RunControlPanel_func rcpf = &IDirectInput::RunControlPanel;
+
+		//std::cout <<"gdsf=" << gdsf << "\n";
+		//std::cout << "rcpf=" << rcpf << "\n";
+
+		/*NTSTATUS hookResult = LhInstallHook(
+			&gdsf,
+			GetDeviceStatus_Hook,
+			NULL,
+			&hHook);*/
+
+		
 
 		//Start named pipe client
 		startPipeListen();
+
+		if (dinputDevice != 0)
+		{
+			dinputDevice->Unacquire();
+			dinputDevice->Release();
+		}
 	}
 	else
 	{
