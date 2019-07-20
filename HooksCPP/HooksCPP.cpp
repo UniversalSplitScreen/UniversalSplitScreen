@@ -625,22 +625,7 @@ static BOOL CALLBACK DIEnumDeviceObjectsCallback(LPCDIDEVICEOBJECTINSTANCE lpddo
 		return DIENUM_CONTINUE;
 }
 
-#define THIS_
-//__declspec(nothrow)
-
-/*class dummy
-{
-public:
-	virtual HRESULT __thiscall Dinput_GetDeviceStates_Hook(THIS_ DWORD cbData, LPVOID lpvData)
-	{
-		std::cout << "Dinput_GetDeviceStates_Hook, cbData=" << cbData << ", lpvData=" << lpvData << "\n";
-		return 7;
-		//return pDinput->GetDeviceStatus(dinputGuids[controllerIndex - 1]);
-	}
-};*/
-
 LPDIRECTINPUTDEVICE8 dinputDevice = 0;
-
 
 //First argument is a pointer to the COM object, required or application crashes after executing hook
 HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cbData, LPVOID lpvData)
@@ -650,20 +635,6 @@ HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cb
 	return dinputDevice->GetDeviceState(cbData, lpvData);
 	//return 7;
 }
-
-/*__declspec(nothrow) HRESULT __stdcall Dinput_Aquire_Hook()
-{
-	std::cout << "AQUIRE HOOK\n";
-	return 8;
-	//return pDinput->GetDeviceStatus(dinputGuids[controllerIndex - 1]);
-}*/
-
-//typedef HRESULT ( __stdcall IDirectInput:: *GetDeviceStatus_func)(REFGUID rguidInstance);
-//typedef HRESULT(__stdcall IDirectInput:: *RunControlPanel_func)(HWND hwndOwner,DWORD dwFlags);
-
-
-
-
 
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
@@ -781,59 +752,11 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			installHook(TEXT("user32"), "PeekMessageA", PeekMessageA_Hook);
 			installHook(TEXT("user32"), "PeekMessageW", PeekMessageW_Hook);
 		}
-
-		//DirectInput8
-		//HMODULE dinputhmod = LoadLibrary("Dinput8.dll");
-		//std::cout << "dinputhmod=" << dinputhmod << "\n";
-
+		
 		std::cout << "pwd=" << system("dir") << "\n";
 		dinputDevice = 0;
 		
 		HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(pDinput), NULL);
-
-		/*int* vptr = *(int**)pDinput;
-		std::cout << "vptr=" << vptr << "\n";
-		std::cout << "*vptr=" << *vptr << "\n";
-			
-		for (int asdf = 0; asdf < 9; asdf++)
-		{
-			std::cout << "vptr[" << asdf << "] = 0x" << vptr[asdf] << "\n";
-		}
-
-		/*__asm
-		{
-			mov ecx, obj
-		}
-
-			( (void (*)()) vptr[0] )();
-
-		__asm
-		{
-			mov ecx, pDinput
-		}
-
-		auto fp1 = ((HRESULT(*)(DWORD, LPVOID)) vptr[5]);
-		std::cout << "fp1=" << fp1 << "\n";
-		HRESULT fp1o = fp1(0, 0);
-		std::cout << "fp1o=" << fp1o << "\n";
-
-		//DIERR_INPUTLOST, DIERR_INVALIDPARAM, DIERR_NOTACQUIRED, DIERR_NOTINITIALIZED, E_PENDING
-		std::cout << "DIERR_INPUTLOST=" << DIERR_INPUTLOST << "\n";
-		std::cout << "DIERR_INVALIDPARAM=" << DIERR_INVALIDPARAM << "\n";
-		std::cout << "DIERR_NOTACQUIRED=" << DIERR_NOTACQUIRED << "\n";
-		std::cout << "DIERR_NOTINITIALIZED=" << DIERR_NOTINITIALIZED << "\n";
-		std::cout << "E_PENDING=" << E_PENDING << "\n";*/
-		
-		/*auto vtb = reinterpret_cast<void **>(*reinterpret_cast<void **>(pDinput));
-		auto vtb_method = static_cast<HRESULT(*)(DWORD cbData, LPVOID lpvData)>(vtb[5]);
-		std::cout << "vtb=" << vtb << "\n";
-		std::cout << "vtb_method=" << vtb_method << "\n";*/
-
-		//HRESULT(WINAPI IDirectInputDevice8::*fp)(DWORD, LPVOID) = &IDirectInputDevice8::GetDeviceState;
-		//std::cout << "fp=" << fp << "\n";//Always 1
-		//std::cout << "&fp=" << &fp << "\n";
-			   		 	  	  	   
-
 
 		if (DI_OK == dinput_ret)
 		{
@@ -846,101 +769,35 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 				HRESULT cdRes = pDinput->CreateDevice(dinputGuids[controllerIndex - 1], &dinputDevice, NULL);//TODO: will give out of bounds
 				std::cout << "cdRes = " << cdRes << "\n";
-
-
-
-
-
-				//https://kaisar-haque.blogspot.com/2008/07/c-accessing-virtual-table.html
-				int* vptr = *(int**)dinputDevice;
-
-
-				/*__asm
-				  {
-					   mov ecx, dinputDevice
-				  }*/
-
-
-				  //( (void (*)()) vptr[0] )
-
-				  //auto fnp = ((HRESULT(*)(DWORD, LPVOID)) vptr[9]); (works, crashes after calling)
-
+				
+				//Dinput8 hook
 				{
-					using fnpT = HRESULT( __stdcall   *)(DWORD, LPVOID);
-					//auto fnp = ((HRESULT  (__stdcall  *)(DWORD, LPVOID)) vptr[9]);
-					fnpT fnp = (fnpT) vptr[9];
+					//https://kaisar-haque.blogspot.com/2008/07/c-accessing-virtual-table.html
+					int* vptr = *(int**)dinputDevice;
 
-
-					std::cout << "fnp=" << fnp << "\n";
-					//STDMETHOD(GetDeviceState)(THIS_ DWORD,LPVOID) PURE;
-
+					using GetDeviceStateFunc = HRESULT( __stdcall *)(DWORD, LPVOID);
+					GetDeviceStateFunc GetDeviceStatePointer = (GetDeviceStateFunc) vptr[9];
+					
 					HOOK_TRACE_INFO hHook = { NULL };
 
-					//dummy* _dummy = new dummy();
-
-					//typedef  HRESULT(dummy::*aaa)(DWORD, LPVOID);
-				//	aaa dummypt = &dummy::Dinput_GetDeviceStates_Hook;
-
-					//fnpT targetP = (fnpT)((*(int**)_dummy)[0]);
-					//std::cout << "targetP=" << targetP << "\n";
-
 					NTSTATUS hookResult = LhInstallHook(
-						//&fp,
-						fnp,
-						//targetP,
+						GetDeviceStatePointer,
 						Dinput_GetDeviceState_Hook,
 						NULL,
 						&hHook);
-
-					std::cout << " hookResult=" << hookResult << "\n";
-					std::cout << " hhook.Link=" << hHook.Link << "\n";
 
 					if (!FAILED(hookResult))
 					{
 						ULONG ACLEntries[1] = { 0 };
 						//LhSetExclusiveACL(ACLEntries, 1, &hHook);
 						LhSetInclusiveACL(ACLEntries, 1, &hHook);
-						std::cout << "Successfully installed dinput8 hook GetDeviceStateX\n";
+						std::cout << "Successfully installed dinput8 hook GetDeviceState\n";
 					}
 					else
 					{
 						std::cout << "Failed to install dinput8 hook GetDeviceState in module, NTSTATUS: " << hookResult << "\n";
 					}
 				}
-
-				/*{
-					auto fnp = ((HRESULT(__stdcall *)()) vptr[7]);
-
-
-					std::cout << "fnp=" << fnp << "\n";
-					//STDMETHOD(GetDeviceState)(THIS_ DWORD,LPVOID) PURE;
-
-					HOOK_TRACE_INFO hHook = { NULL };
-
-					NTSTATUS hookResult = LhInstallHook(
-						//&fp,
-						fnp,
-						Dinput_Aquire_Hook,
-						NULL,
-						&hHook);
-
-					std::cout << " hookResult=" << hookResult << "\n";
-					std::cout << " hhook.Link=" << hHook.Link << "\n";
-
-					if (!FAILED(hookResult))
-					{
-						ULONG ACLEntries[1] = { 0 };
-						//LhSetExclusiveACL(ACLEntries, 1, &hHook);
-						LhSetInclusiveACL(ACLEntries, 1, &hHook);
-						std::cout << "Successfully installed dinput8 hook aquire\n";
-					}
-					else
-					{
-						std::cout << "Failed to install dinput8 hook aquire in module, NTSTATUS: " << hookResult << "\n";
-					}
-				}*/
-
-
 
 				HRESULT sclRes = dinputDevice->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
 				std::cout << "sclRes=" << sclRes << "\n";
@@ -979,12 +836,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 						DIJOYSTATE state;
 
-#ifdef _DEBUG
-						std::cout << "DEBUG\n";
-#endif
 						HRESULT getDevStateRes = (dinputDevice)->GetDeviceState(sizeof(DIJOYSTATE), &state);
-
-
 
 						std::cout << "getDevStateRes = " << getDevStateRes << "\n";
 						BOOL POVCentered = (LOWORD(state.rgdwPOV) == 0xFFFF);
