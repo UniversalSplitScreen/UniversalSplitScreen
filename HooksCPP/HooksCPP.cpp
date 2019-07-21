@@ -65,6 +65,7 @@ const int maxDinputDevices = 16;
 GUID dinputGuids[maxDinputDevices];
 GUID controllerGuid;
 int dinputGuids_i = 0;
+bool dinputBlockInput = false;
 
 /*class dinput_deleter {
 	
@@ -638,13 +639,29 @@ LPDIRECTINPUTDEVICE8 dinputDevice = 0;
 HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cbData, LPVOID lpvData)
 {
 	//std::cout << "Dinput_GetDeviceStates_Hook, cbData=" << cbData << ", lpvData=" << lpvData << "\n";
-	return dinputDevice->GetDeviceState(cbData, lpvData);
+	if (dinputBlockInput)
+	{
+		memset(lpvData, 0, cbData);
+		return DI_OK;
+	}
+	else
+	{
+		return dinputDevice->GetDeviceState(cbData, lpvData);
+	}
 }
 
 HRESULT __stdcall Dinput_CreateDevice_Hook(IDirectInput8* pdin, REFGUID rguid, LPDIRECTINPUTDEVICE8A* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
 {
 	std::cout << "Dinput CreateDeviceHook called\n";
-	return pDinput->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+
+	if (dinputBlockInput)
+	{
+		return DIERR_INVALIDPARAM;//pretend it failed
+	}
+	else
+	{
+		return pDinput->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+	}
 }
 
 void installDinputHook(void* EntryPoint, void* HookProc, string name)
@@ -660,8 +677,8 @@ void installDinputHook(void* EntryPoint, void* HookProc, string name)
 	if (!FAILED(hookResult))
 	{
 		ULONG ACLEntries[1] = { 0 };
-		//LhSetExclusiveACL(ACLEntries, 1, &hHook);
-		LhSetInclusiveACL(ACLEntries, 1, &hHook);//TODO: switch back to exclusive
+		LhSetExclusiveACL(ACLEntries, 1, &hHook);
+		//LhSetInclusiveACL(ACLEntries, 1, &hHook);//TODO: switch back to exclusive
 
 		std::cout << "Successfully installed dinput8 hook " << name << "\n";
 	}
@@ -813,71 +830,75 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			installHook(TEXT("user32"), "PeekMessageW", PeekMessageW_Hook);
 		}
 		
-		if (controllerIndex == 0)
+		
+		dinputDevice = 0;
+
+		HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(pDinput), NULL);
+
+		if (dinput_ret != DI_OK)
 		{
-			std::cout << "Not setting up dinput: controllerIndex == 0\n";
+			std::cerr << "Fail DirectInput8Create, dinput_ret=" << dinput_ret << endl;
 		}
 		else
 		{
-			dinputDevice = 0;
+			std::cout << "Succeed dDirectInput8Create\n";
+			dinputGuids_i = 0;
+			pDinput->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, 0, DIEDFL_ALLDEVICES);
+			//TODO: sort the array by guidInstance (important so order is same in all hooks in games)
 
-			HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(pDinput), NULL);
-
-			if (dinput_ret != DI_OK)
+			if (controllerIndex = 0)
 			{
-				std::cerr << "Fail DirectInput8Create, dinput_ret=" << dinput_ret << endl;
+				dinputBlockInput = true;
+				controllerGuid = dinputGuids[controllerIndex - 1];
+				if (DI_OK == pDinput->CreateDevice(controllerGuid, &dinputDevice, NULL))
+				{
+					installDinputHooks();
+				}
+			}
+			else if (!(controllerIndex <= maxDinputDevices && controllerIndex <= dinputGuids_i))
+			{
+				std::cerr << "Not selecting dinput controller because controllerIndex out of range" << endl;
+				MessageBox(NULL, "Not selecting dinput controller because controllerIndex out of range", NULL, MB_OK);
 			}
 			else
 			{
-				std::cout << "Succeed dDirectInput8Create\n";
-				dinputGuids_i = 0;
-				pDinput->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, 0, DIEDFL_ALLDEVICES);
-				//TODO: sort the array by guidInstance (important so order is same in all hooks in games)
-
-				if (!(controllerIndex <= maxDinputDevices && controllerIndex <= dinputGuids_i))
+				controllerGuid = dinputGuids[controllerIndex - 1];
+				HRESULT cdRes = pDinput->CreateDevice(controllerGuid, &dinputDevice, NULL);
+					
+				if (cdRes != DI_OK)
 				{
-					std::cerr << "Not selecting dinput controller because controllerIndex out of range" << endl;
-					MessageBox(NULL, "Not selecting dinput controller because controllerIndex out of range", NULL, MB_OK);
+					std::cerr << "dinput create device error: " << cdRes << endl;
 				}
 				else
 				{
-					controllerGuid = dinputGuids[controllerIndex - 1];
-					HRESULT cdRes = pDinput->CreateDevice(controllerGuid, &dinputDevice, NULL);
-					
-					if (cdRes != DI_OK)
-					{
-						std::cerr << "dinput create device error: " << cdRes << endl;
-					}
+					//Dinput8 hook
+					installDinputHooks();
+
+					dinputDevice->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
+
+					dinputDevice->SetDataFormat(&c_dfDIJoystick);
+
+					DIDEVCAPS caps;
+					caps.dwSize = sizeof(DIDEVCAPS);
+					HRESULT gcRes = dinputDevice->GetCapabilities(&caps);
+
+					std::cout << "dinput device number of buttons =" << caps.dwButtons << "\n";
+					std::cout << "dinput device number of axes =" << caps.dwAxes << "\n";
+
+
+					dinputDevice->EnumObjects(&DIEnumDeviceObjectsCallback, dinputDevice, DIDFT_AXIS);
+
+
+					HRESULT aquireResult = dinputDevice->Acquire();
+
+					if (aquireResult == DI_OK)
+						std::cout << "Successfully aquired dinput device\n";
 					else
-					{
-						//Dinput8 hook
-						installDinputHooks();
-
-						dinputDevice->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
-
-						dinputDevice->SetDataFormat(&c_dfDIJoystick);
-
-						DIDEVCAPS caps;
-						caps.dwSize = sizeof(DIDEVCAPS);
-						HRESULT gcRes = dinputDevice->GetCapabilities(&caps);
-
-						std::cout << "dinput device number of buttons =" << caps.dwButtons << "\n";
-						std::cout << "dinput device number of axes =" << caps.dwAxes << "\n";
-
-
-						dinputDevice->EnumObjects(&DIEnumDeviceObjectsCallback, dinputDevice, DIDFT_AXIS);
-
-
-						HRESULT aquireResult = dinputDevice->Acquire();
-
-						if (aquireResult == DI_OK)
-							std::cout << "Successfully aquired dinput device\n";
-						else
-							std::cout << "Failed to aquired dinput device\n";
-					}
+						std::cout << "Failed to aquired dinput device\n";
 				}
 			}
 		}
+		
 
 		//Start named pipe client
 		startPipeListen();
