@@ -57,6 +57,7 @@ IDirectInput8* pDinput;
 
 const int maxDinputDevices = 16;
 GUID dinputGuids[maxDinputDevices];
+GUID controllerGuid;
 int dinputGuids_i = 0;
 
 /*class dinput_deleter {
@@ -631,24 +632,22 @@ LPDIRECTINPUTDEVICE8 dinputDevice = 0;
 HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cbData, LPVOID lpvData)
 {
 	std::cout << "Dinput_GetDeviceStates_Hook, cbData=" << cbData << ", lpvData=" << lpvData << "\n";
-	std::cout << "dinputDevice=" << dinputDevice << "\n";
 	return dinputDevice->GetDeviceState(cbData, lpvData);
-	//return 7;
 }
 
-void installDinputHooks()
+HRESULT __stdcall Dinput_CreateDevice_Hook(IDirectInput8* pdin, REFGUID rguid, LPDIRECTINPUTDEVICE8A* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
 {
-	//https://kaisar-haque.blogspot.com/2008/07/c-accessing-virtual-table.html
-	int* vptr = *(int**)dinputDevice;
+	std::cout << "Dinput_CREATE DEVICE HOOK\n";
+	return pDinput->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+}
 
-	using GetDeviceStateFunc = HRESULT(__stdcall *)(DWORD, LPVOID);
-	GetDeviceStateFunc GetDeviceStatePointer = (GetDeviceStateFunc)vptr[9];
-
+void installDinputHook(void* EntryPoint, void* HookProc, string name)
+{
 	HOOK_TRACE_INFO hHook = { NULL };
 
 	NTSTATUS hookResult = LhInstallHook(
-		GetDeviceStatePointer,
-		Dinput_GetDeviceState_Hook,
+		EntryPoint,
+		HookProc,
 		NULL,
 		&hHook);
 
@@ -656,13 +655,30 @@ void installDinputHooks()
 	{
 		ULONG ACLEntries[1] = { 0 };
 		//LhSetExclusiveACL(ACLEntries, 1, &hHook);
-		LhSetInclusiveACL(ACLEntries, 1, &hHook);
-		std::cout << "Successfully installed dinput8 hook GetDeviceState\n";
+		LhSetInclusiveACL(ACLEntries, 1, &hHook);//TODO: switch back to exclusive
+
+		std::cout << "Successfully installed dinput8 hook " << name << "\n";
 	}
 	else
 	{
-		std::cout << "Failed to install dinput8 hook GetDeviceState in module, NTSTATUS: " << hookResult << "\n";
+		std::cout << "Failed to install dinput8 hook " << name << " in module, NTSTATUS: " << hookResult << "\n";
 	}
+}
+
+void installDinputHooks()
+{
+	//https://kaisar-haque.blogspot.com/2008/07/c-accessing-virtual-table.html
+	int* vptr_device = *(int**)dinputDevice;
+	int* vptr_dinput = *(int**)pDinput;
+
+	using GetDeviceStateFunc = HRESULT(__stdcall *)(DWORD, LPVOID);
+	GetDeviceStateFunc GetDeviceStatePointer = (GetDeviceStateFunc)vptr_device[9];
+	installDinputHook(GetDeviceStatePointer, Dinput_GetDeviceState_Hook, "GetDeviceState");
+
+	//IDirectInput8*
+	using CreateDeviceFunc = HRESULT(__stdcall *)(REFGUID rguid, LPDIRECTINPUTDEVICE8A* lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
+	CreateDeviceFunc CreateDevicePointer = (CreateDeviceFunc)vptr_dinput[3];
+	installDinputHook(CreateDevicePointer, Dinput_CreateDevice_Hook, "CreateDevice");
 }
 
 
@@ -799,7 +815,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 			if (controllerIndex > 0 && controllerIndex <= maxDinputDevices)
 			{
-				HRESULT cdRes = pDinput->CreateDevice(dinputGuids[controllerIndex - 1], &dinputDevice, NULL);//TODO: will give out of bounds
+				controllerGuid = dinputGuids[controllerIndex - 1];
+				HRESULT cdRes = pDinput->CreateDevice(controllerGuid, &dinputDevice, NULL);//TODO: will give out of bounds
 				std::cout << "cdRes = " << cdRes << "\n";
 				
 				//Dinput8 hook
@@ -831,6 +848,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 					for (int asdf = 0; asdf < 15; asdf++)
 					{
+						break;
 						HRESULT pollRes = dinputDevice->Poll();
 						std::cout << "pollres=" << pollRes << "\n";
 
@@ -869,6 +887,29 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			std::cout << "Fail DirectInput8Create, dinput_ret=" << dinput_ret << "\n";
 		}
 		
+
+		//dinput CreateDevice hook test
+		IDirectInput8A* __pDinput;
+		{
+			HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(__pDinput), NULL);
+
+			if (DI_OK == dinput_ret)
+			{
+				std::cout << "__Succeed dDirectInput8Create\n";
+				dinputGuids_i = 0;
+				__pDinput->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, 0, DIEDFL_ALLDEVICES);
+
+				if (controllerIndex > 0 && controllerIndex <= maxDinputDevices)
+				{
+					HRESULT cdRes = __pDinput->CreateDevice(dinputGuids[controllerIndex - 1], &dinputDevice, NULL);
+					std::cout << "__cdRes = " << cdRes << "\n";
+				}
+			}
+			else
+			{
+				std::cout << "__Fail DirectInput8Create, dinput_ret=" << dinput_ret << "\n";
+			}
+		}
 
 		//installHook(TEXT("Dinput8"), "IDirectInput8::GetDeviceStatus", GetDeviceStatus_Hook);
 
