@@ -14,6 +14,12 @@
 #include <dinput.h>
 using namespace std;
 
+#if _WIN64
+#define X64
+#else
+#define X86
+#endif
+
 extern HMODULE DllHandle;
 
 HWND hWnd = 0;
@@ -667,15 +673,21 @@ void installDinputHook(void* EntryPoint, void* HookProc, string name)
 
 void installDinputHooks()
 {
+	//First 4 byte (32bit) or 8 bytes (64bit) of object with virtual functions will be a pointer to an array of pointers to the virtual functions
+#ifdef X64
+		using ptrSize = long long;//64 bit pointers
+#else
+		using ptrSize = int;//32 bit pointers
+#endif
+
 	//https://kaisar-haque.blogspot.com/2008/07/c-accessing-virtual-table.html
-	int* vptr_device = *(int**)dinputDevice;
-	int* vptr_dinput = *(int**)pDinput;
+	ptrSize* vptr_device = *(ptrSize**)dinputDevice;
+	ptrSize* vptr_dinput = *(ptrSize**)pDinput;
 
 	using GetDeviceStateFunc = HRESULT(__stdcall *)(DWORD, LPVOID);
 	GetDeviceStateFunc GetDeviceStatePointer = (GetDeviceStateFunc)vptr_device[9];
 	installDinputHook(GetDeviceStatePointer, Dinput_GetDeviceState_Hook, "GetDeviceState");
 
-	//IDirectInput8*
 	using CreateDeviceFunc = HRESULT(__stdcall *)(REFGUID rguid, LPDIRECTINPUTDEVICE8A* lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
 	CreateDeviceFunc CreateDevicePointer = (CreateDeviceFunc)vptr_dinput[3];
 	installDinputHook(CreateDevicePointer, Dinput_CreateDevice_Hook, "CreateDevice");
