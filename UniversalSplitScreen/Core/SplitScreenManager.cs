@@ -367,7 +367,11 @@ namespace UniversalSplitScreen.Core
 				Thread.Sleep(1000);//TODO: configurable this
 
 				if (Options.CurrentOptions.SendWM_ACTIVATE)
+				{
 					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_ACTIVATE, (IntPtr)2, (IntPtr)null);//2 or 1?
+					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_ACTIVATEAPP, (IntPtr)1, IntPtr.Zero);
+					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_NCACTIVATE, (IntPtr)0, IntPtr.Zero);//Title bar will be redrawn as if focused if wParam == 1
+				}
 
 				if (Options.CurrentOptions.SendWM_SETFOCUS)
 					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_SETFOCUS, (IntPtr)null, (IntPtr)null);
