@@ -12,6 +12,7 @@
 //#include <Xinput.h>
 #include <windowsx.h>
 #include <dinput.h>
+#include <winuser.h>
 using namespace std;
 
 #if _WIN64
@@ -51,6 +52,10 @@ const int requiredAbsCount = 40;//Requires higher number for higher mouse pollin
 
 
 UINT16 vkey_state;//Stores the mouse keys (5 of them) and the WASD keys. (1=on, 0=off)
+
+BYTE* vkeysState = new BYTE[256 / 8];//256 vkeys, 8 bits per byte
+
+
 int controllerIndex = 0;//The controller index for this game.
 HANDLE allowedMouseHandle = 0;//We will allow raw input from this mouse handle.
 
@@ -193,9 +198,29 @@ inline int getBitShiftForVKey(int VKey)
 	}
 }
 
+bool isVkeyDown(int vkey)
+{
+	BYTE p = vkeysState[vkey / 8];
+	return p & (1 << (vkey % 8));
+}
+
+void setVkeyState(int vkey, bool down)
+{
+	BYTE* p = vkeysState + (vkey / 8);
+	int shift = (1 << (vkey % 8));
+	if (down)
+		*p |= shift;
+	else
+		*p &= (~shift);
+}
+
 SHORT WINAPI GetAsyncKeyState_Hook(int vKey)
 {
-	return (vkey_state & (1 << getBitShiftForVKey(vKey))) == 0 ? // is the vKey up?
+	if (vKey == 0x10 || vKey == 0xA0 || vKey == 0xA1)//shift
+	{
+		return 0b1000000000000000;
+	}
+	else return (vkey_state & (1 << getBitShiftForVKey(vKey))) == 0 ? // is the vKey up?
 		0 : 0b1000000000000000;
 }
 
