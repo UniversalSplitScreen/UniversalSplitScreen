@@ -171,11 +171,12 @@ namespace UniversalSplitScreen.Core
 					proc.StartInfo.FileName = is64 ? "IJx64.exe" : "IJx86.exe";
 
 					//Arguments
+					string arguments;
 					{
 						object[] args = new object[]
 						{
 							window.pid,
-							$"\"{(is64 ? hooksLibrary64 : hooksLibrary32)}\"",
+							(is64 ? hooksLibrary64 : hooksLibrary32),
 							window.hWnd,
 							needPipe        ? pipe.pipeNameRead  : "USS_NO_READ_PIPE_NEEDED",
 							needWritePipe   ? pipe.pipeNameWrite : "USS_NO_WRITE_PIPE_NEEDED",
@@ -195,13 +196,14 @@ namespace UniversalSplitScreen.Core
 							options.Hook_DInput
 						};
 
-						StringBuilder sb = new StringBuilder();
+						StringBuilder sb_args = new StringBuilder();
 						foreach (var arg in args)
 						{
-							sb.Append(" " + arg);
+							sb_args.Append(" \"" + arg.ToString() + "\"");
 						}
 
-						proc.StartInfo.Arguments = sb.ToString();
+						arguments = sb_args.ToString();
+						proc.StartInfo.Arguments = arguments;
 					}
 
 					proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
@@ -212,7 +214,7 @@ namespace UniversalSplitScreen.Core
 					Logger.WriteLine($"InjectorCPP.Inject result = 0x{exitCode:x}. is64={is64}, needPipe={needPipe}");
 					if (exitCode != 0 )
 					{
-						MessageBox.Show($"Error injecting hooks into pid={window.pid}, Error = 0x{exitCode:x}", "Error");
+						MessageBox.Show($"Error injecting hooks into pid={window.pid}, Error = 0x{exitCode:x}, arguments={arguments}", "Error");
 						DeactivateSplitScreen();
 						return;
 					}
