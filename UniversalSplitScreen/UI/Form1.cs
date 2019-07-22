@@ -61,6 +61,7 @@ namespace UniversalSplitScreen.UI
 			RefCheckbox_Hook_GetAsyncKeyState.RefType			= new RefType<bool>("Hook_GetAsyncKeyState");
 			RefCheckbox_Hook_GetKeyState.RefType				= new RefType<bool>("Hook_GetKeyState");
 			RefCheckbox_Hook_XInput.RefType						= new RefType<bool>("Hook_XInput");
+			RefCheckbox_Hook_Dinput.RefType						= new RefType<bool>("Hook_DInput");
 			RefCheckbox_Hook_UseLegacyInput.RefType				= new RefType<bool>("Hook_UseLegacyInput");
 			RefCheckbox_UpdateAbsoluteFlagInMouseMessage.RefType= new RefType<bool>("UpdateAbsoluteFlagInMouseMessage");
 			RefCheckbox_Hook_MouseVisibility.RefType			= new RefType<bool>("Hook_MouseVisibility");

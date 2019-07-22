@@ -144,6 +144,7 @@ namespace UniversalSplitScreen.Core
 					options.Hook_GetAsyncKeyState ||
 					options.Hook_SetCursorPos ||
 					options.Hook_XInput ||
+					options.Hook_DInput ||
 					options.Hook_UseLegacyInput ||
 					options.Hook_MouseVisibility)
 				{
@@ -190,7 +191,8 @@ namespace UniversalSplitScreen.Core
 							options.Hook_FilterRawInput,
 							options.Hook_SetCursorPos,
 							options.Hook_XInput,
-							options.Hook_MouseVisibility
+							options.Hook_MouseVisibility,
+							options.Hook_DInput
 						};
 
 						StringBuilder sb = new StringBuilder();

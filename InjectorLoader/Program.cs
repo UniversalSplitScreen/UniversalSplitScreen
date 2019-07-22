@@ -84,7 +84,7 @@ namespace InjectorLoader
 		
 		public static void Main(string[] args)
 		{
-			const int argsLength = 18;
+			const int argsLength = 19;
 
 			if (args.Length != argsLength)
 			{
@@ -122,6 +122,7 @@ namespace InjectorLoader
 			bool HookSetCursorPos = nextBool();
 			bool HookXInput = nextBool();
 			bool hookMouseVisibility = nextBool();
+			bool HookDInput = nextBool();
 			
 
 
@@ -173,6 +174,7 @@ namespace InjectorLoader
 			writeBool(HookXInput, x++);
 			writeBool(useLegacyInput, x++);
 			writeBool(hookMouseVisibility, x++);
+			writeBool(HookDInput, x++);
 
 			IntPtr ptr = Marshal.AllocHGlobal(size);
 			Marshal.Copy(data, 0, ptr, size);

@@ -28,6 +28,7 @@ namespace UniversalSplitScreen.Core
 		public bool Hook_GetAsyncKeyState			{ get; set; } = false;
 		public bool Hook_GetKeyState				{ get; set; } = false;
 		public bool Hook_XInput						{ get; set; } = false;
+		public bool Hook_DInput						{ get; set; } = false;
 		public bool Hook_UseLegacyInput				{ get; set; } = false;
 		public bool UpdateAbsoluteFlagInMouseMessage { get; set; } = true; //Only does something if legacy input is on
 		public bool Hook_MouseVisibility			{ get; set; } = false;

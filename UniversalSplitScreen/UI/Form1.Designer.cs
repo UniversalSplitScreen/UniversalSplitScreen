@@ -37,6 +37,7 @@
 			this.stopButton = new System.Windows.Forms.Button();
 			this.resetAllButton = new System.Windows.Forms.Button();
 			this.activeWindowPanel = new System.Windows.Forms.Panel();
+			this.Label_StopWarning = new System.Windows.Forms.Label();
 			this.GroupBox_Utilities = new System.Windows.Forms.GroupBox();
 			this.groupBoxHandleUnlocker = new System.Windows.Forms.GroupBox();
 			this.UnlockHandleButton = new System.Windows.Forms.Button();
@@ -117,7 +118,7 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.WebLinkWebsite = new UniversalSplitScreen.UI.WebLinkLabel();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.Label_StopWarning = new System.Windows.Forms.Label();
+			this.RefCheckbox_Hook_Dinput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -151,7 +152,7 @@
 			this.tabControl1.Location = new System.Drawing.Point(12, 12);
 			this.tabControl1.Name = "tabControl1";
 			this.tabControl1.SelectedIndex = 0;
-			this.tabControl1.Size = new System.Drawing.Size(776, 426);
+			this.tabControl1.Size = new System.Drawing.Size(776, 453);
 			this.tabControl1.TabIndex = 1;
 			this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
 			// 
@@ -165,7 +166,7 @@
 			this.tabPage1.Location = new System.Drawing.Point(4, 22);
 			this.tabPage1.Name = "tabPage1";
 			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage1.Size = new System.Drawing.Size(768, 400);
+			this.tabPage1.Size = new System.Drawing.Size(768, 427);
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Current window";
 			this.tabPage1.UseVisualStyleBackColor = true;
@@ -173,7 +174,7 @@
 			// CheckBox_Transparency
 			// 
 			this.CheckBox_Transparency.AutoSize = true;
-			this.CheckBox_Transparency.Location = new System.Drawing.Point(292, 377);
+			this.CheckBox_Transparency.Location = new System.Drawing.Point(89, 404);
 			this.CheckBox_Transparency.Name = "CheckBox_Transparency";
 			this.CheckBox_Transparency.Size = new System.Drawing.Size(121, 17);
 			this.CheckBox_Transparency.TabIndex = 11;
@@ -183,7 +184,7 @@
 			// 
 			// startButton
 			// 
-			this.startButton.Location = new System.Drawing.Point(559, 371);
+			this.startButton.Location = new System.Drawing.Point(559, 398);
 			this.startButton.Name = "startButton";
 			this.startButton.Size = new System.Drawing.Size(96, 23);
 			this.startButton.TabIndex = 10;
@@ -193,7 +194,7 @@
 			// 
 			// stopButton
 			// 
-			this.stopButton.Location = new System.Drawing.Point(661, 371);
+			this.stopButton.Location = new System.Drawing.Point(661, 398);
 			this.stopButton.Name = "stopButton";
 			this.stopButton.Size = new System.Drawing.Size(101, 23);
 			this.stopButton.TabIndex = 9;
@@ -203,7 +204,7 @@
 			// 
 			// resetAllButton
 			// 
-			this.resetAllButton.Location = new System.Drawing.Point(7, 371);
+			this.resetAllButton.Location = new System.Drawing.Point(6, 398);
 			this.resetAllButton.Name = "resetAllButton";
 			this.resetAllButton.Size = new System.Drawing.Size(75, 23);
 			this.resetAllButton.TabIndex = 8;
@@ -224,8 +225,19 @@
 			this.activeWindowPanel.Controls.Add(this.hwndBox);
 			this.activeWindowPanel.Location = new System.Drawing.Point(6, 6);
 			this.activeWindowPanel.Name = "activeWindowPanel";
-			this.activeWindowPanel.Size = new System.Drawing.Size(759, 359);
+			this.activeWindowPanel.Size = new System.Drawing.Size(759, 386);
 			this.activeWindowPanel.TabIndex = 7;
+			// 
+			// Label_StopWarning
+			// 
+			this.Label_StopWarning.AutoSize = true;
+			this.Label_StopWarning.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+			this.Label_StopWarning.Location = new System.Drawing.Point(586, 349);
+			this.Label_StopWarning.MaximumSize = new System.Drawing.Size(200, 0);
+			this.Label_StopWarning.Name = "Label_StopWarning";
+			this.Label_StopWarning.Size = new System.Drawing.Size(172, 26);
+			this.Label_StopWarning.TabIndex = 11;
+			this.Label_StopWarning.Text = "Press the End key (default) on any keyboard to stop split screen";
 			// 
 			// GroupBox_Utilities
 			// 
@@ -233,7 +245,7 @@
 			this.GroupBox_Utilities.Controls.Add(this.Button_ToggleWindowBorders);
 			this.GroupBox_Utilities.Controls.Add(this.Button_EnableWindowResize);
 			this.GroupBox_Utilities.Controls.Add(this.Button_UnlockSourceEngine);
-			this.GroupBox_Utilities.Location = new System.Drawing.Point(3, 214);
+			this.GroupBox_Utilities.Location = new System.Drawing.Point(3, 241);
 			this.GroupBox_Utilities.Name = "GroupBox_Utilities";
 			this.GroupBox_Utilities.Size = new System.Drawing.Size(454, 140);
 			this.GroupBox_Utilities.TabIndex = 10;
@@ -545,7 +557,7 @@
 			this.tabPage2.Location = new System.Drawing.Point(4, 22);
 			this.tabPage2.Name = "tabPage2";
 			this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage2.Size = new System.Drawing.Size(768, 400);
+			this.tabPage2.Size = new System.Drawing.Size(768, 427);
 			this.tabPage2.TabIndex = 1;
 			this.tabPage2.Text = "Options";
 			this.tabPage2.UseVisualStyleBackColor = true;
@@ -628,7 +640,7 @@
 			this.panel1.Controls.Add(this.hooksBox);
 			this.panel1.Location = new System.Drawing.Point(6, 43);
 			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(755, 351);
+			this.panel1.Size = new System.Drawing.Size(755, 378);
 			this.panel1.TabIndex = 0;
 			// 
 			// RefCheckbox_SendScrollwheel
@@ -750,7 +762,7 @@
 			// 
 			// endButtonSetter
 			// 
-			this.endButtonSetter.Location = new System.Drawing.Point(4, 314);
+			this.endButtonSetter.Location = new System.Drawing.Point(4, 352);
 			this.endButtonSetter.Name = "endButtonSetter";
 			this.endButtonSetter.Size = new System.Drawing.Size(175, 23);
 			this.endButtonSetter.TabIndex = 11;
@@ -762,6 +774,7 @@
 			// 
 			// hooksBox
 			// 
+			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_Dinput);
 			this.hooksBox.Controls.Add(this.RefCheckbox_UpdateAbsoluteFlagInMouseMessage);
 			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_MouseVisibility);
 			this.hooksBox.Controls.Add(this.RefCheckbox_Hook_UseLegacyInput);
@@ -776,7 +789,7 @@
 			this.hooksBox.Controls.Add(this.hooksWarningLabel);
 			this.hooksBox.Location = new System.Drawing.Point(472, 3);
 			this.hooksBox.Name = "hooksBox";
-			this.hooksBox.Size = new System.Drawing.Size(280, 345);
+			this.hooksBox.Size = new System.Drawing.Size(280, 372);
 			this.hooksBox.TabIndex = 10;
 			this.hooksBox.TabStop = false;
 			this.hooksBox.Text = "Hooks";
@@ -796,7 +809,7 @@
 			// RefCheckbox_Hook_MouseVisibility
 			// 
 			this.RefCheckbox_Hook_MouseVisibility.AutoSize = true;
-			this.RefCheckbox_Hook_MouseVisibility.Location = new System.Drawing.Point(9, 321);
+			this.RefCheckbox_Hook_MouseVisibility.Location = new System.Drawing.Point(9, 297);
 			this.RefCheckbox_Hook_MouseVisibility.Name = "RefCheckbox_Hook_MouseVisibility";
 			this.RefCheckbox_Hook_MouseVisibility.RefType = null;
 			this.RefCheckbox_Hook_MouseVisibility.Size = new System.Drawing.Size(124, 17);
@@ -820,14 +833,13 @@
 			// RefCheckbox_Hook_XInput
 			// 
 			this.RefCheckbox_Hook_XInput.AutoSize = true;
-			this.RefCheckbox_Hook_XInput.Location = new System.Drawing.Point(9, 297);
+			this.RefCheckbox_Hook_XInput.Location = new System.Drawing.Point(9, 320);
 			this.RefCheckbox_Hook_XInput.Name = "RefCheckbox_Hook_XInput";
 			this.RefCheckbox_Hook_XInput.RefType = null;
 			this.RefCheckbox_Hook_XInput.Size = new System.Drawing.Size(153, 17);
 			this.RefCheckbox_Hook_XInput.TabIndex = 21;
 			this.RefCheckbox_Hook_XInput.Text = "Hook XInput for gamepads";
-			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_XInput, "Redirects controller input to the selected controller index.\r\nThis hook is requir" +
-        "ed if you want to use gamepad/controller input.");
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_XInput, resources.GetString("RefCheckbox_Hook_XInput.ToolTip"));
 			this.RefCheckbox_Hook_XInput.UseVisualStyleBackColor = true;
 			// 
 			// RefCheckbox_Hook_SetCursorPos
@@ -940,7 +952,7 @@
 			this.tabPage3.Controls.Add(this.panel3);
 			this.tabPage3.Location = new System.Drawing.Point(4, 22);
 			this.tabPage3.Name = "tabPage3";
-			this.tabPage3.Size = new System.Drawing.Size(768, 400);
+			this.tabPage3.Size = new System.Drawing.Size(768, 427);
 			this.tabPage3.TabIndex = 2;
 			this.tabPage3.Text = "About";
 			this.tabPage3.UseVisualStyleBackColor = true;
@@ -953,7 +965,7 @@
 			this.panel3.Controls.Add(this.WebLinkWebsite);
 			this.panel3.Location = new System.Drawing.Point(3, 3);
 			this.panel3.Name = "panel3";
-			this.panel3.Size = new System.Drawing.Size(762, 394);
+			this.panel3.Size = new System.Drawing.Size(762, 421);
 			this.panel3.TabIndex = 3;
 			// 
 			// panel4
@@ -993,7 +1005,7 @@
 			this.tabControl2.Location = new System.Drawing.Point(3, 45);
 			this.tabControl2.Name = "tabControl2";
 			this.tabControl2.SelectedIndex = 0;
-			this.tabControl2.Size = new System.Drawing.Size(756, 346);
+			this.tabControl2.Size = new System.Drawing.Size(756, 373);
 			this.tabControl2.TabIndex = 4;
 			// 
 			// tabPage5
@@ -1008,7 +1020,7 @@
 			this.tabPage5.Location = new System.Drawing.Point(4, 22);
 			this.tabPage5.Name = "tabPage5";
 			this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage5.Size = new System.Drawing.Size(748, 320);
+			this.tabPage5.Size = new System.Drawing.Size(748, 347);
 			this.tabPage5.TabIndex = 0;
 			this.tabPage5.Text = "Credits";
 			this.tabPage5.UseVisualStyleBackColor = true;
@@ -1112,7 +1124,7 @@
 			this.tabPage6.Location = new System.Drawing.Point(4, 22);
 			this.tabPage6.Name = "tabPage6";
 			this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage6.Size = new System.Drawing.Size(748, 320);
+			this.tabPage6.Size = new System.Drawing.Size(748, 347);
 			this.tabPage6.TabIndex = 1;
 			this.tabPage6.Text = "License";
 			this.tabPage6.UseVisualStyleBackColor = true;
@@ -1122,7 +1134,7 @@
 			this.GroupBoxLicense.Controls.Add(this.label1);
 			this.GroupBoxLicense.Location = new System.Drawing.Point(6, 6);
 			this.GroupBoxLicense.Name = "GroupBoxLicense";
-			this.GroupBoxLicense.Size = new System.Drawing.Size(736, 308);
+			this.GroupBoxLicense.Size = new System.Drawing.Size(736, 335);
 			this.GroupBoxLicense.TabIndex = 6;
 			this.GroupBoxLicense.TabStop = false;
 			this.GroupBoxLicense.Text = "Universal Split Screen license";
@@ -1156,22 +1168,23 @@
 			this.toolTip1.InitialDelay = 500;
 			this.toolTip1.ReshowDelay = 100;
 			// 
-			// Label_StopWarning
+			// RefCheckbox_Hook_Dinput
 			// 
-			this.Label_StopWarning.AutoSize = true;
-			this.Label_StopWarning.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
-			this.Label_StopWarning.Location = new System.Drawing.Point(582, 328);
-			this.Label_StopWarning.MaximumSize = new System.Drawing.Size(200, 0);
-			this.Label_StopWarning.Name = "Label_StopWarning";
-			this.Label_StopWarning.Size = new System.Drawing.Size(172, 26);
-			this.Label_StopWarning.TabIndex = 11;
-			this.Label_StopWarning.Text = "Press the End key (default) on any keyboard to stop split screen";
+			this.RefCheckbox_Hook_Dinput.AutoSize = true;
+			this.RefCheckbox_Hook_Dinput.Location = new System.Drawing.Point(9, 343);
+			this.RefCheckbox_Hook_Dinput.Name = "RefCheckbox_Hook_Dinput";
+			this.RefCheckbox_Hook_Dinput.RefType = null;
+			this.RefCheckbox_Hook_Dinput.Size = new System.Drawing.Size(154, 17);
+			this.RefCheckbox_Hook_Dinput.TabIndex = 24;
+			this.RefCheckbox_Hook_Dinput.Text = "Hook DInput for gamepads";
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_Dinput, resources.GetString("RefCheckbox_Hook_Dinput.ToolTip"));
+			this.RefCheckbox_Hook_Dinput.UseVisualStyleBackColor = true;
 			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(800, 450);
+			this.ClientSize = new System.Drawing.Size(800, 477);
 			this.Controls.Add(this.tabControl1);
 			this.Cursor = System.Windows.Forms.Cursors.Default;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -1311,5 +1324,6 @@
 		private System.Windows.Forms.TextBox textBoxHandleName;
 		private RefCheckbox RefCheckbox_UpdateAbsoluteFlagInMouseMessage;
 		private System.Windows.Forms.Label Label_StopWarning;
+		private RefCheckbox RefCheckbox_Hook_Dinput;
 	}
 }

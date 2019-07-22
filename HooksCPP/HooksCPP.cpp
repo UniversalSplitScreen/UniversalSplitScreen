@@ -788,27 +788,37 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 		BYTE* _p = data +  512 + 12 + 1;
 
-		bool HookGetCursorPos				= *(_p++) == 1;
-		bool HookGetForegroundWindow		= *(_p++) == 1;
-		bool HookGetAsyncKeyState			= *(_p++) == 1;
-		bool HookGetKeyState				= *(_p++) == 1;
-		bool HookCallWindowProcW			= *(_p++) == 1;
-		bool HookRegisterRawInputDevices	= *(_p++) == 1;
-		bool HookSetCursorPos				= *(_p++) == 1;
-		bool HookXInput						= *(_p++) == 1;
-		bool useLegacyInput					= *(_p++) == 1;
-		bool hookMouseVisibility			= *(_p++) == 1;
+#define NEXT_BOOL(a) bool a = *(_p++) == 1;
+		NEXT_BOOL(HookGetCursorPos)
+		NEXT_BOOL(HookGetForegroundWindow)
+		NEXT_BOOL(HookGetAsyncKeyState)
+		NEXT_BOOL(HookGetKeyState)
+		NEXT_BOOL(HookCallWindowProcW)
+		NEXT_BOOL(HookRegisterRawInputDevices)
+		NEXT_BOOL(HookSetCursorPos)
+		NEXT_BOOL(HookXInput)
+		NEXT_BOOL(useLegacyInput)
+		NEXT_BOOL(hookMouseVisibility)
+		NEXT_BOOL(hookDinput)
+#undef NEXT_BOOL
 
-		std::cout << "HookGetCursorPos: " << HookGetCursorPos << "\n";
-		std::cout << "HookGetForegroundWindow: " << HookGetForegroundWindow << "\n";
-		std::cout << "HookGetAsyncKeyState: " << HookGetAsyncKeyState << "\n";
-		std::cout << "HookGetKeyState: " << HookGetKeyState << "\n";
-		std::cout << "HookCallWindowProcW: " << HookCallWindowProcW << "\n";
-		std::cout << "HookRegisterRawInputDevices: " << HookRegisterRawInputDevices << "\n";
-		std::cout << "HookSetCursorPos: " << HookSetCursorPos << "\n";
-		std::cout << "HookXInput: " << HookXInput << "\n";
-		std::cout << "useLegacyInput: " << useLegacyInput << "\n";
-		std::cout << "hookMouseVisibility: " << hookMouseVisibility << "\n";
+#define NAME_OF_VAR(x) #x
+#define PRINT_BOOL(b) std::cout << NAME_OF_VAR(b) << " = " << (b == TRUE ? "TRUE" : "FALSE") << "\n";
+
+		PRINT_BOOL(HookGetCursorPos)
+		PRINT_BOOL(HookGetForegroundWindow)
+		PRINT_BOOL(HookGetAsyncKeyState)
+		PRINT_BOOL(HookGetKeyState)
+		PRINT_BOOL(HookCallWindowProcW)
+		PRINT_BOOL(HookRegisterRawInputDevices)
+		PRINT_BOOL(HookSetCursorPos)
+		PRINT_BOOL(HookXInput)
+		PRINT_BOOL(useLegacyInput)
+		PRINT_BOOL(hookMouseVisibility)
+		PRINT_BOOL(hookDinput)
+
+#undef NAME_OF_VAR
+#undef PRINT_BOOL
 
 		//Install hooks
 		if (HookGetForegroundWindow) 
@@ -863,71 +873,73 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			installHook(TEXT("user32"), "PeekMessageW", PeekMessageW_Hook);
 		}
 		
-
-		dinputDevice = 0;
-
-		HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(pDinput), NULL);
-
-		if (dinput_ret != DI_OK)
+		if(hookDinput)
 		{
-			std::cerr << "Fail DirectInput8Create, dinput_ret=" << dinput_ret << endl;
-		}
-		else
-		{
+			dinputDevice = 0;
 
-			std::cout << "Succeed dDirectInput8Create\n";
-			dinputGuids_i = 0;
-			pDinput->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, 0, DIEDFL_ALLDEVICES);
-			//TODO: sort the array by guidInstance (important so order is same in all hooks in games)
+			HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(pDinput), NULL);
 
-			if (controllerIndex == 0)
+			if (dinput_ret != DI_OK)
 			{
-				dinputBlockInput = true;
-				controllerGuid = dinputGuids[controllerIndex - 1];
-				if (DI_OK == pDinput->CreateDevice(controllerGuid, &dinputDevice, NULL))
-				{
-					installDinputHooks();
-				}
-			}
-			else if (!(controllerIndex <= maxDinputDevices && controllerIndex <= dinputGuids_i))
-			{
-				std::cerr << "Not selecting dinput controller because controllerIndex out of range" << endl;
-				MessageBox(NULL, "Not selecting dinput controller because controllerIndex out of range", NULL, MB_OK);
+				std::cerr << "Fail DirectInput8Create, dinput_ret=" << dinput_ret << endl;
 			}
 			else
 			{
 
-				controllerGuid = dinputGuids[controllerIndex - 1];
-				HRESULT cdRes = pDinput->CreateDevice(controllerGuid, &dinputDevice, NULL);
-					
-				if (cdRes != DI_OK)
+				std::cout << "Succeed dDirectInput8Create\n";
+				dinputGuids_i = 0;
+				pDinput->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, 0, DIEDFL_ALLDEVICES);
+				//TODO: sort the array by guidInstance (important so order is same in all hooks in games)
+
+				if (controllerIndex == 0)
 				{
-					std::cerr << "dinput create device error: " << cdRes << endl;
+					dinputBlockInput = true;
+					controllerGuid = dinputGuids[controllerIndex - 1];
+					if (DI_OK == pDinput->CreateDevice(controllerGuid, &dinputDevice, NULL))
+					{
+						installDinputHooks();
+					}
+				}
+				else if (!(controllerIndex <= maxDinputDevices && controllerIndex <= dinputGuids_i))
+				{
+					std::cerr << "Not selecting dinput controller because controllerIndex out of range" << endl;
+					MessageBox(NULL, "Not selecting dinput controller because controllerIndex out of range", NULL, MB_OK);
 				}
 				else
 				{
-					//Dinput8 hook
-					installDinputHooks();
 
-					dinputDevice->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
+					controllerGuid = dinputGuids[controllerIndex - 1];
+					HRESULT cdRes = pDinput->CreateDevice(controllerGuid, &dinputDevice, NULL);
 
-					dinputDevice->SetDataFormat(&c_dfDIJoystick2);
-
-					DIDEVCAPS caps;
-					caps.dwSize = sizeof(DIDEVCAPS);
-					HRESULT gcRes = dinputDevice->GetCapabilities(&caps);
-
-					std::cout << "dinput device number of buttons =" << caps.dwButtons << "\n";
-					std::cout << "dinput device number of axes =" << caps.dwAxes << "\n";
-
-					dinputDevice->EnumObjects(&DIEnumDeviceObjectsCallback, dinputDevice, DIDFT_AXIS);
-
-					HRESULT aquireResult = dinputDevice->Acquire();
-
-					if (aquireResult == DI_OK)
-						std::cout << "Successfully aquired dinput device\n";
+					if (cdRes != DI_OK)
+					{
+						std::cerr << "dinput create device error: " << cdRes << endl;
+					}
 					else
-						std::cout << "Failed to aquired dinput device\n";
+					{
+						//Dinput8 hook
+						installDinputHooks();
+
+						dinputDevice->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
+
+						dinputDevice->SetDataFormat(&c_dfDIJoystick2);
+
+						DIDEVCAPS caps;
+						caps.dwSize = sizeof(DIDEVCAPS);
+						HRESULT gcRes = dinputDevice->GetCapabilities(&caps);
+
+						std::cout << "dinput device number of buttons =" << caps.dwButtons << "\n";
+						std::cout << "dinput device number of axes =" << caps.dwAxes << "\n";
+
+						dinputDevice->EnumObjects(&DIEnumDeviceObjectsCallback, dinputDevice, DIDFT_AXIS);
+
+						HRESULT aquireResult = dinputDevice->Acquire();
+
+						if (aquireResult == DI_OK)
+							std::cout << "Successfully aquired dinput device\n";
+						else
+							std::cout << "Failed to aquired dinput device\n";
+					}
 				}
 			}
 		}
