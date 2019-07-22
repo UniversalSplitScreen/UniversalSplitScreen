@@ -66,28 +66,10 @@ GUID dinputGuids[maxDinputDevices];
 GUID controllerGuid;
 int dinputGuids_i = 0;
 bool dinputBlockInput = false;
-
-/*class dinput_deleter {
-	
-public:
-	dinput_deleter()
-	{
-		pDinput = 0;
-	}
-	
-	~dinput_deleter()
-	{
-		if (pDinput != 0)
-		{
-			//TODO: crashes game?
-			//TODO: move to pipe end?
-			pDinput->Release();
-			pDinput = 0;
-		}
-	}
-  };
-
-dinput_deleter pDinput_deleter;*/
+LPDIRECTINPUTDEVICE8 dinputDevice = 0;
+LONG dinputRangeMax = 32767;
+LONG dinputRangeMin = -32768;
+bool dinputDeviceDataFormat = 1;//c_dfDIJoystick : 1, c_dfDIJoystick2 : 2
 
 void UpdateAbsoluteCursorCheck()
 {
@@ -614,17 +596,14 @@ static BOOL CALLBACK DIEnumDevicesCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvR
 	return DIENUM_CONTINUE;
 }
 
-LONG rangeMax = 100;
-LONG rangeMin = -100;
-
 static BOOL CALLBACK DIEnumDeviceObjectsCallback(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
 {
 	LPDIRECTINPUTDEVICE8 did = (LPDIRECTINPUTDEVICE8)pvRef;
 	did->Unacquire();
 
 	DIPROPRANGE range;
-	range.lMax = rangeMax;//32767
-	range.lMin = rangeMin;//-32768
+	range.lMax = dinputRangeMax;//32767
+	range.lMin = dinputRangeMin;//-32768
 	range.diph.dwSize = sizeof(DIPROPRANGE);
 	range.diph.dwHeaderSize = sizeof(DIPROPHEADER);
 	range.diph.dwHow = DIPH_BYID;
@@ -636,10 +615,6 @@ static BOOL CALLBACK DIEnumDeviceObjectsCallback(LPCDIDEVICEOBJECTINSTANCE lpddo
 		return DIENUM_CONTINUE;
 }
 
-LPDIRECTINPUTDEVICE8 dinputDevice = 0;
-
-
-
 static BOOL CALLBACK DIEnumDeviceObjectsCallback_CopyProperties(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
 {
 	LPDIRECTINPUTDEVICE8 theirDevice = (LPDIRECTINPUTDEVICE8)pvRef;
@@ -649,53 +624,29 @@ static BOOL CALLBACK DIEnumDeviceObjectsCallback_CopyProperties(LPCDIDEVICEOBJEC
 	range.diph.dwHeaderSize = sizeof(DIPROPHEADER);
 	range.diph.dwHow = DIPH_BYID;
 	range.diph.dwObj = lpddoi->dwType;
-
-	/*if (!(FAILED(theirDevice->GetProperty(DIPROP_RANGE, &range.diph))))
-	{
-		if (!(FAILED(dinputDevice->SetProperty(DIPROP_RANGE, &range.diph))))
-		{
-			aojhsuifiuhasd++;
-			MessageBox(NULL, "a"+ aojhsuifiuhasd, NULL, MB_OK);
-			return DIENUM_CONTINUE;
-		}
-	}
-	MessageBox(NULL, "b" + aojhsuifiuhasd, NULL, MB_OK);
-	return DIENUM_STOP;*/
-
+	
 	if (FAILED(theirDevice->GetProperty(DIPROP_RANGE, &range.diph)))
 		return DIENUM_STOP;
 
-	rangeMax = range.lMax;
-	rangeMin = range.lMin;
+	dinputRangeMax = range.lMax;
+	dinputRangeMin = range.lMin;
 
 	//seems to return min = 0 and max doubled. Correct for that here:
 	if (range.lMin == 0)
 	{
-		rangeMax = range.lMax / 2;
-		rangeMin = -(range.lMax / 2) - 1;
+		dinputRangeMax = range.lMax / 2;
+		dinputRangeMin = -(range.lMax / 2) - 1;
 	}
 
 	return DIENUM_CONTINUE;
 }
 
-
 bool hasSetupDinputDeviceProperties = false;
 void setupDinputDeviceProperties(LPDIRECTINPUTDEVICE8 theirDevice)
-{
-	//DIPROPDWORD d1;
-	//theirDevice-> GetProperty(DIPROP_DEADZONE, &d1.diph);
-	//dinputDevice->SetProperty(DIPROP_DEADZONE, &d1.diph);
-
-	//DIPROPRANGE d2;
-	//theirDevice-> GetProperty(DIPROP_RANGE, &d2.diph);
-	//dinputDevice->SetProperty(DIPROP_RANGE, &d2.diph);
-
-	
+{	
 	//theirDevice->Unacquire();
 	theirDevice->EnumObjects(&DIEnumDeviceObjectsCallback_CopyProperties, theirDevice, DIDFT_AXIS);	
 	//theirDevice->Acquire();
-
-	
 
 	dinputDevice->Unacquire();
 	dinputDevice->EnumObjects(&DIEnumDeviceObjectsCallback, dinputDevice, DIDFT_AXIS);
@@ -704,13 +655,9 @@ void setupDinputDeviceProperties(LPDIRECTINPUTDEVICE8 theirDevice)
 	hasSetupDinputDeviceProperties = true;
 }
 
-bool dataFormat = 1;//c_dfDIJoystick : 1, c_dfDIJoystick2 : 2
-
 //First argument is a pointer to the COM object, required or application crashes after executing hook
 HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cbData, LPVOID lpvData)
 {
-#if TRUE
-	//std::cout << "Dinput_GetDeviceStates_Hook, cbData=" << cbData << ", lpvData=" << lpvData << "\n";
 	if (dinputBlockInput)
 	{
 		memset(lpvData, 0, cbData);
@@ -718,13 +665,13 @@ HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cb
 	}
 	else
 	{
-		if (dataFormat == 1 && cbData == sizeof(DIJOYSTATE2))
+		if (dinputDeviceDataFormat == 1 && cbData == sizeof(DIJOYSTATE2))
 		{
 			dinputDevice->Unacquire();
 			dinputDevice->SetDataFormat(&c_dfDIJoystick2);
 			dinputDevice->Acquire();
 		}
-		else if (dataFormat == 2 && cbData == sizeof(DIJOYSTATE))
+		else if (dinputDeviceDataFormat == 2 && cbData == sizeof(DIJOYSTATE))
 		{
 			dinputDevice->Unacquire();
 			dinputDevice->SetDataFormat(&c_dfDIJoystick);
@@ -735,10 +682,6 @@ HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cb
 		dinputDevice->Poll();
 		return dinputDevice->GetDeviceState(cbData, lpvData);
 	}
-#else
-	//return pDev->GetDeviceState(cbData, lpvData);
-	return dinputDevice->GetDeviceState(cbData, lpvData);
-#endif
 }
 
 HRESULT __stdcall Dinput_CreateDevice_Hook(IDirectInput8* pdin, REFGUID rguid, LPDIRECTINPUTDEVICE8A* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
@@ -769,7 +712,6 @@ void installDinputHook(void* EntryPoint, void* HookProc, string name)
 	{
 		ULONG ACLEntries[1] = { 0 };
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
-		//LhSetInclusiveACL(ACLEntries, 1, &hHook);//TODO: switch back to exclusive
 
 		std::cout << "Successfully installed dinput8 hook " << name << "\n";
 	}
@@ -969,10 +911,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 					dinputDevice->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
 
-
 					dinputDevice->SetDataFormat(&c_dfDIJoystick2);
-
-
 
 					DIDEVCAPS caps;
 					caps.dwSize = sizeof(DIDEVCAPS);
@@ -981,9 +920,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 					std::cout << "dinput device number of buttons =" << caps.dwButtons << "\n";
 					std::cout << "dinput device number of axes =" << caps.dwAxes << "\n";
 
-
 					dinputDevice->EnumObjects(&DIEnumDeviceObjectsCallback, dinputDevice, DIDFT_AXIS);
-
 
 					HRESULT aquireResult = dinputDevice->Acquire();
 
@@ -992,21 +929,11 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 					else
 						std::cout << "Failed to aquired dinput device\n";
 				}
-
 			}
-
 		}
-
 
 		//Start named pipe client
 		startPipeListen();
-
-		//TODO: re-enable? (application will crash if GetDeviceState is called with 0)
-		/*if (dinputDevice != 0)
-		{
-			dinputDevice->Unacquire();
-			dinputDevice->Release();
-		}*/
 	}
 	else
 	{
