@@ -87,6 +87,7 @@
 			this.RefCheckbox_SendRawMouseInput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.endButtonSetter = new System.Windows.Forms.Button();
 			this.hooksBox = new System.Windows.Forms.GroupBox();
+			this.RefCheckbox_Hook_Dinput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_UpdateAbsoluteFlagInMouseMessage = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_MouseVisibility = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_UseLegacyInput = new UniversalSplitScreen.UI.RefCheckbox();
@@ -118,7 +119,6 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.WebLinkWebsite = new UniversalSplitScreen.UI.WebLinkLabel();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.RefCheckbox_Hook_Dinput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -794,6 +794,18 @@
 			this.hooksBox.TabStop = false;
 			this.hooksBox.Text = "Hooks";
 			// 
+			// RefCheckbox_Hook_Dinput
+			// 
+			this.RefCheckbox_Hook_Dinput.AutoSize = true;
+			this.RefCheckbox_Hook_Dinput.Location = new System.Drawing.Point(9, 343);
+			this.RefCheckbox_Hook_Dinput.Name = "RefCheckbox_Hook_Dinput";
+			this.RefCheckbox_Hook_Dinput.RefType = null;
+			this.RefCheckbox_Hook_Dinput.Size = new System.Drawing.Size(154, 17);
+			this.RefCheckbox_Hook_Dinput.TabIndex = 24;
+			this.RefCheckbox_Hook_Dinput.Text = "Hook DInput for gamepads";
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_Dinput, resources.GetString("RefCheckbox_Hook_Dinput.ToolTip"));
+			this.RefCheckbox_Hook_Dinput.UseVisualStyleBackColor = true;
+			// 
 			// RefCheckbox_UpdateAbsoluteFlagInMouseMessage
 			// 
 			this.RefCheckbox_UpdateAbsoluteFlagInMouseMessage.AutoSize = true;
@@ -861,9 +873,9 @@
 			this.RefCheckbox_Hook_GetKeyState.Location = new System.Drawing.Point(9, 251);
 			this.RefCheckbox_Hook_GetKeyState.Name = "RefCheckbox_Hook_GetKeyState";
 			this.RefCheckbox_Hook_GetKeyState.RefType = null;
-			this.RefCheckbox_Hook_GetKeyState.Size = new System.Drawing.Size(191, 17);
+			this.RefCheckbox_Hook_GetKeyState.Size = new System.Drawing.Size(168, 17);
 			this.RefCheckbox_Hook_GetKeyState.TabIndex = 20;
-			this.RefCheckbox_Hook_GetKeyState.Text = "Hook GetKeyState for WASD keys";
+			this.RefCheckbox_Hook_GetKeyState.Text = "Hook GetKeyState for all keys";
 			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_GetKeyState, "This hook will fix a bug in Borderlands 2 where the player would seemingly random" +
         "ly stop moving.");
 			this.RefCheckbox_Hook_GetKeyState.UseVisualStyleBackColor = true;
@@ -877,8 +889,7 @@
 			this.RefCheckbox_Hook_GetAsyncKeyState.Size = new System.Drawing.Size(144, 17);
 			this.RefCheckbox_Hook_GetAsyncKeyState.TabIndex = 20;
 			this.RefCheckbox_Hook_GetAsyncKeyState.Text = "Hook GetAsyncKeyState";
-			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_GetAsyncKeyState, "This hook will overload GetAsyncKeyState for mouse buttons.\r\nUse this if a game i" +
-        "s not responding to mouse buttons.");
+			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_GetAsyncKeyState, resources.GetString("RefCheckbox_Hook_GetAsyncKeyState.ToolTip"));
 			this.RefCheckbox_Hook_GetAsyncKeyState.UseVisualStyleBackColor = true;
 			this.RefCheckbox_Hook_GetAsyncKeyState.CheckedChanged += new System.EventHandler(this.RefCheckbox_Hook_GetAsyncKeyState_CheckedChanged);
 			// 
@@ -1167,18 +1178,6 @@
 			this.toolTip1.AutoPopDelay = 100000;
 			this.toolTip1.InitialDelay = 500;
 			this.toolTip1.ReshowDelay = 100;
-			// 
-			// RefCheckbox_Hook_Dinput
-			// 
-			this.RefCheckbox_Hook_Dinput.AutoSize = true;
-			this.RefCheckbox_Hook_Dinput.Location = new System.Drawing.Point(9, 343);
-			this.RefCheckbox_Hook_Dinput.Name = "RefCheckbox_Hook_Dinput";
-			this.RefCheckbox_Hook_Dinput.RefType = null;
-			this.RefCheckbox_Hook_Dinput.Size = new System.Drawing.Size(154, 17);
-			this.RefCheckbox_Hook_Dinput.TabIndex = 24;
-			this.RefCheckbox_Hook_Dinput.Text = "Hook DInput for gamepads";
-			this.toolTip1.SetToolTip(this.RefCheckbox_Hook_Dinput, resources.GetString("RefCheckbox_Hook_Dinput.ToolTip"));
-			this.RefCheckbox_Hook_Dinput.UseVisualStyleBackColor = true;
 			// 
 			// Form1
 			// 

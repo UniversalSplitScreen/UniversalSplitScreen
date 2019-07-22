@@ -139,6 +139,7 @@ namespace UniversalSplitScreen.RawInput
 											uint code = (scanCode << 16);//32-bit
 
 											var keysDown = window.keysDown;
+											bool stateChangedSinceLast = keyDown != keysDown[VKey];
 
 											if (keyDown)
 											{
@@ -158,18 +159,11 @@ namespace UniversalSplitScreen.RawInput
 
 											if (VKey < keysDown.Length) keysDown[VKey] = keyDown;
 											
-											if (Options.CurrentOptions.Hook_GetKeyState)
+											if (Options.CurrentOptions.Hook_GetKeyState || Options.CurrentOptions.Hook_GetAsyncKeyState)
 											{
-												byte shift = (byte)(VKey == 0x41 ? 0b0001 : (VKey == 0x44 ? 0b0010 : (VKey == 0x53 ? 0b0100 : (VKey == 0x57 ? 0b1000 : 0))));
-												if (((window.WASD_State & shift) == 0 ? false : true) != keyDown)
-												{
-													if (keyDown)
-														window.WASD_State |= shift;
-													else
-														window.WASD_State &= (byte)~shift;
-
+												if(stateChangedSinceLast)
+												{ 
 													window.HooksCPPNamedPipe?.WriteMessage(0x02, VKey, keyDown ? 1 : 0);
-
 												}
 											}
 

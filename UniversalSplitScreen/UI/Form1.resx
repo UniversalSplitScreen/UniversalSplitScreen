@@ -124,9 +124,6 @@
     <value>Games made in the Source engine (most Valve games, e.g. Team Fortress 2, Left 4 Dead 2, CS:GO, etc.) will prevent you from opening multiple instances.
 If you target a game window and click this button, it will "unlock" it so you can open another instance.</value>
   </data>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <data name="RefCheckbox_DrawMouse.ToolTip" xml:space="preserve">
     <value>This program will draw a "fake" mouse cursor over the game's mouse position.
 Use this if the game doesn't have its own mouse cursor image and relies on the Windows mouse cursor.
@@ -144,9 +141,11 @@ Very few games use raw keyboard input, so this will likely have no effect.</valu
 Useful if the game doesn't listen to raw input unless it is in the foreground.
 Use this if a game is not responding to mouse input.</value>
   </data>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
+  <data name="RefCheckbox_Hook_Dinput.ToolTip" xml:space="preserve">
+    <value>Redirects controller input within the Direct Input API.
+Direct Input is an old API, so it is mostly only used by old games.
+Direct Input supports an effectively unlimited number of controllers, so you can use more than 4 controllers.</value>
+  </data>
   <data name="RefCheckbox_UpdateAbsoluteFlagInMouseMessage.ToolTip" xml:space="preserve">
     <value>If checked, the absolute cursor position (ie the cursor position in UI menus) will be updated when the game processes a mouse move message.
 This will only have an effect if legacy input is enabled.
@@ -168,6 +167,11 @@ You will need the GetCursorPos and SetCursorPos hooks turned ON.
     <value>Redirects controller input to the selected controller index.
 This hook is required if you want to use gamepad/controller input on games that use xinput (most modern games).
 XInput only supports 4 controllers. Do not use a controller index higher than 4 if the game only uses XInput.</value>
+  </data>
+  <data name="RefCheckbox_Hook_GetAsyncKeyState.ToolTip" xml:space="preserve">
+    <value>This hook will overload GetAsyncKeyState for mouse buttons and all keyboard keys.
+Use this if a game is not responding to mouse buttons or keyboard keys.
+This will often fix issues with the shift/control/alt keys.</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>MIT License
@@ -191,11 +195,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.</value>
-  </data>
-  <data name="RefCheckbox_Hook_Dinput.ToolTip" xml:space="preserve">
-    <value>Redirects controller input within the Direct Input API.
-Direct Input is an old API, so it is mostly only used by old games.
-Direct Input supports an effectively unlimited number of controllers, so you can use more than 4 controllers.</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

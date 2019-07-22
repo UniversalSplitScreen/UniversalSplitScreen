@@ -177,64 +177,45 @@ BOOL WINAPI IsWindowEnabled_Hook(HWND hWnd)
 	return TRUE;
 }
 
-inline int getBitShiftForVKey(int VKey)
+inline bool isVkeyDown(int vkey)
 {
-	int shift = 0;
-	if (VKey <= 6)//The mouse keys
-	{
-		return VKey - 1;
-	}
-	else
-	{
-		//WASD keys
-		switch (VKey)
-		{
-			case 0x41: return 6;
-			case 0x44: return 7;
-			case 0x53: return 8;
-			case 0x57: return 9;
-			default: return 10;
-		}
-	}
-}
-
-bool isVkeyDown(int vkey)
-{
+	if (vkey >= 0xFF) return false;
+	
 	BYTE p = vkeysState[vkey / 8];
-	return p & (1 << (vkey % 8));
+	bool ret = p & (1 << (vkey % 8));
+
+	if (!ret)
+	{
+		if (vkey == VK_LSHIFT || vkey == VK_RSHIFT) return isVkeyDown(VK_SHIFT);
+		if (vkey == VK_LMENU || vkey == VK_RMENU) return isVkeyDown(VK_MENU);//alt
+		if (vkey == VK_LCONTROL || vkey == VK_RCONTROL) return isVkeyDown(VK_CONTROL);
+	}
 }
 
-void setVkeyState(int vkey, bool down)
+inline void setVkeyState(int vkey, bool down)
 {
+	if (vkey >= 0xFF) return;
+
 	BYTE* p = vkeysState + (vkey / 8);
 	int shift = (1 << (vkey % 8));
 	if (down)
 		*p |= shift;
 	else
 		*p &= (~shift);
+
+	if (vkey == VK_LSHIFT || vkey == VK_RSHIFT) setVkeyState(VK_SHIFT, down);
+	else if (vkey == VK_LMENU || vkey == VK_RMENU) setVkeyState(VK_MENU, down);
+	else if (vkey == VK_LCONTROL || vkey == VK_RCONTROL) setVkeyState(VK_CONTROL, down);
 }
 
 SHORT WINAPI GetAsyncKeyState_Hook(int vKey)
 {
-	if (vKey == 0x10 || vKey == 0xA0 || vKey == 0xA1)//shift
-	{
-		return 0b1000000000000000;
-	}
-	else return (vkey_state & (1 << getBitShiftForVKey(vKey))) == 0 ? // is the vKey up?
-		0 : 0b1000000000000000;
+	return isVkeyDown(vKey) ? 0b1000000000000000 : 0;
 }
 
 SHORT WINAPI GetKeyState_Hook(int nVirtKey)
 {
-	if (nVirtKey == 0x41 || nVirtKey == 0x44 || nVirtKey == 0x53 || nVirtKey == 0x57)//WASD
-	{
-		return (vkey_state & (1 << getBitShiftForVKey(nVirtKey))) == 0 ? // is the vKey down?
-			0 : 0b1000000000000000;
-	}
-	else
-	{
-		return GetKeyState(nVirtKey);
-	}
+	return isVkeyDown(nVirtKey) ? 0b1000000000000000 : 0;
 }
 
 BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize)
@@ -353,15 +334,7 @@ void startPipeListen()
 				}
 				case 0x02://Set VKey
 				{
-					UINT16 shift = (1 << getBitShiftForVKey(param1));
-					if (param2 == 0)//Button up
-					{
-						vkey_state &= (~shift);//Sets to 0
-					}
-					else//Button down
-					{
-						vkey_state |= shift;//Sets to 1
-					}
+					setVkeyState(param1, param2 != 0);
 					break;
 				}
 				case 0x03://Close named pipe
