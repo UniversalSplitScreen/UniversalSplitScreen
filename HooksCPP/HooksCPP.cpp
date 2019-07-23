@@ -162,7 +162,7 @@ HWND WINAPI GetForegroundWindow_Hook()
 	return hWnd;
 }
 
-HWND WINAPI WindowFromPoint_Hook()
+HWND WINAPI WindowFromPoint_Hook(POINT Point)
 {
 	return hWnd;
 }
