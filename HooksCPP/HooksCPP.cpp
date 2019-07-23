@@ -182,7 +182,7 @@ inline bool isVkeyDown(int vkey)
 	if (vkey >= 0xFF) return false;
 	
 	BYTE p = vkeysState[vkey / 8];
-	bool ret = p & (1 << (vkey % 8));
+	bool ret = (p & (1 << (vkey % 8))) != 0;
 
 	if (!ret)
 	{
@@ -190,6 +190,8 @@ inline bool isVkeyDown(int vkey)
 		if (vkey == VK_LMENU || vkey == VK_RMENU) return isVkeyDown(VK_MENU);//alt
 		if (vkey == VK_LCONTROL || vkey == VK_RCONTROL) return isVkeyDown(VK_CONTROL);
 	}
+
+	return ret;
 }
 
 inline void setVkeyState(int vkey, bool down)
