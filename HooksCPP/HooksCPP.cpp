@@ -584,8 +584,9 @@ static BOOL CALLBACK DIEnumDevicesCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvR
 		4 : Joystick
 		5 : Game Pad */
 
-	if (di.wUsage == 4 || di.wUsage == 5 && dinputGuids_i < maxDinputDevices)
+	if ((di.wUsage == 4 || di.wUsage == 5) && dinputGuids_i < maxDinputDevices)
 	{
+		std::cout << "inserting (next) at dinputGuids_i=" << dinputGuids_i << "\n";
 		dinputGuids[dinputGuids_i++] = di.guidInstance;
 		adding = true;
 	}
@@ -610,9 +611,9 @@ static BOOL CALLBACK DIEnumDeviceObjectsCallback(LPCDIDEVICEOBJECTINSTANCE lpddo
 	range.diph.dwObj = lpddoi->dwType;
 
 	if (FAILED(did->SetProperty(DIPROP_RANGE, &range.diph)))
-		return DIENUM_STOP;
+	return DIENUM_STOP;
 	else
-		return DIENUM_CONTINUE;
+	return DIENUM_CONTINUE;
 }
 
 static BOOL CALLBACK DIEnumDeviceObjectsCallback_CopyProperties(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
@@ -624,7 +625,7 @@ static BOOL CALLBACK DIEnumDeviceObjectsCallback_CopyProperties(LPCDIDEVICEOBJEC
 	range.diph.dwHeaderSize = sizeof(DIPROPHEADER);
 	range.diph.dwHow = DIPH_BYID;
 	range.diph.dwObj = lpddoi->dwType;
-	
+
 	if (FAILED(theirDevice->GetProperty(DIPROP_RANGE, &range.diph)))
 		return DIENUM_STOP;
 
@@ -643,9 +644,9 @@ static BOOL CALLBACK DIEnumDeviceObjectsCallback_CopyProperties(LPCDIDEVICEOBJEC
 
 bool hasSetupDinputDeviceProperties = false;
 void setupDinputDeviceProperties(LPDIRECTINPUTDEVICE8 theirDevice)
-{	
+{
 	//theirDevice->Unacquire();
-	theirDevice->EnumObjects(&DIEnumDeviceObjectsCallback_CopyProperties, theirDevice, DIDFT_AXIS);	
+	theirDevice->EnumObjects(&DIEnumDeviceObjectsCallback_CopyProperties, theirDevice, DIDFT_AXIS);
 	//theirDevice->Acquire();
 
 	dinputDevice->Unacquire();
@@ -670,18 +671,76 @@ HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cb
 			dinputDevice->Unacquire();
 			dinputDevice->SetDataFormat(&c_dfDIJoystick2);
 			dinputDevice->Acquire();
+			dinputDeviceDataFormat = 2;
 		}
 		else if (dinputDeviceDataFormat == 2 && cbData == sizeof(DIJOYSTATE))
 		{
 			dinputDevice->Unacquire();
 			dinputDevice->SetDataFormat(&c_dfDIJoystick);
 			dinputDevice->Acquire();
+			dinputDeviceDataFormat = 1;
 		}
 
 		if (!hasSetupDinputDeviceProperties) setupDinputDeviceProperties(pDev);
 		dinputDevice->Poll();
 		return dinputDevice->GetDeviceState(cbData, lpvData);
 	}
+}
+
+//Buffered data
+bool dinputBufferSetup = false;
+HRESULT __stdcall Dinput_GetDeviceData_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
+{
+	//Copy buffer size and data format
+	if (!dinputBufferSetup)
+	{
+		dinputBufferSetup = true;
+
+		//Data format
+		{
+			DIJOYSTATE state;
+			if(pDev->GetDeviceState(sizeof(DIJOYSTATE), &state) == DIERR_INVALIDPARAM)
+			{
+				//Failed because it was DIJOYSTATE2, and couldn't copy it into the smaller DIJOYSTATE
+				dinputDevice->Unacquire();
+				dinputDevice->SetDataFormat(&c_dfDIJoystick2);
+				dinputDevice->Acquire();
+				dinputDeviceDataFormat = 2;
+			}
+			else
+			{
+				dinputDevice->Unacquire();
+				dinputDevice->SetDataFormat(&c_dfDIJoystick);
+				dinputDevice->Acquire();
+				dinputDeviceDataFormat = 1;
+			}
+		}
+
+		//Buffer size
+		{
+			DIPROPDWORD buffer_size;
+			buffer_size.diph.dwSize = sizeof(DIPROPDWORD);
+			buffer_size.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+			buffer_size.diph.dwHow = DIPH_DEVICE;
+			buffer_size.diph.dwObj = 0;
+			HRESULT gpRes = pDev->GetProperty(DIPROP_BUFFERSIZE, &buffer_size.diph);
+
+			DIPROPDWORD buffer_size2;
+			buffer_size2.diph.dwSize = sizeof(DIPROPDWORD);
+			buffer_size2.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+			buffer_size2.diph.dwHow = DIPH_DEVICE;
+			buffer_size2.diph.dwObj = 0;
+			buffer_size2.dwData = buffer_size.dwData;
+
+			dinputDevice->Unacquire();
+			HRESULT spRes = dinputDevice->SetProperty(DIPROP_BUFFERSIZE, &buffer_size2.diph);
+			dinputDevice->Acquire();
+
+			std::cout << "Get buffer size result = " << gpRes << ", set result = " << spRes << ", buffer size = " << buffer_size.dwData << "\n";
+		}
+	}
+
+	return dinputDevice->GetDeviceData(cbObjectData, rgdod, pdwInOut, dwFlags);
 }
 
 HRESULT __stdcall Dinput_CreateDevice_Hook(IDirectInput8* pdin, REFGUID rguid, LPDIRECTINPUTDEVICE8A* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
@@ -694,7 +753,7 @@ HRESULT __stdcall Dinput_CreateDevice_Hook(IDirectInput8* pdin, REFGUID rguid, L
 	}
 	else
 	{
-		return pDinput->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+		return pdin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
 	}
 }
 
@@ -738,13 +797,55 @@ void installDinputHooks()
 	GetDeviceStateFunc GetDeviceStatePointer = (GetDeviceStateFunc)vptr_device[9];
 	installDinputHook(GetDeviceStatePointer, Dinput_GetDeviceState_Hook, "GetDeviceState");
 
+	using GetDeviceDataFunc = HRESULT(__stdcall *)(DWORD, LPDIDEVICEOBJECTDATA, LPDWORD, DWORD);
+	GetDeviceDataFunc GetDeviceDataPointer = (GetDeviceDataFunc)vptr_device[10];
+	installDinputHook(GetDeviceDataPointer, Dinput_GetDeviceData_Hook, "GetDeviceData");
+
 	using CreateDeviceFunc = HRESULT(__stdcall *)(REFGUID rguid, LPDIRECTINPUTDEVICE8A* lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
 	CreateDeviceFunc CreateDevicePointer = (CreateDeviceFunc)vptr_dinput[3];
 	installDinputHook(CreateDevicePointer, Dinput_CreateDevice_Hook, "CreateDevice");
 }
 
+int compareGuids(const void* pGuid1, const void* pGuid2)
+{
+	GUID guid1 = *(GUID*)pGuid1;
+	GUID guid2 = *(GUID*)pGuid2;
+	
+	unsigned long g1d1 = ((unsigned long *)&guid1)[0];
+	unsigned long g1d2 = ((unsigned long *)&guid1)[1];
+	unsigned long g1d3 = ((unsigned long *)&guid1)[2];
+	unsigned long g1d4 = ((unsigned long *)&guid1)[3];
 
+	unsigned long g2d1 = ((unsigned long *)&guid2)[0];
+	unsigned long g2d2 = ((unsigned long *)&guid2)[1];
+	unsigned long g2d3 = ((unsigned long *)&guid2)[2];
+	unsigned long g2d4 = ((unsigned long *)&guid2)[3];
 
+	if (g1d1 != g2d1)
+	{
+		return g2d1 - g1d1;
+	}
+
+	else if (g1d2 != g2d2)
+	{
+		return g2d2 - g1d2;
+	}
+
+	else if (g1d3 != g2d3)
+	{
+		return g2d3 - g1d3;
+	}
+
+	else if (g1d4 != g2d4)
+	{
+		return g2d4 - g1d4;
+	}
+
+	else
+	{
+		return 0;
+	}
+}
 
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
@@ -758,7 +859,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 	InitializeCriticalSection(&mcs);
 
 	int i = 0;
-	while (ShowCursor(FALSE) >= -10 || i++ > 20);
+	while (ShowCursor(FALSE) >= -10 && i++ < 20);
 	SetCursor(NULL);
 
 	if (inRemoteInfo->UserDataSize == 1024)
@@ -889,7 +990,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 				std::cout << "Succeed dDirectInput8Create\n";
 				dinputGuids_i = 0;
 				pDinput->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, 0, DIEDFL_ALLDEVICES);
-				//TODO: sort the array by guidInstance (important so order is same in all hooks in games)
+				std::qsort(dinputGuids, maxDinputDevices, sizeof(GUID), compareGuids);
 
 				if (controllerIndex == 0)
 				{
@@ -928,8 +1029,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 						caps.dwSize = sizeof(DIDEVCAPS);
 						HRESULT gcRes = dinputDevice->GetCapabilities(&caps);
 
-						std::cout << "dinput device number of buttons =" << caps.dwButtons << "\n";
-						std::cout << "dinput device number of axes =" << caps.dwAxes << "\n";
+						std::cout << "dinput device number of buttons = " << caps.dwButtons << "\n";
+						std::cout << "dinput device number of axes = " << caps.dwAxes << "\n";
 
 						dinputDevice->EnumObjects(&DIEnumDeviceObjectsCallback, dinputDevice, DIDFT_AXIS);
 
@@ -939,7 +1040,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 							std::cout << "Successfully aquired dinput device\n";
 						else
 							std::cout << "Failed to aquired dinput device\n";
-					}
+ 					}
 				}
 			}
 		}
