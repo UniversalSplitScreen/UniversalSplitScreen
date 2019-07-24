@@ -74,7 +74,7 @@ bool dinputBlockInput = false;
 static LPDIRECTINPUTDEVICE8 dinputDevice = 0;
 LONG dinputRangeMax = 32767;
 LONG dinputRangeMin = -32768;
-bool dinputDeviceDataFormat = 1;//c_dfDIJoystick : 1, c_dfDIJoystick2 : 2
+int dinputDeviceDataFormat = 1;//c_dfDIJoystick : 1, c_dfDIJoystick2 : 2
 
 void UpdateAbsoluteCursorCheck()
 {
