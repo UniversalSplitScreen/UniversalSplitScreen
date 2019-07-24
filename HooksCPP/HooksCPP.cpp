@@ -64,14 +64,14 @@ bool filterMouseMessages;
 
 bool pipeClosed = false;
 
-IDirectInput8* pDinput;
+static IDirectInput8* pDinput;
 
 const int maxDinputDevices = 16;
-GUID dinputGuids[maxDinputDevices];
-GUID controllerGuid;
+static GUID dinputGuids[maxDinputDevices];
+static GUID controllerGuid;
 int dinputGuids_i = 0;
 bool dinputBlockInput = false;
-LPDIRECTINPUTDEVICE8 dinputDevice = 0;
+static LPDIRECTINPUTDEVICE8 dinputDevice = 0;
 LONG dinputRangeMax = 32767;
 LONG dinputRangeMin = -32768;
 bool dinputDeviceDataFormat = 1;//c_dfDIJoystick : 1, c_dfDIJoystick2 : 2
