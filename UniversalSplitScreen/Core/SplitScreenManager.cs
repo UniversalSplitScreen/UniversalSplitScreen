@@ -300,10 +300,13 @@ namespace UniversalSplitScreen.Core
 
 		public void ToggleWindowBorders()
 		{
-			const int flip = 0x00C00000 | 0x00080000;//WS_BORDER | WS_SYSMENU
+			const int flip = 0x00C00000 | 0x00080000 | 0x00040000;//WS_BORDER | WS_SYSMENU
 
 			int x = (int)WinApi.GetWindowLongPtr32(active_hWnd, WinApi.GWL_STYLE);
-			x ^= flip;
+			if ((x & flip) > 0)//has a border
+				x &= (~flip);
+			else
+				x |= flip;
 			WinApi.SetWindowLong32(active_hWnd, WinApi.GWL_STYLE, x);
 			WinApi.RefreshWindow(active_hWnd);
 		}
