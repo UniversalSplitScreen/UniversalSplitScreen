@@ -74,7 +74,10 @@ bool dinputBlockInput = false;
 static LPDIRECTINPUTDEVICE8 dinputDevice = 0;
 LONG dinputRangeMax = 32767;
 LONG dinputRangeMin = -32768;
-int dinputDeviceDataFormat = 1;//c_dfDIJoystick : 1, c_dfDIJoystick2 : 2
+int dinputDeviceDataFormat = 2;//c_dfDIJoystick : 1, c_dfDIJoystick2 : 2
+int dinputDeviceDataFormat7 = 2;//for dinput7
+LPDIRECTINPUTA pDinput7;
+LPDIRECTINPUTDEVICE pCtrlr7;
 
 void UpdateAbsoluteCursorCheck()
 {
@@ -616,9 +619,54 @@ static BOOL CALLBACK DIEnumDeviceObjectsCallback(LPCDIDEVICEOBJECTINSTANCE lpddo
 	return DIENUM_CONTINUE;
 }
 
+static BOOL CALLBACK DIEnumDeviceObjectsCallback7(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
+{
+	IDirectInputDeviceA* did = (IDirectInputDeviceA*)pvRef;
+	did->Unacquire();
+
+	DIPROPRANGE range;
+	range.lMax = dinputRangeMax;//32767
+	range.lMin = dinputRangeMin;//-32768
+	range.diph.dwSize = sizeof(DIPROPRANGE);
+	range.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+	range.diph.dwHow = DIPH_BYID;
+	range.diph.dwObj = lpddoi->dwType;
+
+	if (FAILED(did->SetProperty(DIPROP_RANGE, &range.diph)))
+		return DIENUM_STOP;
+	else
+		return DIENUM_CONTINUE;
+}
+
 static BOOL CALLBACK DIEnumDeviceObjectsCallback_CopyProperties(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
 {
 	LPDIRECTINPUTDEVICE8 theirDevice = (LPDIRECTINPUTDEVICE8)pvRef;
+
+	DIPROPRANGE range;
+	range.diph.dwSize = sizeof(DIPROPRANGE);
+	range.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+	range.diph.dwHow = DIPH_BYID;
+	range.diph.dwObj = lpddoi->dwType;
+
+	if (FAILED(theirDevice->GetProperty(DIPROP_RANGE, &range.diph)))
+		return DIENUM_STOP;
+
+	dinputRangeMax = range.lMax;
+	dinputRangeMin = range.lMin;
+
+	//seems to return min = 0 and max doubled. Correct for that here:
+	if (range.lMin == 0)
+	{
+		dinputRangeMax = range.lMax / 2;
+		dinputRangeMin = -(range.lMax / 2) - 1;
+	}
+
+	return DIENUM_CONTINUE;
+}
+
+static BOOL CALLBACK DIEnumDeviceObjectsCallback_CopyProperties7(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
+{
+	IDirectInputDeviceA* theirDevice = (IDirectInputDeviceA*)pvRef;
 
 	DIPROPRANGE range;
 	range.diph.dwSize = sizeof(DIPROPRANGE);
@@ -656,6 +704,20 @@ void setupDinputDeviceProperties(LPDIRECTINPUTDEVICE8 theirDevice)
 	hasSetupDinputDeviceProperties = true;
 }
 
+bool hasSetupDinputDeviceProperties7 = false;
+void setupDinputDeviceProperties7(IDirectInputDeviceA* theirDevice)
+{
+	//theirDevice->Unacquire();
+	theirDevice->EnumObjects(&DIEnumDeviceObjectsCallback_CopyProperties7, theirDevice, DIDFT_AXIS);
+	//theirDevice->Acquire();
+
+	pCtrlr7->Unacquire();
+	pCtrlr7->EnumObjects(&DIEnumDeviceObjectsCallback7, pCtrlr7, DIDFT_AXIS);
+	pCtrlr7->Acquire();
+
+	hasSetupDinputDeviceProperties7 = true;
+}
+
 //First argument is a pointer to the COM object, required or application crashes after executing hook
 HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cbData, LPVOID lpvData)
 {
@@ -684,6 +746,37 @@ HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cb
 		if (!hasSetupDinputDeviceProperties) setupDinputDeviceProperties(pDev);
 		dinputDevice->Poll();
 		return dinputDevice->GetDeviceState(cbData, lpvData);
+	}
+}
+
+HRESULT __stdcall Dinput_GetDeviceState_Hook7(IDirectInputDeviceA* pDev, DWORD cbData, LPVOID lpvData)
+{
+	if (dinputBlockInput)
+	{
+		memset(lpvData, 0, cbData);
+		return DI_OK;
+	}
+	else
+	{
+		//Game lags severely with this hook, perhaps this is called many times?
+		if (dinputDeviceDataFormat7 == 1 && cbData == sizeof(DIJOYSTATE2))
+		{
+			pCtrlr7->Unacquire();
+			pCtrlr7->SetDataFormat(&c_dfDIJoystick2);
+			pCtrlr7->Acquire();
+			dinputDeviceDataFormat7 = 2;
+		}
+		else if (dinputDeviceDataFormat7 == 2 && cbData == sizeof(DIJOYSTATE))
+		{
+			pCtrlr7->Unacquire();
+			pCtrlr7->SetDataFormat(&c_dfDIJoystick);
+			pCtrlr7->Acquire();
+			dinputDeviceDataFormat7 = 1;
+		}
+
+		if (!hasSetupDinputDeviceProperties7) setupDinputDeviceProperties7(pDev);
+		//pCtrlr7->Poll();
+		return pCtrlr7->GetDeviceState(cbData, lpvData);
 	}
 }
 
@@ -757,6 +850,20 @@ HRESULT __stdcall Dinput_CreateDevice_Hook(IDirectInput8* pdin, REFGUID rguid, L
 	}
 }
 
+HRESULT __stdcall Dinput7_CreateDevice_Hook(IDirectInputA* pdin, REFGUID rguid, LPDIRECTINPUTDEVICEA* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
+{
+	std::cout << "Dinput7 CreateDeviceHook called\n";
+
+	if (dinputBlockInput)
+	{
+		return DIERR_INVALIDPARAM;//pretend it failed
+	}
+	else
+	{
+		return pdin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+	}
+}
+
 void installDinputHook(void* EntryPoint, void* HookProc, string name)
 {
 	HOOK_TRACE_INFO hHook = { NULL };
@@ -789,21 +896,58 @@ void installDinputHooks()
 		using ptrSize = int;//32 bit pointers
 #endif
 
+
+		LoadLibrary("dinput.dll");
+
+		auto _DirectInputCreateA = GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateA");
+		typedef HRESULT(__stdcall * func_DirectInputCreate)(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter);
+		static func_DirectInputCreate DirectInputCreateA = (func_DirectInputCreate)_DirectInputCreateA;
+
+		//HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(pDinput), NULL);
+		
+		DirectInputCreateA(DllHandle, 0x0700, &pDinput7, NULL);
+		pDinput7->CreateDevice(controllerGuid, &pCtrlr7, NULL);
+
+		HRESULT r1 = pCtrlr7->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
+		HRESULT r2 = pCtrlr7->SetDataFormat(&c_dfDIJoystick2);
+		HRESULT r3 = pCtrlr7->EnumObjects(&DIEnumDeviceObjectsCallback7, pCtrlr7, DIDFT_AXIS);
+		HRESULT r4 = pCtrlr7->Acquire();
+
+		std::cout << "r1..4 = " << r1 << ", " << r2 << ", " << r3 << ", " << r4 << "\n";
+		
+
 	//https://kaisar-haque.blogspot.com/2008/07/c-accessing-virtual-table.html
 	ptrSize* vptr_device = *(ptrSize**)dinputDevice;
 	ptrSize* vptr_dinput = *(ptrSize**)pDinput;
+
+	ptrSize* vptr_device7 = *(ptrSize**)pCtrlr7;
+	ptrSize* vptr_dinput7 = *(ptrSize**)pDinput7;
 
 	using GetDeviceStateFunc = HRESULT(__stdcall *)(DWORD, LPVOID);
 	GetDeviceStateFunc GetDeviceStatePointer = (GetDeviceStateFunc)vptr_device[9];
 	installDinputHook(GetDeviceStatePointer, Dinput_GetDeviceState_Hook, "GetDeviceState");
 
+	/*//using GetDeviceStateFunc = HRESULT(__stdcall *)(DWORD, LPVOID);
+	GetDeviceStateFunc GetDeviceStatePointer7 = (GetDeviceStateFunc)vptr_device7[9];
+	installDinputHook(GetDeviceStatePointer7, Dinput_GetDeviceState_Hook7, "GetDeviceState (dinput 7)");*/
+	installDinputHook((void*)(vptr_device7[9]), Dinput_GetDeviceState_Hook7, "GetDeviceState (dinput 7)");
+
+
 	using GetDeviceDataFunc = HRESULT(__stdcall *)(DWORD, LPDIDEVICEOBJECTDATA, LPDWORD, DWORD);
 	GetDeviceDataFunc GetDeviceDataPointer = (GetDeviceDataFunc)vptr_device[10];
 	installDinputHook(GetDeviceDataPointer, Dinput_GetDeviceData_Hook, "GetDeviceData");
 
+	//(needs its own function signature)
+	//GetDeviceDataFunc GetDeviceDataPointer7 = (GetDeviceDataFunc)vptr_device7[10];
+	//installDinputHook(GetDeviceDataPointer7, Dinput_GetDeviceData_Hook, "GetDeviceData (dinput 7)");
+
 	using CreateDeviceFunc = HRESULT(__stdcall *)(REFGUID rguid, LPDIRECTINPUTDEVICE8A* lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
 	CreateDeviceFunc CreateDevicePointer = (CreateDeviceFunc)vptr_dinput[3];
 	installDinputHook(CreateDevicePointer, Dinput_CreateDevice_Hook, "CreateDevice");
+
+	/*using CreateDeviceFunc7 = HRESULT(__stdcall *)(REFGUID rguid, LPDIRECTINPUTDEVICEA* lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
+	CreateDeviceFunc7 CreateDevicePointer7 = (CreateDeviceFunc7)vptr_dinput7[3];
+	installDinputHook(CreateDevicePointer7, Dinput7_CreateDevice_Hook, "CreateDevice (dinput 7)");*/
 }
 
 int compareGuids(const void* pGuid1, const void* pGuid2)
