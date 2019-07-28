@@ -76,7 +76,7 @@ LONG dinputRangeMax = 32767;
 LONG dinputRangeMin = -32768;
 int dinputDeviceDataFormat = 2;//c_dfDIJoystick : 1, c_dfDIJoystick2 : 2
 int dinputDeviceDataFormat7 = 2;//for dinput7
-LPDIRECTINPUTA pDinput7;
+LPDIRECTINPUT7 pDinput7;
 LPDIRECTINPUTDEVICE pCtrlr7;
 
 void UpdateAbsoluteCursorCheck()
@@ -621,7 +621,7 @@ static BOOL CALLBACK DIEnumDeviceObjectsCallback(LPCDIDEVICEOBJECTINSTANCE lpddo
 
 static BOOL CALLBACK DIEnumDeviceObjectsCallback7(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
 {
-	IDirectInputDeviceA* did = (IDirectInputDeviceA*)pvRef;
+	LPDIRECTINPUTDEVICE did = (LPDIRECTINPUTDEVICE)pvRef;
 	did->Unacquire();
 
 	DIPROPRANGE range;
@@ -743,6 +743,7 @@ HRESULT __stdcall Dinput_GetDeviceState_Hook(LPDIRECTINPUTDEVICE8 pDev, DWORD cb
 			dinputDeviceDataFormat = 1;
 		}
 
+
 		if (!hasSetupDinputDeviceProperties) setupDinputDeviceProperties(pDev);
 		dinputDevice->Poll();
 		return dinputDevice->GetDeviceState(cbData, lpvData);
@@ -776,7 +777,14 @@ HRESULT __stdcall Dinput_GetDeviceState_Hook7(IDirectInputDeviceA* pDev, DWORD c
 
 		if (!hasSetupDinputDeviceProperties7) setupDinputDeviceProperties7(pDev);
 		//pCtrlr7->Poll();
-		return pCtrlr7->GetDeviceState(cbData, lpvData);
+
+		//wanderlust adventure cbData is 60, but sizeof(DIJOYSTATE) is 80
+
+		DIJOYSTATE tempState;
+
+		 pCtrlr7->GetDeviceState(cbData <= sizeof(DIJOYSTATE) ? sizeof(DIJOYSTATE) : sizeof(DIJOYSTATE2), &tempState);
+		 memcpy(lpvData, &tempState, cbData);
+		 return DI_OK;
 	}
 }
 
@@ -887,6 +895,47 @@ void installDinputHook(void* EntryPoint, void* HookProc, string name)
 	}
 }
 
+int compareGuids(const void* pGuid1, const void* pGuid2)
+{
+	GUID guid1 = *(GUID*)pGuid1;
+	GUID guid2 = *(GUID*)pGuid2;
+
+	unsigned long g1d1 = ((unsigned long *)&guid1)[0];
+	unsigned long g1d2 = ((unsigned long *)&guid1)[1];
+	unsigned long g1d3 = ((unsigned long *)&guid1)[2];
+	unsigned long g1d4 = ((unsigned long *)&guid1)[3];
+
+	unsigned long g2d1 = ((unsigned long *)&guid2)[0];
+	unsigned long g2d2 = ((unsigned long *)&guid2)[1];
+	unsigned long g2d3 = ((unsigned long *)&guid2)[2];
+	unsigned long g2d4 = ((unsigned long *)&guid2)[3];
+
+	if (g1d1 != g2d1)
+	{
+		return g2d1 - g1d1;
+	}
+
+	else if (g1d2 != g2d2)
+	{
+		return g2d2 - g1d2;
+	}
+
+	else if (g1d3 != g2d3)
+	{
+		return g2d3 - g1d3;
+	}
+
+	else if (g1d4 != g2d4)
+	{
+		return g2d4 - g1d4;
+	}
+
+	else
+	{
+		return 0;
+	}
+}
+
 void installDinputHooks()
 {
 	//First 4 byte (32bit) or 8 bytes (64bit) of object with virtual functions will be a pointer to an array of pointers to the virtual functions
@@ -902,18 +951,42 @@ void installDinputHooks()
 		auto _DirectInputCreateA = GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateA");
 		typedef HRESULT(__stdcall * func_DirectInputCreate)(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter);
 		static func_DirectInputCreate DirectInputCreateA = (func_DirectInputCreate)_DirectInputCreateA;
+			
 
-		//HRESULT dinput_ret = DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&(pDinput), NULL);
-		
-		DirectInputCreateA(DllHandle, 0x0700, &pDinput7, NULL);
+		//extern HRESULT WINAPI DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
+
+		auto _DirectInputCreateEx = GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateEx");
+		typedef HRESULT(__stdcall * func_DirectInputCreateEx)(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
+		static func_DirectInputCreateEx DirectInputCreateEx = (func_DirectInputCreateEx)_DirectInputCreateEx;
+
+		//DirectInputCreateA(DllHandle, 0x0700, &pDinput7, NULL);
+		HRESULT r0 = DirectInputCreateEx(DllHandle, 0x0700, IID_IDirectInput7, (void**)&pDinput7, NULL);
+
 		pDinput7->CreateDevice(controllerGuid, &pCtrlr7, NULL);
-
-		HRESULT r1 = pCtrlr7->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
-		HRESULT r2 = pCtrlr7->SetDataFormat(&c_dfDIJoystick2);
+		
+		HRESULT r1 = pCtrlr7->SetDataFormat(GetdfDIJoystick());
+		dinputDeviceDataFormat7 = 1;
+		HRESULT r2 = pCtrlr7->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
+		
 		HRESULT r3 = pCtrlr7->EnumObjects(&DIEnumDeviceObjectsCallback7, pCtrlr7, DIDFT_AXIS);
 		HRESULT r4 = pCtrlr7->Acquire();
 
-		std::cout << "r1..4 = " << r1 << ", " << r2 << ", " << r3 << ", " << r4 << "\n";
+		std::cout << "r0..4 = " << r0 << ", "<< r1 << ", " << r2 << ", " << r3 << ", " << r4 << "\n";
+
+		/*std::cout << "r1..4 = " << r1 << ", " << r2 << ", " << r3 << ", " << r4 << "\n";
+
+		for (int aisudhfio = 0; aisudhfio < 15; aisudhfio++)
+		{
+			DIJOYSTATE asdf;
+			pCtrlr7->GetDeviceState(sizeof(DIJOYSTATE), &asdf);
+			std::cout << "p7 lx=" << asdf.lX << "\n";
+			std::cout << "p7 =" << asdf.lY << "\n";
+			std::cout << "p7 =" << asdf.lZ << "\n";
+			std::cout << "p7 =" << asdf.lRx << "\n";
+			std::cout << "p7 =" << asdf.lRy << "\n";
+			std::cout << "p7 =" << asdf.lRz << "\n";
+			Sleep(1500);
+		}*/
 		
 
 	//https://kaisar-haque.blogspot.com/2008/07/c-accessing-virtual-table.html
@@ -950,46 +1023,6 @@ void installDinputHooks()
 	installDinputHook(CreateDevicePointer7, Dinput7_CreateDevice_Hook, "CreateDevice (dinput 7)");*/
 }
 
-int compareGuids(const void* pGuid1, const void* pGuid2)
-{
-	GUID guid1 = *(GUID*)pGuid1;
-	GUID guid2 = *(GUID*)pGuid2;
-	
-	unsigned long g1d1 = ((unsigned long *)&guid1)[0];
-	unsigned long g1d2 = ((unsigned long *)&guid1)[1];
-	unsigned long g1d3 = ((unsigned long *)&guid1)[2];
-	unsigned long g1d4 = ((unsigned long *)&guid1)[3];
-
-	unsigned long g2d1 = ((unsigned long *)&guid2)[0];
-	unsigned long g2d2 = ((unsigned long *)&guid2)[1];
-	unsigned long g2d3 = ((unsigned long *)&guid2)[2];
-	unsigned long g2d4 = ((unsigned long *)&guid2)[3];
-
-	if (g1d1 != g2d1)
-	{
-		return g2d1 - g1d1;
-	}
-
-	else if (g1d2 != g2d2)
-	{
-		return g2d2 - g1d2;
-	}
-
-	else if (g1d3 != g2d3)
-	{
-		return g2d3 - g1d3;
-	}
-
-	else if (g1d4 != g2d4)
-	{
-		return g2d4 - g1d4;
-	}
-
-	else
-	{
-		return 0;
-	}
-}
 
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
@@ -1154,6 +1187,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 				{
 
 					controllerGuid = dinputGuids[controllerIndex - 1];
+					std::cout << "cg8=" << controllerGuid.Data1 << "\n";
 					HRESULT cdRes = pDinput->CreateDevice(controllerGuid, &dinputDevice, NULL);
 
 					if (cdRes != DI_OK)
