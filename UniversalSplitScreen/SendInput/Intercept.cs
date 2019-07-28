@@ -29,6 +29,9 @@ namespace UniversalSplitScreen.SendInput
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		private static extern IntPtr GetModuleHandle(string lpModuleName);
 
+		[DllImport("user32.dll")]
+		private static extern short GetAsyncKeyState(int vKey);
+
 		public static bool InterceptEnabled = false;
 
 		private static GetMsgProc mouseProc = MouseHookCallback;
@@ -90,6 +93,10 @@ namespace UniversalSplitScreen.SendInput
 						else if (vk > bvk) break;
 					}
 				}
+
+				//Ctrl+esc
+				if (vk == 0x1B && GetAsyncKeyState(0x11) != 0)
+					return (IntPtr)1;
 			}
 			
 			return CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
