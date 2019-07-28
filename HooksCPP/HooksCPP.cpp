@@ -780,7 +780,7 @@ HRESULT __stdcall Dinput_GetDeviceState_Hook7(IDirectInputDeviceA* pDev, DWORD c
 
 		//wanderlust adventure cbData is 60, but sizeof(DIJOYSTATE) is 80
 
-		DIJOYSTATE tempState;
+		DIJOYSTATE2 tempState;
 
 		 pCtrlr7->GetDeviceState(cbData <= sizeof(DIJOYSTATE) ? sizeof(DIJOYSTATE) : sizeof(DIJOYSTATE2), &tempState);
 		 memcpy(lpvData, &tempState, cbData);
