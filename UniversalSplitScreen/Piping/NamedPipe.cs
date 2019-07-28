@@ -243,7 +243,9 @@ namespace UniversalSplitScreen.Piping
 
 			StringBuilder sb = new StringBuilder();
 
-			for (int i = 0; i < 30; i++)
+			sb.Append("USS");
+
+			for (int i = 3; i < 30; i++)
 			{
 				byte b = (byte)(data[i] % 62);
 
