@@ -264,8 +264,22 @@ namespace UniversalSplitScreen.Core
 			Program.Form.WindowState = FormWindowState.Normal;
 		}
 
+		const string handleSeparator = "&&&&&";
 		public void UnlockHandle(string targetName = "")
 		{
+			if (targetName.Contains(handleSeparator))
+			{
+				foreach (var name in targetName.Split(new string[] { handleSeparator }, StringSplitOptions.None))
+				{
+					if (!string.IsNullOrEmpty(name))
+					{
+						Logger.WriteLine($"Unlocking '{name}'");
+						UnlockHandle(name);
+					}
+				}
+				return;
+			}
+
 			string title = "";
 			string msg = "";
 			try
@@ -277,6 +291,8 @@ namespace UniversalSplitScreen.Core
 				msg = seu == 1 ?	"Successfully unlocked game. Launch another instance from the exe file." : 
 					(seu == 0 ?		(targetName != "" ? "Couldn't find the target handle" : "Couldn't find the Source/Goldsrc engine mutex") : 
 									$"Error while finding mutex/handle: {seu}");
+
+				if (!string.IsNullOrEmpty(targetName)) msg += "\nHandle name: " + targetName;
 
 				title = seu == 1 ? "Success" : "Error";
 			}
