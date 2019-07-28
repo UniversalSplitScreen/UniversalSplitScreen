@@ -20,6 +20,8 @@ namespace UniversalSplitScreen.Core
 
 		public bool DrawMouse						{ get; set; } = true;
 
+		public string AutofillHandleName			{ get; set; } = string.Empty;
+
 		public bool Hook_FilterRawInput				{ get; set; } = false;
 		public bool Hook_FilterWindowsMouseInput	{ get; set; } = false;
 		public bool Hook_GetForegroundWindow		{ get; set; } = false;

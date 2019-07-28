@@ -65,8 +65,11 @@ namespace UniversalSplitScreen.UI
 			RefCheckbox_Hook_UseLegacyInput.RefType				= new RefType<bool>("Hook_UseLegacyInput");
 			RefCheckbox_UpdateAbsoluteFlagInMouseMessage.RefType= new RefType<bool>("UpdateAbsoluteFlagInMouseMessage");
 			RefCheckbox_Hook_MouseVisibility.RefType			= new RefType<bool>("Hook_MouseVisibility");
+
+			var handleNameRef = new RefType<string>("AutofillHandleName");
+			RefTextbox_AutofillHandleName.RefType = handleNameRef;
+			if (!string.IsNullOrEmpty(handleNameRef)) textBoxHandleName.Text = handleNameRef;
 		}
-		
 
 		protected override void WndProc(ref Message msg)
 		{
