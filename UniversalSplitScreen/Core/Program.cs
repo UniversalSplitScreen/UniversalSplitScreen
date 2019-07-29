@@ -24,6 +24,7 @@ namespace UniversalSplitScreen
 		public static MessageProcessor MessageProcessor { get; private set; }
 		public static OptionsStructure Options { get; private set; }
 
+		[STAThread]
 		static void Main(string[] args)
 		{
 			Application.EnableVisualStyles();

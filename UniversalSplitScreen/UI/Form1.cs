@@ -233,5 +233,41 @@ namespace UniversalSplitScreen.UI
 			else
 				Program.SplitScreenManager.UnlockHandle(textBoxHandleName.Text);
 		}
+
+		private void Button_BrowseFindWindowHookExe_Click(object sender, EventArgs e)
+		{
+			//DialogResult result = FileDialog_FindWindowHook.ShowDialog();
+			//using (OpenFileDialog openFileDialog = new OpenFileDialog())
+			{
+				/*openFileDialog.InitialDirectory = "c:\\";
+				openFileDialog.Filter = "executable files (*.exe)|*.exe";
+				openFileDialog.FilterIndex = 1;
+				openFileDialog.RestoreDirectory = true;
+				openFileDialog.ShowHelp = true;*/
+				FileDialog_FindWindowHook.ShowHelp = true;//Whole application freezes otherwise
+
+				if (FileDialog_FindWindowHook.ShowDialog() == DialogResult.OK)
+				{
+					Label_FindWindowHookExe.Text = FileDialog_FindWindowHook.FileName;
+				}
+			}
+		}
+
+		private void Button_FindWindowHookLaunch_Click(object sender, EventArgs e)
+		{
+			string fileName = FileDialog_FindWindowHook.FileName;
+			string args = TextBox_FindWindowHookArgs.Text;
+			bool is64 = Checkbox_FindWindowHookIs64.Checked;
+			Logger.WriteLine($"FindWindowHook Launch button clicked. FileName='{fileName}', arguments='{args}', is64={is64}");
+
+			if (System.IO.File.Exists(fileName))
+			{
+				Program.SplitScreenManager.CreateAndInjectFindWindowHook(is64, fileName, args);
+			}
+			else
+			{
+				MessageBox.Show("Executable not found", "Error", MessageBoxButtons.OK);
+			}
+		}
 	}
 }

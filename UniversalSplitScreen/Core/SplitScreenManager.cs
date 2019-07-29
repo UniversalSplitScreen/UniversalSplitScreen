@@ -168,7 +168,9 @@ namespace UniversalSplitScreen.Core
 					bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
 						
 					Process proc = new Process();
-					proc.StartInfo.FileName = is64 ? "IJx64.exe" : "IJx86.exe";
+					proc.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(
+						System.Reflection.Assembly.GetExecutingAssembly().Location),
+						is64 ? "IJx64.exe" : "IJx86.exe");
 
 					//Arguments
 					string arguments;
@@ -267,10 +269,6 @@ namespace UniversalSplitScreen.Core
 		const string handleSeparator = "&&&&&";
 		public void UnlockHandle(string targetName = "")
 		{
-			//TODO: remove
-			CreateAndInjectFindWindowHook(false, @"C:\Program Files (x86)\Steam\steamapps\common\Stardew Valley\StardewModdingAPI.exe", "");
-			return;
-
 			if (targetName.Contains(handleSeparator))
 			{
 				foreach (var name in targetName.Split(new string[] { handleSeparator }, StringSplitOptions.None))
@@ -450,19 +448,16 @@ namespace UniversalSplitScreen.Core
 			}
 		}
 
-		private void CreateAndInjectFindWindowHook(bool is64, string exePath, string cmdLineArgs)
+		public void CreateAndInjectFindWindowHook(bool is64, string exePath, string cmdLineArgs)
 		{
-			string findWindowHookLibraryPath = is64 ? 
-				(Path.Combine(Path.GetDirectoryName(
+			string GetFile(string fileName) => Path.Combine(Path.GetDirectoryName(
 					System.Reflection.Assembly.GetExecutingAssembly().Location),
-					"FindWindowHook64.dll")) : 
-				
-				(Path.Combine(Path.GetDirectoryName(
-						System.Reflection.Assembly.GetExecutingAssembly().Location),
-						"FindWindowHook32.dll"));
+					fileName);
+
+			string findWindowHookLibraryPath = GetFile(is64 ? "FindWindowHook64.dll" : "FindWindowHook32.dll");
 			
 			Process proc = new Process();
-			proc.StartInfo.FileName = is64 ? "IJx64.exe" : "IJx86.exe";
+			proc.StartInfo.FileName = GetFile(is64 ? "IJx64.exe" : "IJx86.exe");
 
 			//Arguments
 			string arguments;
@@ -490,7 +485,8 @@ namespace UniversalSplitScreen.Core
 			Logger.WriteLine($"InjectorLoader.CreateAndInjectFindWindowHook result = 0x{exitCode:x}. is64={is64}");
 			if (exitCode != 0)
 			{
-				MessageBox.Show($"Error injecting FindWindow hook, Error = 0x{exitCode:x}, arguments={arguments}", "Error");
+				string _x = (exitCode == 0xC0009898) ? $"Is the game {(is64 ? 32 : 64)}-bit?\n" : "";
+				MessageBox.Show($"Error injecting FindWindow hook. {_x}Error = 0x{exitCode:x}, arguments={arguments}", "Error", MessageBoxButtons.OK);
 			}
 		}
 
