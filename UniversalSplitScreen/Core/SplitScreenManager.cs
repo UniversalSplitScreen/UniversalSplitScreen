@@ -168,7 +168,9 @@ namespace UniversalSplitScreen.Core
 					bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
 						
 					Process proc = new Process();
-					proc.StartInfo.FileName = is64 ? "IJx64.exe" : "IJx86.exe";
+					proc.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(
+						System.Reflection.Assembly.GetExecutingAssembly().Location),
+						is64 ? "IJx64.exe" : "IJx86.exe");
 
 					//Arguments
 					string arguments;
@@ -443,6 +445,48 @@ namespace UniversalSplitScreen.Core
 				windows.Remove(hWnd);
 
 				InitDeviceToWindows();
+			}
+		}
+
+		public void CreateAndInjectFindWindowHook(bool is64, string exePath, string cmdLineArgs)
+		{
+			string GetFile(string fileName) => Path.Combine(Path.GetDirectoryName(
+					System.Reflection.Assembly.GetExecutingAssembly().Location),
+					fileName);
+
+			string findWindowHookLibraryPath = GetFile(is64 ? "FindWindowHook64.dll" : "FindWindowHook32.dll");
+			
+			Process proc = new Process();
+			proc.StartInfo.FileName = GetFile(is64 ? "IJx64.exe" : "IJx86.exe");
+
+			//Arguments
+			string arguments;
+			{
+				string base64CmdLineArgs = Convert.ToBase64String(Encoding.UTF8.GetBytes(cmdLineArgs));
+				object[] args = new object[]{ "FindWindowHook", findWindowHookLibraryPath, exePath, base64CmdLineArgs };
+
+				StringBuilder sb_args = new StringBuilder();
+				foreach (var arg in args)
+				{
+					sb_args.Append(" \"");
+					sb_args.Append(arg.ToString());
+					sb_args.Append("\"");
+				}
+
+				arguments = sb_args.ToString();
+				proc.StartInfo.Arguments = arguments;
+			}
+
+			proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+			proc.Start();
+			proc.WaitForExit();
+
+			uint exitCode = (uint)proc.ExitCode;
+			Logger.WriteLine($"InjectorLoader.CreateAndInjectFindWindowHook result = 0x{exitCode:x}. is64={is64}");
+			if (exitCode != 0)
+			{
+				string _x = (exitCode == 0xC0009898) ? $"Is the game {(is64 ? 32 : 64)}-bit?\n" : "";
+				MessageBox.Show($"Error injecting FindWindow hook. {_x}Error = 0x{exitCode:x}, arguments={arguments}", "Error", MessageBoxButtons.OK);
 			}
 		}
 
