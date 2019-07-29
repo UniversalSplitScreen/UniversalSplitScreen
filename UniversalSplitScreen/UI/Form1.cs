@@ -1,15 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using UniversalSplitScreen.Core;
-using UniversalSplitScreen.RawInput;
-using UniversalSplitScreen.SendInput;
 
 namespace UniversalSplitScreen.UI
 {

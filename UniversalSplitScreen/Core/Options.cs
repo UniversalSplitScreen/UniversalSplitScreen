@@ -2,15 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace UniversalSplitScreen.Core
 {
-	class Options
+	internal class Options
 	{
-		private static List<OptionsStructure> options = new List<OptionsStructure>();
+		private static readonly List<OptionsStructure> options = new List<OptionsStructure>();
 		public static OptionsStructure CurrentOptions { get; private set; } = new OptionsStructure();
 
 		public static void LoadOptions()
@@ -18,9 +16,9 @@ namespace UniversalSplitScreen.Core
 			CurrentOptions = CurrentOptions ?? new OptionsStructure();
 			options.Add(CurrentOptions);//Default
 
-			DirectoryInfo dInfo = new DirectoryInfo(GetConfigFolder());
+			var dInfo = new DirectoryInfo(GetConfigFolder());
 
-			foreach (var file in dInfo.GetFiles("*.json"))
+			foreach (FileInfo file in dInfo.GetFiles("*.json"))
 			{
 				if (ReadFromFile(file.FullName, out OptionsStructure o))
 				{
@@ -31,7 +29,7 @@ namespace UniversalSplitScreen.Core
 
 			CurrentOptions = options[0];
 
-			var comboBox = Program.Form.OptionsComboBox;
+			ComboBox comboBox = Program.Form.OptionsComboBox;
 			var array = options.ToArray();
 			comboBox.Items.AddRange(array);
 			comboBox.SelectedItem = CurrentOptions;
@@ -55,7 +53,7 @@ namespace UniversalSplitScreen.Core
 			CurrentOptions.OptionsName = name;
 			options.Add(CurrentOptions);
 
-			var cb = Program.Form.OptionsComboBox;
+			ComboBox cb = Program.Form.OptionsComboBox;
 			cb.Items.Add(CurrentOptions);
 			cb.SelectedItem = CurrentOptions;
 		}
@@ -64,7 +62,7 @@ namespace UniversalSplitScreen.Core
 		{
 			if (UI.Prompt.ShowOkCancelDialog("Delete?") == System.Windows.Forms.DialogResult.OK)
 			{
-				var cb = Program.Form.OptionsComboBox;
+				ComboBox cb = Program.Form.OptionsComboBox;
 				var toDelete = (OptionsStructure)cb.SelectedItem;
 				DeleteFile(toDelete);
 
@@ -85,7 +83,7 @@ namespace UniversalSplitScreen.Core
 
 				using (StreamWriter file = File.CreateText(Path.Combine(directory, options.OptionsName + ".json")))
 				{
-					JsonSerializer serializer = new JsonSerializer
+					var serializer = new JsonSerializer
 					{
 						Formatting = Formatting.Indented
 					};
@@ -107,7 +105,7 @@ namespace UniversalSplitScreen.Core
 			{
 				using (StreamReader file = File.OpenText(path))
 				{
-					JsonSerializer serializer = new JsonSerializer();
+					var serializer = new JsonSerializer();
 					options = (OptionsStructure)serializer.Deserialize(file, typeof(OptionsStructure));
 					return true;
 				}

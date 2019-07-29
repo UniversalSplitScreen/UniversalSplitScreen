@@ -73,32 +73,29 @@ namespace UniversalSplitScreen.SendInput
 
 		private static IntPtr KeyboardHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
 		{
-			KBDLLHOOKSTRUCT kb = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
-			
-			if (InterceptEnabled)
+			if (!InterceptEnabled) return CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+
+			var kb = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
+
+			int vk = kb.vkCode;
+
+			if ((vk == 0x09 || vk == 0x1B) //tab or escape
+			    && (kb.flags & 0b100000) != 0)//is alt down
 			{
-				int vk = kb.vkCode;
-
-				if ((vk == 0x09 || vk == 0x1B) //tab or escape
-					&& ((kb.flags & 0b100000) != 0))//is alt down
-				{
-					return (IntPtr)1;//alt+tab and alt+esc will change foreground window.
-				}
-				else
-				{
-					for (ushort i = 0; i < bannedVkeysList.Length; i++)
-					{
-						ushort bvk = bannedVkeysList[i];
-						if (bvk == vk) return (IntPtr)1;
-						else if (vk > bvk) break;
-					}
-				}
-
-				//Ctrl+esc
-				if (vk == 0x1B && GetAsyncKeyState(0x11) != 0)
-					return (IntPtr)1;
+				return (IntPtr)1;//alt+tab and alt+esc will change foreground window.
 			}
-			
+
+			for (ushort i = 0; i < bannedVkeysList.Length; i++)
+			{
+				ushort bvk = bannedVkeysList[i];
+				if (bvk == vk) return (IntPtr)1;
+				else if (vk > bvk) break;
+			}
+
+			//Ctrl+esc
+			if (vk == 0x1B && GetAsyncKeyState(0x11) != 0)
+				return (IntPtr)1;
+
 			return CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
 		}
 	}
