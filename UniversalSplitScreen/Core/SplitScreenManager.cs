@@ -267,6 +267,10 @@ namespace UniversalSplitScreen.Core
 		const string handleSeparator = "&&&&&";
 		public void UnlockHandle(string targetName = "")
 		{
+			//TODO: remove
+			CreateAndInjectFindWindowHook(false, @"C:\Program Files (x86)\Steam\steamapps\common\Stardew Valley\StardewModdingAPI.exe", "");
+			return;
+
 			if (targetName.Contains(handleSeparator))
 			{
 				foreach (var name in targetName.Split(new string[] { handleSeparator }, StringSplitOptions.None))
@@ -443,6 +447,50 @@ namespace UniversalSplitScreen.Core
 				windows.Remove(hWnd);
 
 				InitDeviceToWindows();
+			}
+		}
+
+		private void CreateAndInjectFindWindowHook(bool is64, string exePath, string cmdLineArgs)
+		{
+			string findWindowHookLibraryPath = is64 ? 
+				Path.Combine(Path.GetDirectoryName(
+					System.Reflection.Assembly.GetExecutingAssembly().Location),
+					"FindWindowHook64.dll") : 
+				
+				Path.Combine(Path.GetDirectoryName(
+						System.Reflection.Assembly.GetExecutingAssembly().Location),
+						"FindWindowHook32.dll");
+			
+			Process proc = new Process();
+			proc.StartInfo.FileName = is64 ? "IJx64.exe" : "IJx86.exe";
+
+			//Arguments
+			string arguments;
+			{
+				string base64CmdLineArgs = Convert.ToBase64String(Encoding.UTF8.GetBytes(cmdLineArgs));
+				object[] args = new object[]{ "FindWindowHook", findWindowHookLibraryPath, exePath, base64CmdLineArgs };
+
+				StringBuilder sb_args = new StringBuilder();
+				foreach (var arg in args)
+				{
+					sb_args.Append(" \"");
+					sb_args.Append(arg.ToString());
+					sb_args.Append("\"");
+				}
+
+				arguments = sb_args.ToString();
+				proc.StartInfo.Arguments = arguments;
+			}
+
+			proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+			proc.Start();
+			proc.WaitForExit();
+
+			uint exitCode = (uint)proc.ExitCode;
+			Logger.WriteLine($"InjectorLoader.CreateAndInjectFindWindowHook result = 0x{exitCode:x}. is64={is64}");
+			if (exitCode != 0)
+			{
+				MessageBox.Show($"Error injecting FindWindow hook, Error = 0x{exitCode:x}, arguments={arguments}", "Error");
 			}
 		}
 

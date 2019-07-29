@@ -66,6 +66,18 @@ namespace InjectorLoader
 				IntPtr InPassThruBuffer,
 				uint InPassThruSize
 				);
+			
+			[DllImport("EasyHook32.dll", CharSet = CharSet.Ansi)]
+			public static extern int RhCreateAndInject(
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string InEXEPath,
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string InCommandLine,
+				uint InInjectionOptions,
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string InLibraryPath_x86,
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string InLibraryPath_x64,
+				IntPtr InPassThruBuffer,
+				uint InPassThruSize,
+				IntPtr OutProcessId //Pointer to a UINT (the PID of the new process)
+				);
 		}
 
 		class Injector64
@@ -80,15 +92,33 @@ namespace InjectorLoader
 				IntPtr InPassThruBuffer,
 				uint InPassThruSize
 				);
+
+			[DllImport("EasyHook64.dll", CharSet = CharSet.Ansi)]
+			public static extern int RhCreateAndInject(
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string InEXEPath,
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string InCommandLine,
+				uint InInjectionOptions,
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string InLibraryPath_x86,
+				[MarshalAsAttribute(UnmanagedType.LPWStr)] string InLibraryPath_x64,
+				IntPtr InPassThruBuffer,
+				uint InPassThruSize,
+				IntPtr OutProcessId //Pointer to a UINT (the PID of the new process)
+				);
 		}
 		
 		public static void Main(string[] args)
 		{
-			const int argsLength = 19;
+			const int argsLength_hooksCPP = 19;
+			const int argsLength_findWindowHook = 4;
 
-			if (args.Length != argsLength)
+			if (args.Length == argsLength_findWindowHook && args[0] == "FindWindowHook")
 			{
-				throw new ArgumentException($"Need exactly {argsLength} arguments");
+				CreateAndInjectFindWindowHook(args[1], args[2], args[3]);
+			}
+
+			if (args.Length != argsLength_hooksCPP)
+			{
+				throw new ArgumentException($"Need exactly {argsLength_hooksCPP} arguments");
 			}
 
 			//Arguments
@@ -188,6 +218,17 @@ namespace InjectorLoader
 
 			//Set exit code
 			Environment.Exit((int)nt);
+		}
+		
+		private static void CreateAndInjectFindWindowHook(string hookDllPath, string exePath, string base64CommandLineArgs)
+		{
+			string cmdLineArgs = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64CommandLineArgs));
+			IntPtr pOutPID = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(uint)));
+
+			if (Environment.Is64BitProcess)
+				Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, "", hookDllPath, IntPtr.Zero, 0, pOutPID);
+			else
+				Injector32.RhCreateAndInject(exePath, cmdLineArgs, 0, hookDllPath, "", IntPtr.Zero, 0, pOutPID);
 		}
 	}
 }
