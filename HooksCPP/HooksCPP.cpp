@@ -1167,7 +1167,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 				std::cout << "Succeed dDirectInput8Create\n";
 				dinputGuids_i = 0;
 				pDinput->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, 0, DIEDFL_ALLDEVICES);
-				std::qsort(dinputGuids, maxDinputDevices, sizeof(GUID), compareGuids);
+				//std::qsort(dinputGuids, maxDinputDevices, sizeof(GUID), compareGuids);
 
 				if (controllerIndex == 0)
 				{
