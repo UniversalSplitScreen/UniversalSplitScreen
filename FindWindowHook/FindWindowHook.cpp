@@ -46,8 +46,11 @@ HWND WINAPI FindWindowEx_Hook(LPCSTR lpClassName, LPCSTR lpWindowName)
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 {
 	std::cout << "FindWindowHook NativeInjectionEntryPoint" << std::endl;
+
 	installHook("user32.dll", "FindWindowA", FindWindow_Hook);
 	installHook("user32.dll", "FindWindowW", FindWindow_Hook);
 	installHook("user32.dll", "FindWindowExA", FindWindowEx_Hook);
 	installHook("user32.dll", "FindWindowExW", FindWindowEx_Hook);
+	
+	RhWakeUpProcess();
 }

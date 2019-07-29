@@ -453,13 +453,13 @@ namespace UniversalSplitScreen.Core
 		private void CreateAndInjectFindWindowHook(bool is64, string exePath, string cmdLineArgs)
 		{
 			string findWindowHookLibraryPath = is64 ? 
-				Path.Combine(Path.GetDirectoryName(
+				(Path.Combine(Path.GetDirectoryName(
 					System.Reflection.Assembly.GetExecutingAssembly().Location),
-					"FindWindowHook64.dll") : 
+					"FindWindowHook64.dll")) : 
 				
-				Path.Combine(Path.GetDirectoryName(
+				(Path.Combine(Path.GetDirectoryName(
 						System.Reflection.Assembly.GetExecutingAssembly().Location),
-						"FindWindowHook32.dll");
+						"FindWindowHook32.dll"));
 			
 			Process proc = new Process();
 			proc.StartInfo.FileName = is64 ? "IJx64.exe" : "IJx86.exe";
