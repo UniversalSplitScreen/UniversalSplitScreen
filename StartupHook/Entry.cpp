@@ -10,8 +10,15 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 {
 	std::cout << "FindWindowHook NativeInjectionEntryPoint" << std::endl;
 
+	if (inRemoteInfo->UserDataSize == sizeof(int))
+	{
+		const auto controllerIndex = *reinterpret_cast<int *>(inRemoteInfo->UserData);
+		installDirectInputHooks(controllerIndex);
+	}
+	else
+		MessageBox(nullptr, "UserData incorrect size", "Error", MB_OK);
+
 	installFindWindowHooks();
-	installDirectInputHooks();
 
 	RhWakeUpProcess();
 }
