@@ -446,7 +446,7 @@ namespace UniversalSplitScreen.Core
 			InitDeviceToWindows();
 		}
 
-		public void CreateAndInjectFindWindowHook(bool is64, string exePath, string cmdLineArgs)
+		public void CreateAndInjectStartupHook(bool is64, string exePath, string cmdLineArgs, bool dinputHook, bool findWindowHook, byte controllerIndex = 0)
 		{
 			string GetFile(string fileName) => Path.Combine(Path.GetDirectoryName(
 					System.Reflection.Assembly.GetExecutingAssembly().Location),
@@ -466,7 +466,7 @@ namespace UniversalSplitScreen.Core
 			string arguments;
 			{
 				string base64CmdLineArgs = Convert.ToBase64String(Encoding.UTF8.GetBytes(cmdLineArgs));
-				var args = new object[]{ "FindWindowHook", findWindowHookLibraryPath, exePath, base64CmdLineArgs };
+				var args = new object[]{ findWindowHookLibraryPath, exePath, base64CmdLineArgs, dinputHook, findWindowHook, controllerIndex };
 
 				var sbArgs = new StringBuilder();
 				foreach (object arg in args)
@@ -485,11 +485,11 @@ namespace UniversalSplitScreen.Core
 			proc.WaitForExit();
 
 			var exitCode = (uint)proc.ExitCode;
-			Logger.WriteLine($"InjectorLoader.CreateAndInjectFindWindowHook result = 0x{exitCode:x}. is64={is64}");
+			Logger.WriteLine($"InjectorLoader.CreateAndInjectStartupHook result = 0x{exitCode:x}. is64={is64}");
 			if (exitCode != 0)
 			{
 				string x = (exitCode == 0xC0009898) ? $"Is the game {(is64 ? 32 : 64)}-bit?\n" : "";
-				MessageBox.Show($@"Error injecting FindWindow hook. {x}Error = 0x{exitCode:x}, arguments={arguments}", @"Error", MessageBoxButtons.OK);
+				MessageBox.Show($@"Error injecting StartupHook hook. {x}Error = 0x{exitCode:x}, arguments={arguments}", @"Error", MessageBoxButtons.OK);
 			}
 		}
 

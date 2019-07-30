@@ -121,19 +121,20 @@ namespace InjectorLoader
 		
 		public static void Main(string[] args)
 		{
-			const int argsLength_hooksCPP = 19;
-			const int argsLength_findWindowHook = 4;
+			const int argsLengthHooksCPP = 19;
+			const int argsLengthStartupHook = 6;
 
-			if (args.Length == argsLength_findWindowHook && args[0] == "FindWindowHook")
+			//dllpath, exePath, base64CmdArgs, dinputHookEnabled, findWindowHookEnabled, controllerIndex
+			if (args.Length == argsLengthStartupHook)
 			{
-				var nt_fwh = CreateAndInjectFindWindowHook(args[1], args[2], args[3]);
-				Environment.Exit(nt_fwh);
+				int ntFwh = CreateAndInjectStartupHook(args[0], args[1], args[2], args[3].ToLower().Equals("true"), args[4].ToLower().Equals("true"), byte.Parse(args[5]));
+				Environment.Exit(ntFwh);
 				return;
 			}
 
-			if (args.Length != argsLength_hooksCPP)
+			if (args.Length != argsLengthHooksCPP)
 			{
-				throw new ArgumentException($"Need exactly {argsLength_hooksCPP} arguments");
+				throw new ArgumentException($"Need exactly {argsLengthHooksCPP} arguments");
 			}
 
 			//Arguments
@@ -235,16 +236,25 @@ namespace InjectorLoader
 			Environment.Exit((int)nt);
 		}
 		
-		private static int CreateAndInjectFindWindowHook(string hookDllPath, string exePath, string base64CommandLineArgs)
+		private static int CreateAndInjectStartupHook(string hookDllPath, string exePath, string base64CommandLineArgs, bool dinputHookEnabled, bool findWindowHookEnabled, byte controllerIndex)
 		{
 			string cmdLineArgs = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64CommandLineArgs));
 			IntPtr pOutPID = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(uint)));
 			//System.Windows.Forms.MessageBox.Show(hookDllPath, "hello", System.Windows.Forms.MessageBoxButtons.OK);
 
+			const int size = 3;
+			var data = new byte[size];
+			data[0] = dinputHookEnabled ? (byte)1 : (byte)0;
+			data[1] = findWindowHookEnabled ? (byte)1 : (byte)0;
+			data[2] = controllerIndex;
+
+			IntPtr ptr = Marshal.AllocHGlobal(size);
+			Marshal.Copy(data, 0, ptr, size);
+
 			if (Environment.Is64BitProcess)
-				return Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, "", hookDllPath, IntPtr.Zero, 0, pOutPID);
+				return Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, "", hookDllPath, ptr, size, pOutPID);
 			else
-				return Injector32.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, hookDllPath, "", IntPtr.Zero, 0, pOutPID);
+				return Injector32.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, hookDllPath, "", ptr, size, pOutPID);
 		}
 	}
 }

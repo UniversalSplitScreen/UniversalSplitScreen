@@ -253,7 +253,7 @@ namespace UniversalSplitScreen.UI
 
 			if (System.IO.File.Exists(fileName))
 			{
-				Program.SplitScreenManager.CreateAndInjectFindWindowHook(is64, fileName, args);
+				Program.SplitScreenManager.CreateAndInjectStartupHook(is64, fileName, args);
 			}
 			else
 			{
