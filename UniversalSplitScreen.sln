@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InjectorLoader", "InjectorL
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SourceEngineUnlocker", "SourceEngineUnlocker\SourceEngineUnlocker.vcxproj", "{7FE021D3-47E9-42CD-9BC5-B99DF3593214}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FindWindowHook", "FindWindowHook\FindWindowHook.vcxproj", "{94000A80-5D28-4AAD-B5F8-52DA1801C99B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StartupHook", "StartupHook\StartupHook.vcxproj", "{94000A80-5D28-4AAD-B5F8-52DA1801C99B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

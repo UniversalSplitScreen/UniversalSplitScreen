@@ -452,7 +452,7 @@ namespace UniversalSplitScreen.Core
 					System.Reflection.Assembly.GetExecutingAssembly().Location),
 					fileName);
 
-			string findWindowHookLibraryPath = GetFile(is64 ? "FindWindowHook64.dll" : "FindWindowHook32.dll");
+			string findWindowHookLibraryPath = GetFile(is64 ? "StartupHook64.dll" : "StartupHook32.dll");
 
 			var proc = new Process
 			{
