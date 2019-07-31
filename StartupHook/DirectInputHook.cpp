@@ -21,6 +21,8 @@ extern HMODULE DllHandle;
 LPDIRECTINPUT8 pDinput8A;
 
 static GUID controllerGuid = GUID_NULL;
+const int controllerGuidsLength = 32;
+static GUID controllerGuids[controllerGuidsLength];
 static int controllerIndex = 0;
 
 const HRESULT blockReturnValue = DIERR_INVALIDPARAM;
@@ -35,13 +37,14 @@ static BOOL CALLBACK DIEnumDevicesCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvR
 		5 : Game Pad */
 	if (di.wUsage == 4 || di.wUsage == 5)
 	{
+		controllerGuids[*i] = di.guidInstance;
+
 		*i += 1;
 		if (*i == controllerIndex)//controllerIndex starts at 1
 		{
 			controllerGuid = di.guidInstance;
 			std::cout << "Selected controller, instanceName=" << di.tszInstanceName << ", productName=" << di.tszProductName << ", usage=" << di.wUsage << 
 				", usagePage=" << di.wUsagePage << ", *i=" << *i << "\n";
-			return DIENUM_STOP;
 		}
 	}	
 
@@ -90,7 +93,17 @@ HRESULT __stdcall Dinput8_CreateDeviceA_Hook(IDirectInput8A* pDin, REFGUID rguid
 	if (controllerIndex == 0)
 		return blockReturnValue;
 
-	return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+	for (auto i : controllerGuids)
+	{
+		if (i == rguid)
+		{
+			//They are getting input from a controller
+			return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+		}
+	}
+
+	//They are probably getting input from a mouse/keyboard
+	return pDin->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
 }
 
 HRESULT __stdcall Dinput8_CreateDeviceW_Hook(IDirectInput8W* pDin, REFGUID rguid, LPDIRECTINPUTDEVICE8W* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
@@ -100,7 +113,17 @@ HRESULT __stdcall Dinput8_CreateDeviceW_Hook(IDirectInput8W* pDin, REFGUID rguid
 	if (controllerIndex == 0)
 		return blockReturnValue;
 
-	return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+	for (auto i : controllerGuids)
+	{
+		if (i == rguid)
+		{
+			//They are getting input from a controller
+			return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+		}
+	}
+
+	//They are probably getting input from a mouse/keyboard
+	return pDin->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
 }
 
 HRESULT __stdcall Dinput7_CreateDeviceA_Hook(IDirectInput7A* pDin, REFGUID rguid, LPDIRECTINPUTDEVICEA* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
@@ -110,7 +133,17 @@ HRESULT __stdcall Dinput7_CreateDeviceA_Hook(IDirectInput7A* pDin, REFGUID rguid
 	if (controllerIndex == 0)
 		return blockReturnValue;
 
-	return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+	for (auto i : controllerGuids)
+	{
+		if (i == rguid)
+		{
+			//They are getting input from a controller
+			return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+		}
+	}
+
+	//They are probably getting input from a mouse/keyboard
+	return pDin->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
 }
 
 HRESULT __stdcall Dinput7_CreateDeviceW_Hook(IDirectInput7W* pDin, REFGUID rguid, LPDIRECTINPUTDEVICEW* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
@@ -120,7 +153,17 @@ HRESULT __stdcall Dinput7_CreateDeviceW_Hook(IDirectInput7W* pDin, REFGUID rguid
 	if (controllerIndex == 0)
 		return blockReturnValue;
 
-	return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+	for (auto i : controllerGuids)
+	{
+		if (i == rguid)
+		{
+			//They are getting input from a controller
+			return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
+		}
+	}
+
+	//They are probably getting input from a mouse/keyboard
+	return pDin->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
 }
 
 void installDirectInputHooks(int _controllerIndex)
