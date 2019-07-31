@@ -23,6 +23,8 @@ LPDIRECTINPUT8 pDinput8A;
 static GUID controllerGuid = GUID_NULL;
 static int controllerIndex = 0;
 
+const HRESULT blockReturnValue = DIERR_INVALIDPARAM;
+
 static BOOL CALLBACK DIEnumDevicesCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
 	auto di = *lpddi;
@@ -86,7 +88,7 @@ HRESULT __stdcall Dinput8_CreateDeviceA_Hook(IDirectInput8A* pDin, REFGUID rguid
 	std::cout << "Dinput8 CreateDeviceHookA called\n";
 
 	if (controllerIndex == 0)
-		return DI_OK;
+		return blockReturnValue;
 
 	return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
 }
@@ -96,7 +98,7 @@ HRESULT __stdcall Dinput8_CreateDeviceW_Hook(IDirectInput8W* pDin, REFGUID rguid
 	std::cout << "Dinput8 CreateDeviceHookW called\n";
 
 	if (controllerIndex == 0)
-		return DI_OK;
+		return blockReturnValue;
 
 	return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
 }
@@ -106,7 +108,7 @@ HRESULT __stdcall Dinput7_CreateDeviceA_Hook(IDirectInput7A* pDin, REFGUID rguid
 	std::cout << "Dinput7 CreateDeviceHookA called\n";
 
 	if (controllerIndex == 0)
-		return DI_OK;
+		return blockReturnValue;
 
 	return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
 }
@@ -116,7 +118,7 @@ HRESULT __stdcall Dinput7_CreateDeviceW_Hook(IDirectInput7W* pDin, REFGUID rguid
 	std::cout << "Dinput7 CreateDeviceHookW called\n";
 
 	if (controllerIndex == 0)
-		return DI_OK;
+		return blockReturnValue;
 
 	return pDin->CreateDevice(controllerGuid, lplpDirectInputDevice, pUnkOuter);
 }
