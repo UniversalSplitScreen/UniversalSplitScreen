@@ -21,18 +21,22 @@ static int controllerIndex = 0;
 static BOOL CALLBACK DIEnumDevicesCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
 	auto di = *lpddi;
-	auto i = *static_cast<int*>(pvRef);
-
+	const auto i = static_cast<int*>(pvRef);
+	
 	/* https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf page 26:
 		4 : Joystick
 		5 : Game Pad */
-	if ((di.wUsage == 4 || di.wUsage == 5) && i++ == controllerIndex)//controllerIndex starts at 1
+	if (di.wUsage == 4 || di.wUsage == 5)
 	{
-		controllerGuid = di.guidInstance;
-		std::cout << "Selected controller, instanceName=" << di.tszInstanceName << ", productName=" << di.tszProductName << ", usage=" << di.wUsage
-			<< ", usagePage=" << di.wUsagePage << "\n";
-		return DIENUM_STOP;
-	}
+		*i += 1;
+		if (*i == controllerIndex)//controllerIndex starts at 1
+		{
+			controllerGuid = di.guidInstance;
+			std::cout << "Selected controller, instanceName=" << di.tszInstanceName << ", productName=" << di.tszProductName << ", usage=" << di.wUsage << 
+				", usagePage=" << di.wUsagePage << ", *i=" << *i << "\n";
+			return DIENUM_STOP;
+		}
+	}	
 
 	return DIENUM_CONTINUE;
 }
@@ -87,35 +91,34 @@ void installDirectInputHooks(int _controllerIndex)
 {
 	controllerIndex = _controllerIndex;
 
-	if (DI_OK == DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, reinterpret_cast<void**>(&pDinput8), nullptr))
-	{
-		if (controllerIndex != 0)
-		{
-			int i = 1;
-			pDinput8->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, &i, DIEDFL_ALLDEVICES);
-
-			if (controllerGuid == GUID_NULL)
-			{
-				MessageBox(nullptr, "Not enough controllers", "DirectInput8 error", MB_OK);
-				std::cerr << "Not enough controllers" << std::endl;
-				return;
-			}
-		}
-
-		installHook(GetDinput8CreateDevicePtr(), Dinput8_CreateDevice_Hook, "Dinput8 CreateDevice");
-
-		void* pDinput7CreateDevice;
-		if (!GetDinput7CreateDevicePtr(&pDinput7CreateDevice))
-		{
-			MessageBox(nullptr, "Error creating dinput7 interface", "DirectInput7 error", MB_OK);
-			std::cerr << "Error creating dinput7 interface" << std::endl;
-		}
-
-		installHook(pDinput7CreateDevice, Dinput7_CreateDevice_Hook, "Dinput7 CreateDevice");
-	}
-	else
+	if (DI_OK != DirectInput8Create(DllHandle, DIRECTINPUT_VERSION, IID_IDirectInput8, reinterpret_cast<void**>(&pDinput8), nullptr))
 	{
 		MessageBox(nullptr, "Error creating dinput8 interface", "DirectInput8 error", MB_OK);
 		std::cerr << "Error creating dinput8 interface" << std::endl;
+		return;
 	}
+
+	if (controllerIndex != 0)
+	{
+		int i = 0;
+		pDinput8->EnumDevices(DI8DEVCLASS_ALL, DIEnumDevicesCallback, &i, DIEDFL_ALLDEVICES);
+
+		if (controllerGuid == GUID_NULL)
+		{
+			MessageBox(nullptr, "Not enough controllers", "DirectInput8 error", MB_OK);
+			std::cerr << "Not enough controllers" << std::endl;
+			return;
+		}
+	}
+
+	installHook(GetDinput8CreateDevicePtr(), Dinput8_CreateDevice_Hook, "Dinput8 CreateDevice");
+
+	void* pDinput7CreateDevice;
+	if (!GetDinput7CreateDevicePtr(&pDinput7CreateDevice))
+	{
+		MessageBox(nullptr, "Error creating dinput7 interface", "DirectInput7 error", MB_OK);
+		std::cerr << "Error creating dinput7 interface" << std::endl;
+	}
+
+	installHook(pDinput7CreateDevice, Dinput7_CreateDevice_Hook, "Dinput7 CreateDevice");
 }
