@@ -7,6 +7,8 @@ NTSTATUS installHook(void* entryPoint, void* inCallback, std::string name)
 {
 	HOOK_TRACE_INFO hHook = { NULL };
 
+	std::cout << "entryPoint=" << entryPoint << ", inCallback=" << inCallback << ", name=" << name << std::endl;
+
 	const NTSTATUS hookResult = LhInstallHook(
 		entryPoint,
 		inCallback,
