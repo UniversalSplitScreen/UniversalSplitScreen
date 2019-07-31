@@ -253,12 +253,19 @@ namespace UniversalSplitScreen.UI
 
 			if (System.IO.File.Exists(fileName))
 			{
-				Program.SplitScreenManager.CreateAndInjectStartupHook(is64, fileName, args);
+				Program.SplitScreenManager.CreateAndInjectStartupHook(is64, fileName, args, CheckBox_StartupHook_Dinput.Checked, CheckBox_StartupHook_FindWindow.Checked, (byte)dinputControllerIndex);
 			}
 			else
 			{
 				MessageBox.Show("Executable not found", "Error", MessageBoxButtons.OK);
 			}
+		}
+
+		private int dinputControllerIndex;
+		private void ComboBox_DinputControllerIndex_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			dinputControllerIndex = ComboBox_DinputControllerIndex.SelectedIndex;
+			Logger.WriteLine($"Set dinput controller index = {dinputControllerIndex}");
 		}
 	}
 }

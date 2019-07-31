@@ -105,9 +105,15 @@
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this.tabControl3 = new System.Windows.Forms.TabControl();
 			this.tabPage7 = new System.Windows.Forms.TabPage();
-			this.Button_BrowseFindWindowHookExe = new System.Windows.Forms.Button();
+			this.CheckBox_StartupHook_Dinput = new System.Windows.Forms.CheckBox();
+			this.CheckBox_StartupHook_FindWindow = new System.Windows.Forms.CheckBox();
+			this.Button_FindWindowHookLaunch = new System.Windows.Forms.Button();
+			this.Checkbox_FindWindowHookIs64 = new System.Windows.Forms.CheckBox();
+			this.TextBox_FindWindowHookArgs = new System.Windows.Forms.TextBox();
+			this.Label_FindWindowHookCmdArgsDescriptor = new System.Windows.Forms.Label();
+			this.flowLayoutPanel3 = new System.Windows.Forms.FlowLayoutPanel();
 			this.Label_FindWindowHookExe = new System.Windows.Forms.Label();
-			this.Label_FindWindowDescriptor = new System.Windows.Forms.Label();
+			this.Button_BrowseFindWindowHookExe = new System.Windows.Forms.Button();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
 			this.panel3 = new System.Windows.Forms.Panel();
 			this.panel4 = new System.Windows.Forms.Panel();
@@ -128,11 +134,10 @@
 			this.WebLinkWebsite = new UniversalSplitScreen.UI.WebLinkLabel();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.FileDialog_FindWindowHook = new System.Windows.Forms.OpenFileDialog();
-			this.flowLayoutPanel3 = new System.Windows.Forms.FlowLayoutPanel();
-			this.TextBox_FindWindowHookArgs = new System.Windows.Forms.TextBox();
-			this.Label_FindWindowHookCmdArgsDescriptor = new System.Windows.Forms.Label();
-			this.Checkbox_FindWindowHookIs64 = new System.Windows.Forms.CheckBox();
-			this.Button_FindWindowHookLaunch = new System.Windows.Forms.Button();
+			this.panel5 = new System.Windows.Forms.Panel();
+			this.ComboBox_DinputControllerIndex = new System.Windows.Forms.ComboBox();
+			this.Label_DinputControllerIndex = new System.Windows.Forms.Label();
+			this.panel6 = new System.Windows.Forms.Panel();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -152,6 +157,7 @@
 			this.tabPage4.SuspendLayout();
 			this.tabControl3.SuspendLayout();
 			this.tabPage7.SuspendLayout();
+			this.flowLayoutPanel3.SuspendLayout();
 			this.tabPage3.SuspendLayout();
 			this.panel3.SuspendLayout();
 			this.panel4.SuspendLayout();
@@ -159,7 +165,8 @@
 			this.tabPage5.SuspendLayout();
 			this.tabPage6.SuspendLayout();
 			this.GroupBoxLicense.SuspendLayout();
-			this.flowLayoutPanel3.SuspendLayout();
+			this.panel5.SuspendLayout();
+			this.panel6.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -1017,30 +1024,83 @@
 			// 
 			// tabPage7
 			// 
-			this.tabPage7.Controls.Add(this.Button_FindWindowHookLaunch);
-			this.tabPage7.Controls.Add(this.Checkbox_FindWindowHookIs64);
-			this.tabPage7.Controls.Add(this.TextBox_FindWindowHookArgs);
-			this.tabPage7.Controls.Add(this.Label_FindWindowHookCmdArgsDescriptor);
-			this.tabPage7.Controls.Add(this.flowLayoutPanel3);
-			this.tabPage7.Controls.Add(this.Button_BrowseFindWindowHookExe);
-			this.tabPage7.Controls.Add(this.Label_FindWindowDescriptor);
+			this.tabPage7.Controls.Add(this.panel6);
+			this.tabPage7.Controls.Add(this.panel5);
+			this.tabPage7.Controls.Add(this.CheckBox_StartupHook_FindWindow);
 			this.tabPage7.Location = new System.Drawing.Point(4, 22);
 			this.tabPage7.Name = "tabPage7";
 			this.tabPage7.Padding = new System.Windows.Forms.Padding(3);
 			this.tabPage7.Size = new System.Drawing.Size(754, 395);
 			this.tabPage7.TabIndex = 0;
-			this.tabPage7.Text = "FindWindow hook";
+			this.tabPage7.Text = "Startup hooks";
 			this.tabPage7.UseVisualStyleBackColor = true;
 			// 
-			// Button_BrowseFindWindowHookExe
+			// CheckBox_StartupHook_Dinput
 			// 
-			this.Button_BrowseFindWindowHookExe.Location = new System.Drawing.Point(10, 70);
-			this.Button_BrowseFindWindowHookExe.Name = "Button_BrowseFindWindowHookExe";
-			this.Button_BrowseFindWindowHookExe.Size = new System.Drawing.Size(75, 23);
-			this.Button_BrowseFindWindowHookExe.TabIndex = 2;
-			this.Button_BrowseFindWindowHookExe.Text = "Browse";
-			this.Button_BrowseFindWindowHookExe.UseVisualStyleBackColor = true;
-			this.Button_BrowseFindWindowHookExe.Click += new System.EventHandler(this.Button_BrowseFindWindowHookExe_Click);
+			this.CheckBox_StartupHook_Dinput.AutoSize = true;
+			this.CheckBox_StartupHook_Dinput.Location = new System.Drawing.Point(3, 3);
+			this.CheckBox_StartupHook_Dinput.Name = "CheckBox_StartupHook_Dinput";
+			this.CheckBox_StartupHook_Dinput.Size = new System.Drawing.Size(105, 17);
+			this.CheckBox_StartupHook_Dinput.TabIndex = 9;
+			this.CheckBox_StartupHook_Dinput.Text = "DirectInput hook";
+			this.toolTip1.SetToolTip(this.CheckBox_StartupHook_Dinput, resources.GetString("CheckBox_StartupHook_Dinput.ToolTip"));
+			this.CheckBox_StartupHook_Dinput.UseVisualStyleBackColor = true;
+			// 
+			// CheckBox_StartupHook_FindWindow
+			// 
+			this.CheckBox_StartupHook_FindWindow.AutoSize = true;
+			this.CheckBox_StartupHook_FindWindow.Location = new System.Drawing.Point(6, 6);
+			this.CheckBox_StartupHook_FindWindow.Name = "CheckBox_StartupHook_FindWindow";
+			this.CheckBox_StartupHook_FindWindow.Size = new System.Drawing.Size(112, 17);
+			this.CheckBox_StartupHook_FindWindow.TabIndex = 8;
+			this.CheckBox_StartupHook_FindWindow.Text = "FindWindow hook";
+			this.toolTip1.SetToolTip(this.CheckBox_StartupHook_FindWindow, resources.GetString("CheckBox_StartupHook_FindWindow.ToolTip"));
+			this.CheckBox_StartupHook_FindWindow.UseVisualStyleBackColor = true;
+			// 
+			// Button_FindWindowHookLaunch
+			// 
+			this.Button_FindWindowHookLaunch.Location = new System.Drawing.Point(652, 169);
+			this.Button_FindWindowHookLaunch.Name = "Button_FindWindowHookLaunch";
+			this.Button_FindWindowHookLaunch.Size = new System.Drawing.Size(87, 32);
+			this.Button_FindWindowHookLaunch.TabIndex = 7;
+			this.Button_FindWindowHookLaunch.Text = "Launch";
+			this.Button_FindWindowHookLaunch.UseVisualStyleBackColor = true;
+			this.Button_FindWindowHookLaunch.Click += new System.EventHandler(this.Button_FindWindowHookLaunch_Click);
+			// 
+			// Checkbox_FindWindowHookIs64
+			// 
+			this.Checkbox_FindWindowHookIs64.AutoSize = true;
+			this.Checkbox_FindWindowHookIs64.Location = new System.Drawing.Point(6, 151);
+			this.Checkbox_FindWindowHookIs64.Name = "Checkbox_FindWindowHookIs64";
+			this.Checkbox_FindWindowHookIs64.Size = new System.Drawing.Size(63, 17);
+			this.Checkbox_FindWindowHookIs64.TabIndex = 6;
+			this.Checkbox_FindWindowHookIs64.Text = "Is 64-bit";
+			this.Checkbox_FindWindowHookIs64.UseVisualStyleBackColor = true;
+			// 
+			// TextBox_FindWindowHookArgs
+			// 
+			this.TextBox_FindWindowHookArgs.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.TextBox_FindWindowHookArgs.Location = new System.Drawing.Point(6, 122);
+			this.TextBox_FindWindowHookArgs.Name = "TextBox_FindWindowHookArgs";
+			this.TextBox_FindWindowHookArgs.Size = new System.Drawing.Size(738, 23);
+			this.TextBox_FindWindowHookArgs.TabIndex = 4;
+			// 
+			// Label_FindWindowHookCmdArgsDescriptor
+			// 
+			this.Label_FindWindowHookCmdArgsDescriptor.AutoSize = true;
+			this.Label_FindWindowHookCmdArgsDescriptor.Location = new System.Drawing.Point(3, 106);
+			this.Label_FindWindowHookCmdArgsDescriptor.Name = "Label_FindWindowHookCmdArgsDescriptor";
+			this.Label_FindWindowHookCmdArgsDescriptor.Size = new System.Drawing.Size(171, 13);
+			this.Label_FindWindowHookCmdArgsDescriptor.TabIndex = 5;
+			this.Label_FindWindowHookCmdArgsDescriptor.Text = "Command line arguments (optional)";
+			// 
+			// flowLayoutPanel3
+			// 
+			this.flowLayoutPanel3.Controls.Add(this.Label_FindWindowHookExe);
+			this.flowLayoutPanel3.Location = new System.Drawing.Point(3, 32);
+			this.flowLayoutPanel3.Name = "flowLayoutPanel3";
+			this.flowLayoutPanel3.Size = new System.Drawing.Size(738, 71);
+			this.flowLayoutPanel3.TabIndex = 3;
 			// 
 			// Label_FindWindowHookExe
 			// 
@@ -1053,15 +1113,15 @@
 			this.Label_FindWindowHookExe.TabIndex = 1;
 			this.Label_FindWindowHookExe.Text = "Path to game executable...";
 			// 
-			// Label_FindWindowDescriptor
+			// Button_BrowseFindWindowHookExe
 			// 
-			this.Label_FindWindowDescriptor.AutoSize = true;
-			this.Label_FindWindowDescriptor.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.Label_FindWindowDescriptor.Location = new System.Drawing.Point(7, 7);
-			this.Label_FindWindowDescriptor.Name = "Label_FindWindowDescriptor";
-			this.Label_FindWindowDescriptor.Size = new System.Drawing.Size(564, 45);
-			this.Label_FindWindowDescriptor.TabIndex = 0;
-			this.Label_FindWindowDescriptor.Text = resources.GetString("Label_FindWindowDescriptor.Text");
+			this.Button_BrowseFindWindowHookExe.Location = new System.Drawing.Point(6, 3);
+			this.Button_BrowseFindWindowHookExe.Name = "Button_BrowseFindWindowHookExe";
+			this.Button_BrowseFindWindowHookExe.Size = new System.Drawing.Size(75, 23);
+			this.Button_BrowseFindWindowHookExe.TabIndex = 2;
+			this.Button_BrowseFindWindowHookExe.Text = "Browse";
+			this.Button_BrowseFindWindowHookExe.UseVisualStyleBackColor = true;
+			this.Button_BrowseFindWindowHookExe.Click += new System.EventHandler(this.Button_BrowseFindWindowHookExe_Click);
 			// 
 			// tabPage3
 			// 
@@ -1289,50 +1349,66 @@
 			this.FileDialog_FindWindowHook.Filter = "Executable files|*.exe";
 			this.FileDialog_FindWindowHook.Title = "Select game executable";
 			// 
-			// flowLayoutPanel3
+			// panel5
 			// 
-			this.flowLayoutPanel3.Controls.Add(this.Label_FindWindowHookExe);
-			this.flowLayoutPanel3.Location = new System.Drawing.Point(10, 99);
-			this.flowLayoutPanel3.Name = "flowLayoutPanel3";
-			this.flowLayoutPanel3.Size = new System.Drawing.Size(738, 71);
-			this.flowLayoutPanel3.TabIndex = 3;
+			this.panel5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.panel5.Controls.Add(this.Label_DinputControllerIndex);
+			this.panel5.Controls.Add(this.ComboBox_DinputControllerIndex);
+			this.panel5.Controls.Add(this.CheckBox_StartupHook_Dinput);
+			this.panel5.Location = new System.Drawing.Point(6, 29);
+			this.panel5.Name = "panel5";
+			this.panel5.Size = new System.Drawing.Size(129, 85);
+			this.panel5.TabIndex = 10;
 			// 
-			// TextBox_FindWindowHookArgs
+			// ComboBox_DinputControllerIndex
 			// 
-			this.TextBox_FindWindowHookArgs.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.TextBox_FindWindowHookArgs.Location = new System.Drawing.Point(10, 189);
-			this.TextBox_FindWindowHookArgs.Name = "TextBox_FindWindowHookArgs";
-			this.TextBox_FindWindowHookArgs.Size = new System.Drawing.Size(738, 23);
-			this.TextBox_FindWindowHookArgs.TabIndex = 4;
+			this.ComboBox_DinputControllerIndex.FormattingEnabled = true;
+			this.ComboBox_DinputControllerIndex.Items.AddRange(new object[] {
+            "No controller",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16"});
+			this.ComboBox_DinputControllerIndex.Location = new System.Drawing.Point(3, 59);
+			this.ComboBox_DinputControllerIndex.Name = "ComboBox_DinputControllerIndex";
+			this.ComboBox_DinputControllerIndex.Size = new System.Drawing.Size(121, 21);
+			this.ComboBox_DinputControllerIndex.TabIndex = 10;
+			this.ComboBox_DinputControllerIndex.SelectedIndexChanged += new System.EventHandler(this.ComboBox_DinputControllerIndex_SelectedIndexChanged);
 			// 
-			// Label_FindWindowHookCmdArgsDescriptor
+			// Label_DinputControllerIndex
 			// 
-			this.Label_FindWindowHookCmdArgsDescriptor.AutoSize = true;
-			this.Label_FindWindowHookCmdArgsDescriptor.Location = new System.Drawing.Point(7, 173);
-			this.Label_FindWindowHookCmdArgsDescriptor.Name = "Label_FindWindowHookCmdArgsDescriptor";
-			this.Label_FindWindowHookCmdArgsDescriptor.Size = new System.Drawing.Size(171, 13);
-			this.Label_FindWindowHookCmdArgsDescriptor.TabIndex = 5;
-			this.Label_FindWindowHookCmdArgsDescriptor.Text = "Command line arguments (optional)";
+			this.Label_DinputControllerIndex.AutoSize = true;
+			this.Label_DinputControllerIndex.Location = new System.Drawing.Point(3, 43);
+			this.Label_DinputControllerIndex.Name = "Label_DinputControllerIndex";
+			this.Label_DinputControllerIndex.Size = new System.Drawing.Size(82, 13);
+			this.Label_DinputControllerIndex.TabIndex = 11;
+			this.Label_DinputControllerIndex.Text = "Controller index:";
 			// 
-			// Checkbox_FindWindowHookIs64
+			// panel6
 			// 
-			this.Checkbox_FindWindowHookIs64.AutoSize = true;
-			this.Checkbox_FindWindowHookIs64.Location = new System.Drawing.Point(10, 233);
-			this.Checkbox_FindWindowHookIs64.Name = "Checkbox_FindWindowHookIs64";
-			this.Checkbox_FindWindowHookIs64.Size = new System.Drawing.Size(63, 17);
-			this.Checkbox_FindWindowHookIs64.TabIndex = 6;
-			this.Checkbox_FindWindowHookIs64.Text = "Is 64-bit";
-			this.Checkbox_FindWindowHookIs64.UseVisualStyleBackColor = true;
-			// 
-			// Button_FindWindowHookLaunch
-			// 
-			this.Button_FindWindowHookLaunch.Location = new System.Drawing.Point(661, 357);
-			this.Button_FindWindowHookLaunch.Name = "Button_FindWindowHookLaunch";
-			this.Button_FindWindowHookLaunch.Size = new System.Drawing.Size(87, 32);
-			this.Button_FindWindowHookLaunch.TabIndex = 7;
-			this.Button_FindWindowHookLaunch.Text = "Launch";
-			this.Button_FindWindowHookLaunch.UseVisualStyleBackColor = true;
-			this.Button_FindWindowHookLaunch.Click += new System.EventHandler(this.Button_FindWindowHookLaunch_Click);
+			this.panel6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.panel6.Controls.Add(this.Button_BrowseFindWindowHookExe);
+			this.panel6.Controls.Add(this.flowLayoutPanel3);
+			this.panel6.Controls.Add(this.Label_FindWindowHookCmdArgsDescriptor);
+			this.panel6.Controls.Add(this.Button_FindWindowHookLaunch);
+			this.panel6.Controls.Add(this.TextBox_FindWindowHookArgs);
+			this.panel6.Controls.Add(this.Checkbox_FindWindowHookIs64);
+			this.panel6.Location = new System.Drawing.Point(6, 185);
+			this.panel6.Name = "panel6";
+			this.panel6.Size = new System.Drawing.Size(742, 204);
+			this.panel6.TabIndex = 11;
 			// 
 			// Form1
 			// 
@@ -1378,6 +1454,8 @@
 			this.tabControl3.ResumeLayout(false);
 			this.tabPage7.ResumeLayout(false);
 			this.tabPage7.PerformLayout();
+			this.flowLayoutPanel3.ResumeLayout(false);
+			this.flowLayoutPanel3.PerformLayout();
 			this.tabPage3.ResumeLayout(false);
 			this.panel3.ResumeLayout(false);
 			this.panel3.PerformLayout();
@@ -1389,8 +1467,10 @@
 			this.tabPage6.ResumeLayout(false);
 			this.GroupBoxLicense.ResumeLayout(false);
 			this.GroupBoxLicense.PerformLayout();
-			this.flowLayoutPanel3.ResumeLayout(false);
-			this.flowLayoutPanel3.PerformLayout();
+			this.panel5.ResumeLayout(false);
+			this.panel5.PerformLayout();
+			this.panel6.ResumeLayout(false);
+			this.panel6.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -1492,12 +1572,17 @@
 		private System.Windows.Forms.TabPage tabPage7;
 		private System.Windows.Forms.Button Button_BrowseFindWindowHookExe;
 		private System.Windows.Forms.Label Label_FindWindowHookExe;
-		private System.Windows.Forms.Label Label_FindWindowDescriptor;
 		private System.Windows.Forms.OpenFileDialog FileDialog_FindWindowHook;
 		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel3;
 		private System.Windows.Forms.TextBox TextBox_FindWindowHookArgs;
 		private System.Windows.Forms.Label Label_FindWindowHookCmdArgsDescriptor;
 		private System.Windows.Forms.Button Button_FindWindowHookLaunch;
 		private System.Windows.Forms.CheckBox Checkbox_FindWindowHookIs64;
+		private System.Windows.Forms.CheckBox CheckBox_StartupHook_Dinput;
+		private System.Windows.Forms.CheckBox CheckBox_StartupHook_FindWindow;
+		private System.Windows.Forms.Panel panel5;
+		private System.Windows.Forms.Label Label_DinputControllerIndex;
+		private System.Windows.Forms.ComboBox ComboBox_DinputControllerIndex;
+		private System.Windows.Forms.Panel panel6;
 	}
 }
