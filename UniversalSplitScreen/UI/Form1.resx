@@ -130,6 +130,44 @@ You can unlock multiple handles at once by separating with 5 &amp; symbols, e.g.
     <value>Games made in the Source engine (most Valve games, e.g. Team Fortress 2, Left 4 Dead 2, CS:GO, etc.) will prevent you from opening multiple instances.
 If you target a game window and click this button, it will "unlock" it so you can open another instance.</value>
   </data>
+  <data name="CheckBox_StartupHook_Dinput.ToolTip" xml:space="preserve">
+    <value>Redirects controller input within the Direct Input API.
+Direct Input is an old API, so it is mostly only used by old games.
+Direct Input supports an effectively unlimited number of controllers, so you can use more than 4 controllers.
+</value>
+  </data>
+  <data name="CheckBox_StartupHook_FindWindow.ToolTip" xml:space="preserve">
+    <value>Some games will use FindWindow at launch to detect if any instances of the game are already running.
+Launching a game with this utility will hook FindWindow so the game cannot detect other instances.
+As with the other hooks, this may be detected as a false positive by an anti-virus or anti-cheat system.
+</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>MIT License
+
+Copyright (c) 2019 Ilyaki
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</value>
+  </data>
+  <metadata name="FileDialog_FindWindowHook.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>115, 15</value>
+  </metadata>
   <data name="RefCheckbox_DrawMouse.ToolTip" xml:space="preserve">
     <value>This program will draw a "fake" mouse cursor over the game's mouse position.
 Use this if the game doesn't have its own mouse cursor image and relies on the Windows mouse cursor.
@@ -180,44 +218,6 @@ XInput only supports 4 controllers. Do not use a controller index higher than 4 
 Use this if a game is not responding to mouse buttons or keyboard keys.
 This will often fix issues with the shift/control/alt keys.</value>
   </data>
-  <data name="CheckBox_StartupHook_Dinput.ToolTip" xml:space="preserve">
-    <value>Redirects controller input within the Direct Input API.
-Direct Input is an old API, so it is mostly only used by old games.
-Direct Input supports an effectively unlimited number of controllers, so you can use more than 4 controllers.
-</value>
-  </data>
-  <data name="CheckBox_StartupHook_FindWindow.ToolTip" xml:space="preserve">
-    <value>Some games will use FindWindow at launch to detect if any instances of the game are already running.
-Launching a game with this utility will hook FindWindow so the game cannot detect other instances.
-As with the other hooks, this may be detected as a false positive by an anti-virus or anti-cheat system.
-</value>
-  </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>MIT License
-
-Copyright (c) 2019 Ilyaki
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.</value>
-  </data>
-  <metadata name="FileDialog_FindWindowHook.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>115, 15</value>
-  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
