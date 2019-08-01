@@ -454,13 +454,7 @@ namespace UniversalSplitScreen.Core
 
 			string findWindowHookLibraryPath = GetFile(is64 ? "StartupHook64.dll" : "StartupHook32.dll");
 
-			var proc = new Process
-			{
-				StartInfo =
-				{
-					FileName = GetFile(is64 ? "IJx64.exe" : "IJx86.exe")
-				}
-			};
+			
 
 			//Arguments
 			string arguments;
@@ -477,10 +471,21 @@ namespace UniversalSplitScreen.Core
 				}
 
 				arguments = sbArgs.ToString();
-				proc.StartInfo.Arguments = arguments;
 			}
 
-			proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+			var proc = new Process
+			{
+				StartInfo =
+				{
+					FileName = GetFile(is64 ? "IJx64.exe" : "IJx86.exe"),
+					Arguments = arguments,
+					WindowStyle = ProcessWindowStyle.Hidden,
+					CreateNoWindow = true,
+					RedirectStandardError = true,
+					UseShellExecute = false
+				},
+				
+			};
 			proc.Start();
 			proc.WaitForExit();
 
@@ -488,8 +493,9 @@ namespace UniversalSplitScreen.Core
 			Logger.WriteLine($"InjectorLoader.CreateAndInjectStartupHook result = 0x{exitCode:x}. is64={is64}");
 			if (exitCode != 0)
 			{
+				string stdcerr = proc.StandardError.ReadToEnd();
 				string x = (exitCode == 0xC0009898) ? $"Is the game {(is64 ? 32 : 64)}-bit?\n" : "";
-				MessageBox.Show($@"Error injecting StartupHook hook. {x}Error = 0x{exitCode:x}, arguments={arguments}", @"Error", MessageBoxButtons.OK);
+				MessageBox.Show($@"Error injecting StartupHook hook. {x}Error = 0x{exitCode:x}, arguments={arguments}, stcerr={stdcerr}", @"Error", MessageBoxButtons.OK);
 			}
 		}
 
