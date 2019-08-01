@@ -117,12 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CheckBox_StartupHook_FindWindow.ToolTip" xml:space="preserve">
-    <value>Some games will use FindWindow at launch to detect if any instances of the game are already running.
-Launching a game with this utility will hook FindWindow so the game cannot detect other instances.
-As with the other hooks, this may be detected as a false positive by an anti-virus or anti-cheat system.
-</value>
-  </data>
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
@@ -154,9 +148,10 @@ Useful if the game doesn't listen to raw input unless it is in the foreground.
 Use this if a game is not responding to mouse input.</value>
   </data>
   <data name="RefCheckbox_Hook_Dinput.ToolTip" xml:space="preserve">
-    <value>Redirects controller input within the Direct Input API.
-Direct Input is an old API, so it is mostly only used by old games.
-Direct Input supports an effectively unlimited number of controllers, so you can use more than 4 controllers.</value>
+    <value>XInput is used by most games for controller input. However, XInput supports only up to 4 controllers.
+DirectInput supports effectively unlimited controllers. This hook translating DInput into XInput so you can use more than 4 controllers.
+This hook requires 'Hook XInput for gamepads'
+If you want to hook DInput for controller input in games that use DInput natively, see 'Hook DInput' in the Utilities tab.</value>
   </data>
   <data name="RefCheckbox_UpdateAbsoluteFlagInMouseMessage.ToolTip" xml:space="preserve">
     <value>If checked, the absolute cursor position (ie the cursor position in UI menus) will be updated when the game processes a mouse move message.
@@ -189,6 +184,12 @@ This will often fix issues with the shift/control/alt keys.</value>
     <value>Redirects controller input within the Direct Input API.
 Direct Input is an old API, so it is mostly only used by old games.
 Direct Input supports an effectively unlimited number of controllers, so you can use more than 4 controllers.
+</value>
+  </data>
+  <data name="CheckBox_StartupHook_FindWindow.ToolTip" xml:space="preserve">
+    <value>Some games will use FindWindow at launch to detect if any instances of the game are already running.
+Launching a game with this utility will hook FindWindow so the game cannot detect other instances.
+As with the other hooks, this may be detected as a false positive by an anti-virus or anti-cheat system.
 </value>
   </data>
   <data name="label1.Text" xml:space="preserve">
