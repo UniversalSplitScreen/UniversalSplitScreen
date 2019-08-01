@@ -66,6 +66,7 @@ bool pipe_closed = false;
 
 static IDirectInput8* p_dinput;
 
+bool HookDinput = false;
 const int max_dinput_devices = 16;
 static GUID dinput_guids[max_dinput_devices];
 static GUID controller_guid;
@@ -229,11 +230,71 @@ BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT
 	return true;
 }
 
+DWORD packetNumber = 0;
 DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
 {
 	if (controller_index == 0) // user wants no controller on this game
 		return ERROR_DEVICE_NOT_CONNECTED;
-	return XInputGetState(controller_index - 1, pState);
+		
+	if (!HookDinput)
+	{
+		return XInputGetState(controller_index - 1, pState);
+	}
+
+	pState->dwPacketNumber = packetNumber++;
+	memset(&(pState->Gamepad), 0, sizeof(XINPUT_GAMEPAD));
+
+	dinput_device->Poll();
+	DIJOYSTATE2 diState;
+	dinput_device->GetDeviceState(sizeof(DIJOYSTATE2), &diState);
+
+#define BTN(n, f) if (diState.rgbButtons[n] != 0) pState->Gamepad.wButtons |= f
+	BTN(0, XINPUT_GAMEPAD_A);
+	BTN(1, XINPUT_GAMEPAD_B);
+	BTN(2, XINPUT_GAMEPAD_X);
+	BTN(3, XINPUT_GAMEPAD_Y);
+	BTN(4, XINPUT_GAMEPAD_LEFT_SHOULDER);
+	BTN(5, XINPUT_GAMEPAD_RIGHT_SHOULDER);
+	BTN(6, XINPUT_GAMEPAD_BACK);
+	BTN(7, XINPUT_GAMEPAD_START);
+	BTN(8, XINPUT_GAMEPAD_LEFT_THUMB);
+	BTN(9, XINPUT_GAMEPAD_RIGHT_THUMB);
+#undef BTN
+
+	const auto pov = diState.rgdwPOV;
+	if (!(LOWORD(pov[0]) == 0xFFFF))//POV not centred
+	{
+		auto deg = (pov[0]) / 4500;
+#define DPAD(a,b,c, f) if (deg == (a) || deg == (b) || deg == (c)) pState->Gamepad.wButtons |= f
+		DPAD(7, 0, 1, XINPUT_GAMEPAD_DPAD_UP);
+		DPAD(1, 2, 3, XINPUT_GAMEPAD_DPAD_RIGHT);
+		DPAD(3, 4, 5, XINPUT_GAMEPAD_DPAD_DOWN);
+		DPAD(5, 6, 7, XINPUT_GAMEPAD_DPAD_LEFT);
+#undef DPAD
+	}
+
+#define DEADZONE(x, d) (((x) >= (d) || (x) <= (-(d))) ? (x) : 0)
+	pState->Gamepad.sThumbLX = DEADZONE(diState.lX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+	pState->Gamepad.sThumbLY = -1 - DEADZONE(diState.lY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+	pState->Gamepad.sThumbRX = DEADZONE(diState.lRx, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+	pState->Gamepad.sThumbRY = -1 - DEADZONE(diState.lRy, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+#undef DEADZONE
+
+#define TRIGGERDEADZONE(x) (((x) >= XINPUT_GAMEPAD_TRIGGER_THRESHOLD) ? (x) : 0)
+	const auto triggerAxis = diState.lZ;
+	if (triggerAxis > 0)
+	{
+		const auto x = 255 * ((float)triggerAxis / dinput_range_max);
+		pState->Gamepad.bLeftTrigger = TRIGGERDEADZONE(x);
+	}
+	else if (triggerAxis < 0)
+	{
+		const auto x = 255 * ((float)triggerAxis / dinput_range_min);
+		pState->Gamepad.bRightTrigger = TRIGGERDEADZONE(x);
+	}
+#undef TRIGGERDEADZONE
+
+	return ERROR_SUCCESS;
 }
 
 DWORD WINAPI XInputSetState_Hook(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration)
@@ -1054,6 +1115,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		NEXT_BOOL(useLegacyInput)
 		NEXT_BOOL(hookMouseVisibility)
 		NEXT_BOOL(hookDinput)
+		HookDinput = hookDinput;
 #undef NEXT_BOOL
 
 #define NAME_OF_VAR(x) #x
@@ -1095,27 +1157,6 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (HookSetCursorPos) installHook(TEXT("user32"), "SetCursorPos", SetCursorPos_Hook);
 		//if (filterRawInput)						installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 
-		//Hook XInput dll
-		if (HookXInput)
-		{
-			LPCSTR xinputNames[] = {
-				"xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll"
-			};
-
-			for (int xi = 0; xi < 5; xi++)
-			{
-				if (GetModuleHandleA(xinputNames[xi]) != nullptr)
-				{
-					installHook(xinputNames[xi], "XInputGetState", XInputGetState_Hook);
-					installHook(xinputNames[xi], "XInputSetState", XInputSetState_Hook);
-				}
-				else
-				{
-					std::cout << "Not hooking " << xinputNames[xi] << " because not loaded\n";
-				}
-			}
-		}
-
 		filter_raw_input = HookRegisterRawInputDevices;
 		filter_mouse_messages = HookCallWindowProcW;
 		//if (filterRawInput || filterMouseMessages)	installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
@@ -1153,7 +1194,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 					controller_guid = dinput_guids[controller_index - 1];
 					if (DI_OK == p_dinput->CreateDevice(controller_guid, &dinput_device, nullptr))
 					{
-						installDinputHooks();
+						//installDinputHooks();
 					}
 				}
 				else if (!(controller_index <= max_dinput_devices && controller_index <= dinputGuids_i))
@@ -1175,11 +1216,12 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 					else
 					{
 						//Dinput8 hook
-						installDinputHooks();
+						//installDinputHooks();
 
 						dinput_device->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
 
 						dinput_device->SetDataFormat(&c_dfDIJoystick2);
+						dinput_device_data_format = 2;
 
 						DIDEVCAPS caps;
 						caps.dwSize = sizeof(DIDEVCAPS);
@@ -1197,6 +1239,27 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 						else
 							std::cout << "Failed to aquired dinput device\n";
 					}
+				}
+			}
+		}
+
+		//Hook XInput dll
+		if (HookXInput)
+		{
+			LPCSTR xinputNames[] = {
+				"xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll"
+			};
+
+			for (int xi = 0; xi < 5; xi++)
+			{
+				if (GetModuleHandleA(xinputNames[xi]) != nullptr)
+				{
+					installHook(xinputNames[xi], "XInputGetState", XInputGetState_Hook);
+					installHook(xinputNames[xi], "XInputSetState", XInputSetState_Hook);
+				}
+				else
+				{
+					std::cout << "Not hooking " << xinputNames[xi] << " because not loaded\n";
 				}
 			}
 		}
