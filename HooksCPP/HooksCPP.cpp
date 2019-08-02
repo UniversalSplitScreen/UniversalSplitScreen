@@ -512,6 +512,8 @@ BOOL FilterMessage(LPMSG lpMsg)
 	//Filter raw input
 	if (Msg == WM_INPUT && filter_raw_input)
 	{
+		lpMsg->wParam = RIM_INPUT;//While in foreground
+
 		UINT dwSize = 0;
 		const UINT sorh = sizeof(RAWINPUTHEADER);
 		static RAWINPUT raw[sorh];
