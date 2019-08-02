@@ -71,6 +71,31 @@ namespace UniversalSplitScreen.Core
 		/// </summary>
 		public void ActivateSplitScreen()
 		{
+			#region XInput/DInput warnings
+			bool needXinputHook = false;
+			bool needDinputTranslationHook = false;
+			foreach (var window in windows.Values)
+			{
+				if (window.ControllerIndex > 0 && !Options.CurrentOptions.Hook_XInput)
+					needXinputHook = true;
+
+				if (window.ControllerIndex > 4 && (!Options.CurrentOptions.Hook_DInput || !Options.CurrentOptions.Hook_XInput))
+					needDinputTranslationHook = true;
+			}
+
+			if (needXinputHook &&
+			    MessageBox.Show(
+				    @"You need to enable the XInput hook to use controllers. Do you want to continue anyway?", @"Warning",
+				    MessageBoxButtons.YesNo) != DialogResult.Yes)
+				return;
+
+			if (needDinputTranslationHook &&
+			    MessageBox.Show(
+				    @"You need to enable the XInput hook and the DInput to XInput translation hook to use more than 4 controllers. Do you want to continue anyway?", @"Warning",
+				    MessageBoxButtons.YesNo) != DialogResult.Yes)
+				return;
+			#endregion
+
 			var options = Options.CurrentOptions;
 
 			//Check if windows still exist
@@ -454,13 +479,7 @@ namespace UniversalSplitScreen.Core
 
 			string findWindowHookLibraryPath = GetFile(is64 ? "StartupHook64.dll" : "StartupHook32.dll");
 
-			var proc = new Process
-			{
-				StartInfo =
-				{
-					FileName = GetFile(is64 ? "IJx64.exe" : "IJx86.exe")
-				}
-			};
+			
 
 			//Arguments
 			string arguments;
@@ -477,10 +496,21 @@ namespace UniversalSplitScreen.Core
 				}
 
 				arguments = sbArgs.ToString();
-				proc.StartInfo.Arguments = arguments;
 			}
 
-			proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+			var proc = new Process
+			{
+				StartInfo =
+				{
+					FileName = GetFile(is64 ? "IJx64.exe" : "IJx86.exe"),
+					Arguments = arguments,
+					WindowStyle = ProcessWindowStyle.Hidden,
+					CreateNoWindow = true,
+					RedirectStandardError = true,
+					UseShellExecute = false
+				},
+				
+			};
 			proc.Start();
 			proc.WaitForExit();
 
@@ -488,8 +518,9 @@ namespace UniversalSplitScreen.Core
 			Logger.WriteLine($"InjectorLoader.CreateAndInjectStartupHook result = 0x{exitCode:x}. is64={is64}");
 			if (exitCode != 0)
 			{
+				string stdcerr = proc.StandardError.ReadToEnd();
 				string x = (exitCode == 0xC0009898) ? $"Is the game {(is64 ? 32 : 64)}-bit?\n" : "";
-				MessageBox.Show($@"Error injecting StartupHook hook. {x}Error = 0x{exitCode:x}, arguments={arguments}", @"Error", MessageBoxButtons.OK);
+				MessageBox.Show($@"Error injecting StartupHook hook. {x}Error = 0x{exitCode:x}, arguments={arguments}, stcerr={stdcerr}", @"Error", MessageBoxButtons.OK);
 			}
 		}
 
