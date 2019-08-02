@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using UniversalSplitScreen.Core;
 
@@ -16,6 +18,9 @@ namespace UniversalSplitScreen.UI
 
 		public ComboBox OptionsComboBox => optionsComboBox;
 
+		private string goldbergAccountNamePath;
+		private string goldbergSteamIDPath;
+
 		public Form1()
 		{
 			InitializeComponent();
@@ -28,6 +33,8 @@ namespace UniversalSplitScreen.UI
 			PopulateOptionsRefTypes(Options.CurrentOptions);
 
 			Label_CurrentVersion.Text = $"Current version: {UpdateChecker.currentVersion}";
+
+			LoadGoldbergData();
 		}
 
 		public void PopulateOptionsRefTypes(OptionsStructure options)
@@ -267,5 +274,59 @@ namespace UniversalSplitScreen.UI
 			dinputControllerIndex = ComboBox_DinputControllerIndex.SelectedIndex;
 			Logger.WriteLine($"Set dinput controller index = {dinputControllerIndex}");
 		}
+
+		#region Goldberg
+		private void LoadGoldbergData()
+		{
+			string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Goldberg SteamEmu Saves", "settings");
+			goldbergAccountNamePath = Path.Combine(folder, "account_name.txt");
+			goldbergSteamIDPath = Path.Combine(folder, "user_steam_id.txt");
+
+			string ReadLine(string path)
+			{
+				try
+				{
+					return File.ReadLines(path).First();
+				}
+				catch (Exception)
+				{
+					return string.Empty;
+				}
+			}
+
+			TextBox_Goldberg_Username.Text = ReadLine(goldbergAccountNamePath);
+			TextBox_Goldberg_ID.Text = ReadLine(goldbergSteamIDPath);
+		}
+
+		private void Button_Goldberg_Username_Set_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				File.WriteAllText(goldbergAccountNamePath, TextBox_Goldberg_Username.Text);
+			}
+			catch (Exception ex)
+			{
+				string msg = (ex.GetType() == typeof(DirectoryNotFoundException))
+					? "Goldberg has not been set up. Try running a game with it at least once.\n"
+					: "";
+				MessageBox.Show($@"{msg}Error: {ex}", @"Error", MessageBoxButtons.OK);
+			}
+		}
+
+		private void Button_Goldberg_ID_Set_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				File.WriteAllText(goldbergSteamIDPath, TextBox_Goldberg_ID.Text);
+			}
+			catch (Exception ex)
+			{
+				string msg = (ex.GetType() == typeof(DirectoryNotFoundException))
+					? "Goldberg has not been set up. Try running a game with it at least once.\n"
+					: "";
+				MessageBox.Show($@"{msg}Error: {ex}", @"Error", MessageBoxButtons.OK);
+			}
+		}
+		#endregion
 	}
 }

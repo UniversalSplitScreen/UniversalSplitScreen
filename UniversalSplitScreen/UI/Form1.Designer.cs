@@ -118,6 +118,14 @@
 			this.ComboBox_DinputControllerIndex = new System.Windows.Forms.ComboBox();
 			this.CheckBox_StartupHook_Dinput = new System.Windows.Forms.CheckBox();
 			this.CheckBox_StartupHook_FindWindow = new System.Windows.Forms.CheckBox();
+			this.tabPage8 = new System.Windows.Forms.TabPage();
+			this.Button_Goldberg_ID_Set = new System.Windows.Forms.Button();
+			this.TextBox_Goldberg_ID = new System.Windows.Forms.TextBox();
+			this.Button_Goldberg_Username_Set = new System.Windows.Forms.Button();
+			this.TextBox_Goldberg_Username = new System.Windows.Forms.TextBox();
+			this.Label_Goldberg_ID = new System.Windows.Forms.Label();
+			this.Label_Goldberg_Username = new System.Windows.Forms.Label();
+			this.WebLinkLabel_Goldberg = new UniversalSplitScreen.UI.WebLinkLabel();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
 			this.panel3 = new System.Windows.Forms.Panel();
 			this.panel4 = new System.Windows.Forms.Panel();
@@ -138,14 +146,6 @@
 			this.WebLinkWebsite = new UniversalSplitScreen.UI.WebLinkLabel();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.FileDialog_FindWindowHook = new System.Windows.Forms.OpenFileDialog();
-			this.tabPage8 = new System.Windows.Forms.TabPage();
-			this.WebLinkLabel_Goldberg = new UniversalSplitScreen.UI.WebLinkLabel();
-			this.Label_Goldberg_Username = new System.Windows.Forms.Label();
-			this.Label_Goldberg_ID = new System.Windows.Forms.Label();
-			this.TextBox_Goldberg_Username = new System.Windows.Forms.TextBox();
-			this.Button_Goldberg_Username_Set = new System.Windows.Forms.Button();
-			this.TextBox_Goldberg_ID = new System.Windows.Forms.TextBox();
-			this.Button_Goldberg_ID_Set = new System.Windows.Forms.Button();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -168,6 +168,7 @@
 			this.panel6.SuspendLayout();
 			this.flowLayoutPanel3.SuspendLayout();
 			this.panel5.SuspendLayout();
+			this.tabPage8.SuspendLayout();
 			this.tabPage3.SuspendLayout();
 			this.panel3.SuspendLayout();
 			this.panel4.SuspendLayout();
@@ -175,7 +176,6 @@
 			this.tabPage5.SuspendLayout();
 			this.tabPage6.SuspendLayout();
 			this.GroupBoxLicense.SuspendLayout();
-			this.tabPage8.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -1207,6 +1207,89 @@
 			this.toolTip1.SetToolTip(this.CheckBox_StartupHook_FindWindow, resources.GetString("CheckBox_StartupHook_FindWindow.ToolTip"));
 			this.CheckBox_StartupHook_FindWindow.UseVisualStyleBackColor = true;
 			// 
+			// tabPage8
+			// 
+			this.tabPage8.Controls.Add(this.Button_Goldberg_ID_Set);
+			this.tabPage8.Controls.Add(this.TextBox_Goldberg_ID);
+			this.tabPage8.Controls.Add(this.Button_Goldberg_Username_Set);
+			this.tabPage8.Controls.Add(this.TextBox_Goldberg_Username);
+			this.tabPage8.Controls.Add(this.Label_Goldberg_ID);
+			this.tabPage8.Controls.Add(this.Label_Goldberg_Username);
+			this.tabPage8.Controls.Add(this.WebLinkLabel_Goldberg);
+			this.tabPage8.Location = new System.Drawing.Point(4, 22);
+			this.tabPage8.Name = "tabPage8";
+			this.tabPage8.Size = new System.Drawing.Size(754, 395);
+			this.tabPage8.TabIndex = 1;
+			this.tabPage8.Text = "Goldberg";
+			this.tabPage8.UseVisualStyleBackColor = true;
+			// 
+			// Button_Goldberg_ID_Set
+			// 
+			this.Button_Goldberg_ID_Set.Location = new System.Drawing.Point(334, 157);
+			this.Button_Goldberg_ID_Set.Name = "Button_Goldberg_ID_Set";
+			this.Button_Goldberg_ID_Set.Size = new System.Drawing.Size(75, 20);
+			this.Button_Goldberg_ID_Set.TabIndex = 6;
+			this.Button_Goldberg_ID_Set.Text = "Set";
+			this.Button_Goldberg_ID_Set.UseVisualStyleBackColor = true;
+			this.Button_Goldberg_ID_Set.Click += new System.EventHandler(this.Button_Goldberg_ID_Set_Click);
+			// 
+			// TextBox_Goldberg_ID
+			// 
+			this.TextBox_Goldberg_ID.Location = new System.Drawing.Point(7, 157);
+			this.TextBox_Goldberg_ID.Name = "TextBox_Goldberg_ID";
+			this.TextBox_Goldberg_ID.Size = new System.Drawing.Size(320, 20);
+			this.TextBox_Goldberg_ID.TabIndex = 5;
+			// 
+			// Button_Goldberg_Username_Set
+			// 
+			this.Button_Goldberg_Username_Set.Location = new System.Drawing.Point(334, 94);
+			this.Button_Goldberg_Username_Set.Name = "Button_Goldberg_Username_Set";
+			this.Button_Goldberg_Username_Set.Size = new System.Drawing.Size(75, 20);
+			this.Button_Goldberg_Username_Set.TabIndex = 4;
+			this.Button_Goldberg_Username_Set.Text = "Set";
+			this.Button_Goldberg_Username_Set.UseVisualStyleBackColor = true;
+			this.Button_Goldberg_Username_Set.Click += new System.EventHandler(this.Button_Goldberg_Username_Set_Click);
+			// 
+			// TextBox_Goldberg_Username
+			// 
+			this.TextBox_Goldberg_Username.Location = new System.Drawing.Point(7, 94);
+			this.TextBox_Goldberg_Username.Name = "TextBox_Goldberg_Username";
+			this.TextBox_Goldberg_Username.Size = new System.Drawing.Size(320, 20);
+			this.TextBox_Goldberg_Username.TabIndex = 3;
+			// 
+			// Label_Goldberg_ID
+			// 
+			this.Label_Goldberg_ID.AutoSize = true;
+			this.Label_Goldberg_ID.Location = new System.Drawing.Point(4, 140);
+			this.Label_Goldberg_ID.Name = "Label_Goldberg_ID";
+			this.Label_Goldberg_ID.Size = new System.Drawing.Size(51, 13);
+			this.Label_Goldberg_ID.TabIndex = 2;
+			this.Label_Goldberg_ID.Text = "Steam ID";
+			// 
+			// Label_Goldberg_Username
+			// 
+			this.Label_Goldberg_Username.AutoSize = true;
+			this.Label_Goldberg_Username.Location = new System.Drawing.Point(4, 77);
+			this.Label_Goldberg_Username.Name = "Label_Goldberg_Username";
+			this.Label_Goldberg_Username.Size = new System.Drawing.Size(55, 13);
+			this.Label_Goldberg_Username.TabIndex = 1;
+			this.Label_Goldberg_Username.Text = "Username";
+			// 
+			// WebLinkLabel_Goldberg
+			// 
+			this.WebLinkLabel_Goldberg.AutoSize = true;
+			this.WebLinkLabel_Goldberg.LinkArea = new System.Windows.Forms.LinkArea(82, 4);
+			this.WebLinkLabel_Goldberg.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
+			this.WebLinkLabel_Goldberg.Location = new System.Drawing.Point(3, 9);
+			this.WebLinkLabel_Goldberg.Name = "WebLinkLabel_Goldberg";
+			this.WebLinkLabel_Goldberg.Size = new System.Drawing.Size(416, 30);
+			this.WebLinkLabel_Goldberg.TabIndex = 0;
+			this.WebLinkLabel_Goldberg.TabStop = true;
+			this.WebLinkLabel_Goldberg.Text = "You can use this page to quickly change your Goldberg username and Steam ID.\r\nSee" +
+    " here on how to set up the Goldberg Emulator.";
+			this.WebLinkLabel_Goldberg.Url = "https://universalsplitscreen.github.io/docs/goldberg/";
+			this.WebLinkLabel_Goldberg.UseCompatibleTextRendering = true;
+			// 
 			// tabPage3
 			// 
 			this.tabPage3.Controls.Add(this.panel3);
@@ -1433,87 +1516,6 @@
 			this.FileDialog_FindWindowHook.Filter = "Executable files|*.exe";
 			this.FileDialog_FindWindowHook.Title = "Select game executable";
 			// 
-			// tabPage8
-			// 
-			this.tabPage8.Controls.Add(this.Button_Goldberg_ID_Set);
-			this.tabPage8.Controls.Add(this.TextBox_Goldberg_ID);
-			this.tabPage8.Controls.Add(this.Button_Goldberg_Username_Set);
-			this.tabPage8.Controls.Add(this.TextBox_Goldberg_Username);
-			this.tabPage8.Controls.Add(this.Label_Goldberg_ID);
-			this.tabPage8.Controls.Add(this.Label_Goldberg_Username);
-			this.tabPage8.Controls.Add(this.WebLinkLabel_Goldberg);
-			this.tabPage8.Location = new System.Drawing.Point(4, 22);
-			this.tabPage8.Name = "tabPage8";
-			this.tabPage8.Size = new System.Drawing.Size(754, 395);
-			this.tabPage8.TabIndex = 1;
-			this.tabPage8.Text = "Goldberg";
-			this.tabPage8.UseVisualStyleBackColor = true;
-			// 
-			// WebLinkLabel_Goldberg
-			// 
-			this.WebLinkLabel_Goldberg.AutoSize = true;
-			this.WebLinkLabel_Goldberg.LinkArea = new System.Windows.Forms.LinkArea(82, 4);
-			this.WebLinkLabel_Goldberg.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-			this.WebLinkLabel_Goldberg.Location = new System.Drawing.Point(3, 9);
-			this.WebLinkLabel_Goldberg.Name = "WebLinkLabel_Goldberg";
-			this.WebLinkLabel_Goldberg.Size = new System.Drawing.Size(416, 30);
-			this.WebLinkLabel_Goldberg.TabIndex = 0;
-			this.WebLinkLabel_Goldberg.TabStop = true;
-			this.WebLinkLabel_Goldberg.Text = "You can use this page to quickly change your Goldberg username and Steam ID.\r\nSee" +
-    " here on how to set up the Goldberg Emulator.";
-			this.WebLinkLabel_Goldberg.Url = "https://universalsplitscreen.github.io/docs/goldberg/";
-			this.WebLinkLabel_Goldberg.UseCompatibleTextRendering = true;
-			// 
-			// Label_Goldberg_Username
-			// 
-			this.Label_Goldberg_Username.AutoSize = true;
-			this.Label_Goldberg_Username.Location = new System.Drawing.Point(4, 77);
-			this.Label_Goldberg_Username.Name = "Label_Goldberg_Username";
-			this.Label_Goldberg_Username.Size = new System.Drawing.Size(55, 13);
-			this.Label_Goldberg_Username.TabIndex = 1;
-			this.Label_Goldberg_Username.Text = "Username";
-			// 
-			// Label_Goldberg_ID
-			// 
-			this.Label_Goldberg_ID.AutoSize = true;
-			this.Label_Goldberg_ID.Location = new System.Drawing.Point(4, 140);
-			this.Label_Goldberg_ID.Name = "Label_Goldberg_ID";
-			this.Label_Goldberg_ID.Size = new System.Drawing.Size(51, 13);
-			this.Label_Goldberg_ID.TabIndex = 2;
-			this.Label_Goldberg_ID.Text = "Steam ID";
-			// 
-			// TextBox_Goldberg_Username
-			// 
-			this.TextBox_Goldberg_Username.Location = new System.Drawing.Point(7, 94);
-			this.TextBox_Goldberg_Username.Name = "TextBox_Goldberg_Username";
-			this.TextBox_Goldberg_Username.Size = new System.Drawing.Size(320, 20);
-			this.TextBox_Goldberg_Username.TabIndex = 3;
-			// 
-			// Button_Goldberg_Username_Set
-			// 
-			this.Button_Goldberg_Username_Set.Location = new System.Drawing.Point(334, 94);
-			this.Button_Goldberg_Username_Set.Name = "Button_Goldberg_Username_Set";
-			this.Button_Goldberg_Username_Set.Size = new System.Drawing.Size(75, 20);
-			this.Button_Goldberg_Username_Set.TabIndex = 4;
-			this.Button_Goldberg_Username_Set.Text = "Set";
-			this.Button_Goldberg_Username_Set.UseVisualStyleBackColor = true;
-			// 
-			// TextBox_Goldberg_ID
-			// 
-			this.TextBox_Goldberg_ID.Location = new System.Drawing.Point(7, 157);
-			this.TextBox_Goldberg_ID.Name = "TextBox_Goldberg_ID";
-			this.TextBox_Goldberg_ID.Size = new System.Drawing.Size(320, 20);
-			this.TextBox_Goldberg_ID.TabIndex = 5;
-			// 
-			// Button_Goldberg_ID_Set
-			// 
-			this.Button_Goldberg_ID_Set.Location = new System.Drawing.Point(334, 157);
-			this.Button_Goldberg_ID_Set.Name = "Button_Goldberg_ID_Set";
-			this.Button_Goldberg_ID_Set.Size = new System.Drawing.Size(75, 20);
-			this.Button_Goldberg_ID_Set.TabIndex = 6;
-			this.Button_Goldberg_ID_Set.Text = "Set";
-			this.Button_Goldberg_ID_Set.UseVisualStyleBackColor = true;
-			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1564,6 +1566,8 @@
 			this.flowLayoutPanel3.PerformLayout();
 			this.panel5.ResumeLayout(false);
 			this.panel5.PerformLayout();
+			this.tabPage8.ResumeLayout(false);
+			this.tabPage8.PerformLayout();
 			this.tabPage3.ResumeLayout(false);
 			this.panel3.ResumeLayout(false);
 			this.panel3.PerformLayout();
@@ -1575,8 +1579,6 @@
 			this.tabPage6.ResumeLayout(false);
 			this.GroupBoxLicense.ResumeLayout(false);
 			this.GroupBoxLicense.PerformLayout();
-			this.tabPage8.ResumeLayout(false);
-			this.tabPage8.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
