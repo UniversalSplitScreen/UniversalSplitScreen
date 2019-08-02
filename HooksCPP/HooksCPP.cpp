@@ -186,6 +186,11 @@ HWND WINAPI GetFocus_Hook()
 	return hWnd;
 }
 
+HWND WINAPI GetCapture_Hook()
+{
+	return hWnd;
+}
+
 inline bool is_vkey_down(int vkey)
 {
 	if (vkey >= 0xFF) return false;
@@ -1157,6 +1162,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 			installHook(TEXT("user32"), "GetActiveWindow", GetActiveWindow_Hook);
 			installHook(TEXT("user32"), "IsWindowEnabled", IsWindowEnabled_Hook);
 			installHook(TEXT("user32"), "GetFocus", GetFocus_Hook);
+			installHook(TEXT("user32"), "GetCapture", GetCapture_Hook);
 		}
 
 		if (hookMouseVisibility)
