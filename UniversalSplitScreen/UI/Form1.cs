@@ -302,6 +302,8 @@ namespace UniversalSplitScreen.UI
 		{
 			try
 			{
+				if (!File.Exists(goldbergAccountNamePath))
+					File.CreateText(goldbergAccountNamePath).Dispose();
 				File.WriteAllText(goldbergAccountNamePath, TextBox_Goldberg_Username.Text);
 			}
 			catch (Exception ex)
@@ -317,6 +319,8 @@ namespace UniversalSplitScreen.UI
 		{
 			try
 			{
+				if (!File.Exists(goldbergSteamIDPath))
+					File.CreateText(goldbergSteamIDPath).Dispose();
 				File.WriteAllText(goldbergSteamIDPath, TextBox_Goldberg_ID.Text);
 			}
 			catch (Exception ex)
