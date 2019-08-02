@@ -181,6 +181,11 @@ BOOL WINAPI IsWindowEnabled_Hook(HWND hWnd)
 	return TRUE;
 }
 
+HWND WINAPI GetFocus_Hook()
+{
+	return hWnd;
+}
+
 inline bool is_vkey_down(int vkey)
 {
 	if (vkey >= 0xFF) return false;
