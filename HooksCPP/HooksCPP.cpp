@@ -577,6 +577,12 @@ BOOL FilterMessage(LPMSG lpMsg)
 	//USS signature is 1 << 7 or 0b10000000 for WM_MOUSEMOVE(0x0200). If this is detected, allow event to pass
 	if (filter_mouse_messages)
 	{
+		if (Msg == WM_KILLFOCUS || (Msg == WM_ACTIVATE && _wParam == 0) || Msg == WM_CAPTURECHANGED || (Msg == WM_ACTIVATE && (int)_lParam == (int)hWnd))
+		{
+			memset(lpMsg, 0, sizeof(MSG));
+			return -1;
+		}
+
 		if (Msg == WM_MOUSEMOVE && ((int)_wParam & 0b10000000) > 0)
 			return 1;
 
