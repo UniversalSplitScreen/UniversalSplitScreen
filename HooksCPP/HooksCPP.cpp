@@ -212,12 +212,19 @@ inline void setVkeyState(int vkey, bool down)
 {
 	if (vkey >= 0xFF) return;
 
-	BYTE* p = vkeys_state + (vkey / 8);
+	auto x = (vkey / 8);
+	BYTE shift = (1 << (vkey % 8));
+	if (down)
+		vkeys_state[x] |= shift;
+	else
+		vkeys_state[x] &= (~shift);
+
+	/*BYTE* p = vkeys_state + (vkey / 8);
 	int shift = (1 << (vkey % 8));
 	if (down)
 		*p |= shift;
 	else
-		*p &= (~shift);
+		*p &= (~shift);*/
 
 	if (vkey == VK_LSHIFT || vkey == VK_RSHIFT) setVkeyState(VK_SHIFT, down);
 	else if (vkey == VK_LMENU || vkey == VK_RMENU) setVkeyState(VK_MENU, down);
@@ -232,6 +239,20 @@ SHORT WINAPI GetAsyncKeyState_Hook(int vKey)
 SHORT WINAPI GetKeyState_Hook(int nVirtKey)
 {
 	return is_vkey_down(nVirtKey) ? 0b1000000000000000 : 0;
+}
+
+BOOL WINAPI GetKeyboardState_Hook(PBYTE lpKeyState)
+{
+	memset(lpKeyState, 0, 256);
+	//GetKeyboardState(lpKeyState);
+
+	for (int vkey = 0; vkey < 256; vkey++)
+	{
+		//if (lpKeyState[vkey] != 0)
+			lpKeyState[vkey] = is_vkey_down(vkey) ? 0b10000000 : 0;
+	}
+
+	return TRUE;
 }
 
 BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize)
@@ -1094,6 +1115,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 	while (ShowCursor(FALSE) >= -10 && i++ < 20);
 	SetCursor(nullptr);
 
+	memset(vkeys_state, 0, 256 / 8);
+
 	if (inRemoteInfo->UserDataSize == 1024)
 	{
 		//Get UserData
@@ -1173,7 +1196,11 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 		if (HookGetCursorPos) installHook(TEXT("user32"), "GetCursorPos", GetCursorPos_Hook);
 		if (HookGetAsyncKeyState) installHook(TEXT("user32"), "GetAsyncKeyState", GetAsyncKeyState_Hook);
-		if (HookGetKeyState) installHook(TEXT("user32"), "GetKeyState", GetKeyState_Hook);
+		if (HookGetKeyState)
+		{
+			installHook(TEXT("user32"), "GetKeyState", GetKeyState_Hook);
+			installHook(TEXT("user32"), "GetKeyboardState", GetKeyboardState_Hook);
+		}
 		if (HookSetCursorPos) installHook(TEXT("user32"), "SetCursorPos", SetCursorPos_Hook);
 		//if (filterRawInput)						installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 
