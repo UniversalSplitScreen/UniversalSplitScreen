@@ -164,6 +164,7 @@ namespace UniversalSplitScreen.Core
 					options.Hook_GetForegroundWindow || 
 					options.Hook_GetCursorPos || 
 					options.Hook_GetKeyState || 
+					options.Hook_GetKeyboardState || 
 					options.Hook_GetAsyncKeyState ||
 					options.Hook_SetCursorPos ||
 					options.Hook_XInput ||
@@ -215,6 +216,7 @@ namespace UniversalSplitScreen.Core
 							options.Hook_GetForegroundWindow,
 							options.Hook_GetAsyncKeyState,
 							options.Hook_GetKeyState,
+							options.Hook_GetKeyboardState,
 							options.Hook_FilterWindowsMouseInput,
 							options.Hook_FilterRawInput,
 							options.Hook_SetCursorPos,

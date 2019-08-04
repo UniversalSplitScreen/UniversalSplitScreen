@@ -121,7 +121,7 @@ namespace InjectorLoader
 		
 		public static void Main(string[] args)
 		{
-			const int argsLengthHooksCPP = 19;
+			const int argsLengthHooksCPP = 20;
 			const int argsLengthStartupHook = 6;
 
 			//dllpath, exePath, base64CmdArgs, dinputHookEnabled, findWindowHookEnabled, controllerIndex
@@ -163,6 +163,7 @@ namespace InjectorLoader
 			bool HookGetForegroundWindow = nextBool();
 			bool HookGetAsyncKeyState = nextBool();
 			bool HookGetKeyState = nextBool();
+			bool HookGetKeyboardState = nextBool();
 			bool HookCallWindowProcW = nextBool();
 			bool HookRegisterRawInputDevices = nextBool();
 			bool HookSetCursorPos = nextBool();
@@ -214,6 +215,7 @@ namespace InjectorLoader
 			writeBool(HookGetForegroundWindow, x++);
 			writeBool(HookGetAsyncKeyState, x++);
 			writeBool(HookGetKeyState, x++);
+			writeBool(HookGetKeyboardState, x++);
 			writeBool(HookCallWindowProcW, x++);
 			writeBool(HookRegisterRawInputDevices, x++);
 			writeBool(HookSetCursorPos, x++);

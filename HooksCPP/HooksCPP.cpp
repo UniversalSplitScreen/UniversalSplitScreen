@@ -1149,6 +1149,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		NEXT_BOOL(HookGetForegroundWindow)
 		NEXT_BOOL(HookGetAsyncKeyState)
 		NEXT_BOOL(HookGetKeyState)
+		NEXT_BOOL(HookGetKeyboardState)
 		NEXT_BOOL(HookCallWindowProcW)
 		NEXT_BOOL(HookRegisterRawInputDevices)
 		NEXT_BOOL(HookSetCursorPos)
@@ -1166,6 +1167,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		PRINT_BOOL(HookGetForegroundWindow)
 		PRINT_BOOL(HookGetAsyncKeyState)
 		PRINT_BOOL(HookGetKeyState)
+		PRINT_BOOL(HookGetKeyboardState)
 		PRINT_BOOL(HookCallWindowProcW)
 		PRINT_BOOL(HookRegisterRawInputDevices)
 		PRINT_BOOL(HookSetCursorPos)
@@ -1196,16 +1198,15 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 		if (HookGetCursorPos) installHook(TEXT("user32"), "GetCursorPos", GetCursorPos_Hook);
 		if (HookGetAsyncKeyState) installHook(TEXT("user32"), "GetAsyncKeyState", GetAsyncKeyState_Hook);
-		if (HookGetKeyState)
-		{
-			installHook(TEXT("user32"), "GetKeyState", GetKeyState_Hook);
-			installHook(TEXT("user32"), "GetKeyboardState", GetKeyboardState_Hook);
-		}
+		if (HookGetKeyState) installHook(TEXT("user32"), "GetKeyState", GetKeyState_Hook);
+		if (HookGetKeyboardState) installHook(TEXT("user32"), "GetKeyboardState", GetKeyboardState_Hook);
+		
 		if (HookSetCursorPos) installHook(TEXT("user32"), "SetCursorPos", SetCursorPos_Hook);
 		//if (filterRawInput)						installHook(TEXT("user32"), "RegisterRawInputDevices",	RegisterRawInputDevices_Hook);
 
 		filter_raw_input = HookRegisterRawInputDevices;
 		filter_mouse_messages = HookCallWindowProcW;
+		enable_legacy_input = useLegacyInput;
 		//if (filterRawInput || filterMouseMessages)	installHook(TEXT("user32"), "CallWindowProcW",			CallWindowProc_Hook);
 
 		if (filter_raw_input || filter_mouse_messages || enable_legacy_input)
