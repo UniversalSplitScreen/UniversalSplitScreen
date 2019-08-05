@@ -1303,20 +1303,27 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (HookXInput)
 		{
 			LPCSTR xinputNames[] = {
-				"xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll"
+				"xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll", "xinput1_5.dll"
 			};
 
-			for (int xi = 0; xi < 5; xi++)
+			for (auto& xinputName : xinputNames)
 			{
-				if (GetModuleHandleA(xinputNames[xi]) != nullptr)
+				if (LoadLibrary(xinputName) == nullptr)
 				{
-					installHook(xinputNames[xi], "XInputGetState", XInputGetState_Hook);
-					installHook(xinputNames[xi], "XInputSetState", XInputSetState_Hook);
-					installHook(xinputNames[xi], "XInputGetCapabilities", XInputGetCapabilities_Hook);
+					std::cout << "Not hooking " << xinputName << " because could not be loaded\n";
 				}
 				else
 				{
-					std::cout << "Not hooking " << xinputNames[xi] << " because not loaded\n";
+					if (GetModuleHandleA(xinputName) == nullptr)
+					{
+						std::cout << "Not hooking " << xinputName << " because not loaded (???)\n";
+					}
+					else
+					{
+						installHook(xinputName, "XInputGetState", XInputGetState_Hook);
+						installHook(xinputName, "XInputSetState", XInputSetState_Hook);
+						installHook(xinputName, "XInputGetCapabilities", XInputGetCapabilities_Hook);
+					}
 				}
 			}
 		}
