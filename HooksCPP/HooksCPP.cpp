@@ -335,6 +335,14 @@ DWORD WINAPI XInputSetState_Hook(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration
 	return XInputSetState(controller_index - 1, pVibration);
 }
 
+DWORD WINAPI XInputGetCapabilities_Hook(DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES *pCapabilities)
+{
+	if (controller_index == 0) // user wants no controller on this game
+		return ERROR_DEVICE_NOT_CONNECTED;
+
+	return XInputGetCapabilities(controller_index - 1, dwFlags, pCapabilities);
+}
+
 inline int bytesToInt(BYTE* bytes)
 {
 	return (int)(bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3]);
@@ -1304,6 +1312,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 				{
 					installHook(xinputNames[xi], "XInputGetState", XInputGetState_Hook);
 					installHook(xinputNames[xi], "XInputSetState", XInputSetState_Hook);
+					installHook(xinputNames[xi], "XInputGetCapabilities", XInputGetCapabilities_Hook);
 				}
 				else
 				{
