@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 //Output file is named IJ not InjectorLoader because "InjectorLoader" is picked up by some antiviruses
 
@@ -118,7 +120,73 @@ namespace InjectorLoader
 				IntPtr OutProcessId //Pointer to a UINT (the PID of the new process)
 				);
 		}
-		
+
+		[DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+		static extern bool CreateProcess(
+			string lpApplicationName,
+			string lpCommandLine,
+			//ref SECURITY_ATTRIBUTES lpProcessAttributes,
+			//ref SECURITY_ATTRIBUTES lpThreadAttributes,
+			IntPtr lpProcessAttributes,
+			IntPtr lpThreadAttributes, 
+			bool bInheritHandles,
+			uint dwCreationFlags,
+			IntPtr lpEnvironment,
+			string lpCurrentDirectory,
+			//IntPtr lpStartupInfo,
+			[In] ref STARTUPINFO lpStartupInfo,
+			out PROCESS_INFORMATION lpProcessInformation);
+
+		[DllImport("kernel32.dll")]
+		static extern uint ResumeThread(IntPtr hThread);
+
+		[DllImport("user32.dll")]
+		static extern uint WaitForInputIdle(IntPtr hProcess, uint dwMilliseconds);
+
+		[DllImport("kernel32.dll")]
+		static extern int SuspendThread(IntPtr hThread);
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+		struct STARTUPINFO
+		{
+			public Int32 cb;
+			public string lpReserved;
+			public string lpDesktop;
+			public string lpTitle;
+			public Int32 dwX;
+			public Int32 dwY;
+			public Int32 dwXSize;
+			public Int32 dwYSize;
+			public Int32 dwXCountChars;
+			public Int32 dwYCountChars;
+			public Int32 dwFillAttribute;
+			public Int32 dwFlags;
+			public Int16 wShowWindow;
+			public Int16 cbReserved2;
+			public IntPtr lpReserved2;
+			public IntPtr hStdInput;
+			public IntPtr hStdOutput;
+			public IntPtr hStdError;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct PROCESS_INFORMATION
+		{
+			public IntPtr hProcess;
+			public IntPtr hThread;
+			public int dwProcessId;
+			public int dwThreadId;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct SECURITY_ATTRIBUTES
+		{
+			public int nLength;
+			public IntPtr lpSecurityDescriptor;
+			public int bInheritHandle;
+		}
+
+
 		public static void Main(string[] args)
 		{
 			const int argsLengthHooksCPP = 20;
@@ -253,10 +321,47 @@ namespace InjectorLoader
 			IntPtr ptr = Marshal.AllocHGlobal(size);
 			Marshal.Copy(data, 0, ptr, size);
 
-			if (Environment.Is64BitProcess)
-				return Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, "", hookDllPath, ptr, size, pOutPID);
-			else
-				return Injector32.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, hookDllPath, "", ptr, size, pOutPID);
+			const bool useWaitForIdle = true;
+
+			if (!useWaitForIdle)
+			{
+				if (Environment.Is64BitProcess)
+					return Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, "", hookDllPath, ptr, size, pOutPID);
+				else
+					return Injector32.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, hookDllPath, "", ptr, size, pOutPID);
+
+			}
+			
+			string directoryPath = Path.GetDirectoryName(exePath);
+
+			STARTUPINFO startup = new STARTUPINFO();
+			startup.cb = Marshal.SizeOf(startup);
+			startup.dwFlags = 0x1;//STARTF_USESHOWWINDOW
+			startup.wShowWindow = 1;//SW_SHOWNORMAL
+
+			bool success = CreateProcess(exePath, cmdLineArgs, IntPtr.Zero, IntPtr.Zero, false,
+				0x00000004, //Suspended
+				IntPtr.Zero, directoryPath, ref startup, out PROCESS_INFORMATION processInformation);
+
+			if (!success) return -1;
+
+			ResumeThread(processInformation.hThread);
+
+			//Inject can crash without waiting for process to initialise
+			WaitForInputIdle(processInformation.hProcess, 0xFFFFFFFF);
+
+			SuspendThread(processInformation.hThread);
+
+			int injectResult = Environment.Is64BitProcess ? 
+				Injector64.RhInjectLibrary((uint)processInformation.dwProcessId, 0, 0, "", hookDllPath, ptr, (uint)size) : 
+				Injector32.RhInjectLibrary((uint)processInformation.dwProcessId, 0, 0, hookDllPath, "", ptr, (uint)size);
+
+			//MessageBox.Show($@"0x{injectResult:x}", @"Inject result", MessageBoxButtons.OK);
+
+			ResumeThread(processInformation.hThread);
+
+			return injectResult;
+
 		}
 	}
 }
