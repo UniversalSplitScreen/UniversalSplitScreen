@@ -117,6 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <data name="UnlockHandleButton.ToolTip" xml:space="preserve">
+    <value>This will close the handle named above in the target game. 
+Use this to run multiple instances, similar to Unlock Source engine.
+You will need to find the handle name with Process Explorer. (Press Ctrl+H in Process Explorer to view handles).
+You can unlock multiple handles at once by separating with 5 &amp; symbols, e.g. handle1&amp;&amp;&amp;&amp;&amp;handle2</value>
+  </data>
+  <data name="Button_UnlockSourceEngine.ToolTip" xml:space="preserve">
+    <value>Games made in the Source engine (most Valve games, e.g. Team Fortress 2, Left 4 Dead 2, CS:GO, etc.) will prevent you from opening multiple instances.
+If you target a game window and click this button, it will "unlock" it so you can open another instance.</value>
+  </data>
   <data name="RefCheckbox_DrawMouse.ToolTip" xml:space="preserve">
     <value>This program will draw a "fake" mouse cursor over the game's mouse position.
 Use this if the game doesn't have its own mouse cursor image and relies on the Windows mouse cursor.
@@ -134,9 +147,6 @@ Very few games use raw keyboard input, so this will likely have no effect.</valu
 Useful if the game doesn't listen to raw input unless it is in the foreground.
 Use this if a game is not responding to mouse input.</value>
   </data>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <data name="RefCheckbox_Hook_GetKeyboardState.ToolTip" xml:space="preserve">
     <value>Somes games will use GetKeyboardState to get keyboard input.
 Windows should in theory only report input from the message queue (ie Send normal keyboard input) but sometimes using two keyboards at once will interfere with the function.
@@ -174,16 +184,6 @@ XInput only supports 4 controllers. Do not use a controller index higher than 4 
     <value>This hook will overload GetAsyncKeyState for mouse buttons and all keyboard keys.
 Use this if a game is not responding to mouse buttons or keyboard keys.
 This will often fix issues with the shift/control/alt keys.</value>
-  </data>
-  <data name="UnlockHandleButton.ToolTip" xml:space="preserve">
-    <value>This will close the handle named above in the target game. 
-Use this to run multiple instances, similar to Unlock Source engine.
-You will need to find the handle name with Process Explorer. (Press Ctrl+H in Process Explorer to view handles).
-You can unlock multiple handles at once by separating with 5 &amp; symbols, e.g. handle1&amp;&amp;&amp;&amp;&amp;handle2</value>
-  </data>
-  <data name="Button_UnlockSourceEngine.ToolTip" xml:space="preserve">
-    <value>Games made in the Source engine (most Valve games, e.g. Team Fortress 2, Left 4 Dead 2, CS:GO, etc.) will prevent you from opening multiple instances.
-If you target a game window and click this button, it will "unlock" it so you can open another instance.</value>
   </data>
   <data name="CheckBox_StartupHook_Dinput.ToolTip" xml:space="preserve">
     <value>Redirects controller input within the Direct Input API.

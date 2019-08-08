@@ -219,10 +219,9 @@ namespace UniversalSplitScreen.UI
 			Program.Form.Opacity = CheckBox_Transparency.Checked ? 0.90 : 1.00;
 		}
 
-		private async void Button_CheckUpdates_Click(object sender, EventArgs e)
+		private void Button_CheckUpdates_Click(object sender, EventArgs e)
 		{
-			string versionName = await UpdateChecker.IsThereAnUpdate();
-			MessageBox.Show(string.IsNullOrWhiteSpace(versionName) ? "No new version found" : $"Found new version: {versionName}\nDownload the latest version from the website.");
+			UpdateChecker.CheckUpdateDialog(true);
 		}
 
 		private void UnlockHandleButton_Click(object sender, EventArgs e)
@@ -274,6 +273,11 @@ namespace UniversalSplitScreen.UI
 		{
 			dinputControllerIndex = ComboBox_DinputControllerIndex.SelectedIndex;
 			Logger.WriteLine($"Set dinput controller index = {dinputControllerIndex}");
+		}
+
+		public void SetAutomaticallyCheckUpdatesChecked(bool value)
+		{
+			Checkbox_AutomaticallyCheckForUpdates.Checked = value;
 		}
 
 		#region Goldberg
@@ -333,5 +337,12 @@ namespace UniversalSplitScreen.UI
 			}
 		}
 		#endregion
+
+		private void Checkbox_AutomaticallyCheckForUpdates_CheckedChanged(object sender, EventArgs e)
+		{
+			if (Program.Config == null) return;
+			Program.Config.AutomaticallyCheckForUpdatesOnStartup = Checkbox_AutomaticallyCheckForUpdates.Checked;
+			Program.Config.SaveConfig();
+		}
 	}
 }

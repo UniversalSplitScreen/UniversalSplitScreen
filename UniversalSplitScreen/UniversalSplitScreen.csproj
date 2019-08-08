@@ -109,6 +109,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Config.cs" />
     <Compile Include="Core\IntVector2.cs" />
     <Compile Include="Core\Logger.cs" />
     <Compile Include="Core\Options.cs" />
@@ -177,6 +178,12 @@
     <Compile Include="UI\RefTextbox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="UI\UpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\UpdateForm.Designer.cs">
+      <DependentUpon>UpdateForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\WebLinkLabel.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -211,6 +218,9 @@
   <ItemGroup>
     <EmbeddedResource Include="UI\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\UpdateForm.resx">
+      <DependentUpon>UpdateForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

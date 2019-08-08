@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using UniversalSplitScreen.Core;
 using UniversalSplitScreen.RawInput;
@@ -9,6 +10,8 @@ namespace UniversalSplitScreen
 {
 	class Program
 	{
+		public static Config Config { get; private set; }
+
 		static Intercept i;
 
 		public static Form1 Form { get; private set; }
@@ -20,11 +23,16 @@ namespace UniversalSplitScreen
 		[STAThread]
 		static void Main(string[] args)
 		{
+			Config = Config.LoadConfig();
+			if (Config?.AutomaticallyCheckForUpdatesOnStartup ?? true)
+				UpdateChecker.CheckUpdateDialog(false);
+
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
 			Form = new Form1();
 			Form_hWnd = Form.Handle;
+			Form.SetAutomaticallyCheckUpdatesChecked(Config?.AutomaticallyCheckForUpdatesOnStartup ?? true);
 			
 			Options = new OptionsStructure();
 

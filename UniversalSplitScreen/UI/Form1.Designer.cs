@@ -147,6 +147,7 @@
 			this.WebLinkWebsite = new UniversalSplitScreen.UI.WebLinkLabel();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.FileDialog_FindWindowHook = new System.Windows.Forms.OpenFileDialog();
+			this.Checkbox_AutomaticallyCheckForUpdates = new System.Windows.Forms.CheckBox();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
@@ -1316,6 +1317,7 @@
 			// 
 			// panel3
 			// 
+			this.panel3.Controls.Add(this.Checkbox_AutomaticallyCheckForUpdates);
 			this.panel3.Controls.Add(this.panel4);
 			this.panel3.Controls.Add(this.Button_CheckUpdates);
 			this.panel3.Controls.Add(this.tabControl2);
@@ -1359,10 +1361,10 @@
 			// 
 			this.tabControl2.Controls.Add(this.tabPage5);
 			this.tabControl2.Controls.Add(this.tabPage6);
-			this.tabControl2.Location = new System.Drawing.Point(3, 45);
+			this.tabControl2.Location = new System.Drawing.Point(3, 82);
 			this.tabControl2.Name = "tabControl2";
 			this.tabControl2.SelectedIndex = 0;
-			this.tabControl2.Size = new System.Drawing.Size(756, 387);
+			this.tabControl2.Size = new System.Drawing.Size(756, 350);
 			this.tabControl2.TabIndex = 4;
 			// 
 			// tabPage5
@@ -1377,7 +1379,7 @@
 			this.tabPage5.Location = new System.Drawing.Point(4, 22);
 			this.tabPage5.Name = "tabPage5";
 			this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage5.Size = new System.Drawing.Size(748, 361);
+			this.tabPage5.Size = new System.Drawing.Size(748, 324);
 			this.tabPage5.TabIndex = 0;
 			this.tabPage5.Text = "Credits";
 			this.tabPage5.UseVisualStyleBackColor = true;
@@ -1481,7 +1483,7 @@
 			this.tabPage6.Location = new System.Drawing.Point(4, 22);
 			this.tabPage6.Name = "tabPage6";
 			this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage6.Size = new System.Drawing.Size(748, 361);
+			this.tabPage6.Size = new System.Drawing.Size(748, 324);
 			this.tabPage6.TabIndex = 1;
 			this.tabPage6.Text = "License";
 			this.tabPage6.UseVisualStyleBackColor = true;
@@ -1491,7 +1493,7 @@
 			this.GroupBoxLicense.Controls.Add(this.label1);
 			this.GroupBoxLicense.Location = new System.Drawing.Point(6, 6);
 			this.GroupBoxLicense.Name = "GroupBoxLicense";
-			this.GroupBoxLicense.Size = new System.Drawing.Size(736, 352);
+			this.GroupBoxLicense.Size = new System.Drawing.Size(736, 312);
 			this.GroupBoxLicense.TabIndex = 6;
 			this.GroupBoxLicense.TabStop = false;
 			this.GroupBoxLicense.Text = "Universal Split Screen license";
@@ -1529,6 +1531,17 @@
 			// 
 			this.FileDialog_FindWindowHook.Filter = "Executable files|*.exe";
 			this.FileDialog_FindWindowHook.Title = "Select game executable";
+			// 
+			// Checkbox_AutomaticallyCheckForUpdates
+			// 
+			this.Checkbox_AutomaticallyCheckForUpdates.AutoSize = true;
+			this.Checkbox_AutomaticallyCheckForUpdates.Location = new System.Drawing.Point(578, 59);
+			this.Checkbox_AutomaticallyCheckForUpdates.Name = "Checkbox_AutomaticallyCheckForUpdates";
+			this.Checkbox_AutomaticallyCheckForUpdates.Size = new System.Drawing.Size(177, 17);
+			this.Checkbox_AutomaticallyCheckForUpdates.TabIndex = 8;
+			this.Checkbox_AutomaticallyCheckForUpdates.Text = "Automatically check for updates";
+			this.Checkbox_AutomaticallyCheckForUpdates.UseVisualStyleBackColor = true;
+			this.Checkbox_AutomaticallyCheckForUpdates.CheckedChanged += new System.EventHandler(this.Checkbox_AutomaticallyCheckForUpdates_CheckedChanged);
 			// 
 			// Form1
 			// 
@@ -1715,5 +1728,6 @@
 		private System.Windows.Forms.Label Label_Goldberg_ID;
 		private System.Windows.Forms.Label Label_Goldberg_Username;
 		private RefCheckbox RefCheckbox_Hook_GetKeyboardState;
+		private System.Windows.Forms.CheckBox Checkbox_AutomaticallyCheckForUpdates;
 	}
 }
