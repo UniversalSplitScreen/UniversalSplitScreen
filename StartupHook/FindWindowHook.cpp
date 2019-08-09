@@ -19,6 +19,12 @@ HANDLE WINAPI OpenProcess_Hook(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD
 	return NULL;
 }
 
+BOOL WINAPI EnumWindows_Hook(WNDENUMPROC lpEnumFunc, LPARAM lParam)
+{
+	//Pretend it succeeded
+	return TRUE;
+}
+
 void installFindWindowHooks()
 {
 	installHook("user32.dll", "FindWindowA", FindWindow_Hook);
@@ -27,4 +33,6 @@ void installFindWindowHooks()
 	installHook("user32.dll", "FindWindowExW", FindWindowEx_Hook);
 
 	installHook("kernel32.dll", "OpenProcess", OpenProcess_Hook);
+
+	installHook("user32.dll", "EnumWindows", EnumWindows_Hook);
 }
