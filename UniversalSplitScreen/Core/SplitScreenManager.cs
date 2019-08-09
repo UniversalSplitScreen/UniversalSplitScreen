@@ -515,16 +515,21 @@ namespace UniversalSplitScreen.Core
 				
 			};
 			proc.Start();
-			proc.WaitForExit();
-
-			var exitCode = (uint)proc.ExitCode;
-			Logger.WriteLine($"InjectorLoader.CreateAndInjectStartupHook result = 0x{exitCode:x}. is64={is64}");
-			if (exitCode != 0)
+			Task.Run(delegate
 			{
-				string stdcerr = proc.StandardError.ReadToEnd();
-				string x = (exitCode == 0xC0009898) ? $"Is the game {(is64 ? 32 : 64)}-bit?\n" : "";
-				MessageBox.Show($@"Error injecting StartupHook hook. {x}Error = 0x{exitCode:x}, arguments={arguments}, stcerr={stdcerr}", @"Error", MessageBoxButtons.OK);
-			}
+				proc.WaitForExit();
+
+				var exitCode = (uint) proc.ExitCode;
+				Logger.WriteLine($"InjectorLoader.CreateAndInjectStartupHook result = 0x{exitCode:x}. is64={is64}");
+				if (exitCode != 0)
+				{
+					string stdcerr = proc.StandardError.ReadToEnd();
+					string x = (exitCode == 0xC0009898) ? $"Is the game {(is64 ? 32 : 64)}-bit?\n" : "";
+					MessageBox.Show(
+						$@"Error injecting StartupHook hook. {x}Error = 0x{exitCode:x}, arguments={arguments}, stcerr={stdcerr}",
+						@"Error", MessageBoxButtons.OK);
+				}
+			});
 		}
 
 		/// <summary>
