@@ -312,17 +312,18 @@ namespace InjectorLoader
 			IntPtr pOutPID = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(uint)));
 			//System.Windows.Forms.MessageBox.Show(hookDllPath, "hello", System.Windows.Forms.MessageBoxButtons.OK);
 
-			const int size = 3;
+			const bool useWaitForIdle = true;
+
+			const int size = 4;
 			var data = new byte[size];
 			data[0] = dinputHookEnabled ? (byte)1 : (byte)0;
 			data[1] = findWindowHookEnabled ? (byte)1 : (byte)0;
 			data[2] = controllerIndex;
+			data[3] = useWaitForIdle ? (byte) 0 : (byte) 1;
 
 			IntPtr ptr = Marshal.AllocHGlobal(size);
 			Marshal.Copy(data, 0, ptr, size);
-
-			const bool useWaitForIdle = true;
-
+			
 			if (!useWaitForIdle)
 			{
 				if (Environment.Is64BitProcess)
@@ -336,8 +337,8 @@ namespace InjectorLoader
 
 			STARTUPINFO startup = new STARTUPINFO();
 			startup.cb = Marshal.SizeOf(startup);
-			startup.dwFlags = 0x1;//STARTF_USESHOWWINDOW
-			startup.wShowWindow = 1;//SW_SHOWNORMAL
+			//startup.dwFlags = 0x1;//STARTF_USESHOWWINDOW
+			//startup.wShowWindow = 1;//SW_SHOWNORMAL
 
 			bool success = CreateProcess(exePath, cmdLineArgs, IntPtr.Zero, IntPtr.Zero, false,
 				0x00000004, //Suspended
@@ -348,16 +349,14 @@ namespace InjectorLoader
 			ResumeThread(processInformation.hThread);
 
 			//Inject can crash without waiting for process to initialise
-			WaitForInputIdle(processInformation.hProcess, 0xFFFFFFFF);
+			WaitForInputIdle(processInformation.hProcess, uint.MaxValue);
 
 			SuspendThread(processInformation.hThread);
 
 			int injectResult = Environment.Is64BitProcess ? 
 				Injector64.RhInjectLibrary((uint)processInformation.dwProcessId, 0, 0, "", hookDllPath, ptr, (uint)size) : 
 				Injector32.RhInjectLibrary((uint)processInformation.dwProcessId, 0, 0, hookDllPath, "", ptr, (uint)size);
-
-			//MessageBox.Show($@"0x{injectResult:x}", @"Inject result", MessageBoxButtons.OK);
-
+			
 			ResumeThread(processInformation.hThread);
 
 			return injectResult;
