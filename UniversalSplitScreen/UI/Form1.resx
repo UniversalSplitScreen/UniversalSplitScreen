@@ -185,6 +185,12 @@ XInput only supports 4 controllers. Do not use a controller index higher than 4 
 Use this if a game is not responding to mouse buttons or keyboard keys.
 This will often fix issues with the shift/control/alt keys.</value>
   </data>
+  <data name="CheckBox_StartupHook_UseWaitForIdle.ToolTip" xml:space="preserve">
+    <value>Some games will crash if hooks are injected before the process has properly initialised.
+Some games may also crash if hooks are injected afterwards.
+If the startup hooks are crashing, try with this on and off.
+If both options don't work, try turning this off and enabling '640x480 compatibility mode' on the game's executable.</value>
+  </data>
   <data name="CheckBox_StartupHook_Dinput.ToolTip" xml:space="preserve">
     <value>Redirects controller input within the Direct Input API.
 Direct Input is an old API, so it is mostly only used by old games.

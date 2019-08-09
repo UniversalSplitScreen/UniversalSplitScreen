@@ -190,12 +190,12 @@ namespace InjectorLoader
 		public static void Main(string[] args)
 		{
 			const int argsLengthHooksCPP = 20;
-			const int argsLengthStartupHook = 6;
+			const int argsLengthStartupHook = 7;
 
 			//dllpath, exePath, base64CmdArgs, dinputHookEnabled, findWindowHookEnabled, controllerIndex
 			if (args.Length == argsLengthStartupHook)
 			{
-				int ntFwh = CreateAndInjectStartupHook(args[0], args[1], args[2], args[3].ToLower().Equals("true"), args[4].ToLower().Equals("true"), byte.Parse(args[5]));
+				int ntFwh = CreateAndInjectStartupHook(args[0], args[1], args[2], args[3].ToLower().Equals("true"), args[4].ToLower().Equals("true"), args[5].ToLower().Equals("true"), byte.Parse(args[6]));
 				Environment.Exit(ntFwh);
 				return;
 			}
@@ -306,14 +306,12 @@ namespace InjectorLoader
 			Environment.Exit((int)nt);
 		}
 		
-		private static int CreateAndInjectStartupHook(string hookDllPath, string exePath, string base64CommandLineArgs, bool dinputHookEnabled, bool findWindowHookEnabled, byte controllerIndex)
+		private static int CreateAndInjectStartupHook(string hookDllPath, string exePath, string base64CommandLineArgs, bool useWaitForIdle, bool dinputHookEnabled, bool findWindowHookEnabled, byte controllerIndex)
 		{
 			string cmdLineArgs = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64CommandLineArgs));
 			IntPtr pOutPID = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(uint)));
 			//System.Windows.Forms.MessageBox.Show(hookDllPath, "hello", System.Windows.Forms.MessageBoxButtons.OK);
-
-			const bool useWaitForIdle = true;
-
+			
 			const int size = 4;
 			var data = new byte[size];
 			data[0] = dinputHookEnabled ? (byte)1 : (byte)0;

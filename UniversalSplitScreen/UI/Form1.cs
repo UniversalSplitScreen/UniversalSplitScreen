@@ -260,7 +260,7 @@ namespace UniversalSplitScreen.UI
 
 			if (System.IO.File.Exists(fileName))
 			{
-				Program.SplitScreenManager.CreateAndInjectStartupHook(is64, fileName, args, CheckBox_StartupHook_Dinput.Checked, CheckBox_StartupHook_FindWindow.Checked, (byte)dinputControllerIndex);
+				Program.SplitScreenManager.CreateAndInjectStartupHook(is64, fileName, args, CheckBox_StartupHook_UseWaitForIdle.Checked, CheckBox_StartupHook_Dinput.Checked, CheckBox_StartupHook_FindWindow.Checked, (byte)dinputControllerIndex);
 			}
 			else
 			{
