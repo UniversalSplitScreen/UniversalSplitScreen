@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "FindWindowHook.h"
+#include "InstallHooks.h"
 #include "Hooking.h"
 
 //FindWindowA/FindWindowW

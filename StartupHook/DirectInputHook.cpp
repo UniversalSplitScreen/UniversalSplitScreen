@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "DirectInputHook.h"
+#include "InstallHooks.h"
 #include "Hooking.h"
 #include <dinput.h>
 #include <iostream>

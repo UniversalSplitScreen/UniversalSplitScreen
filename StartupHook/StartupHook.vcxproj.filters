@@ -21,13 +21,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DirectInputHook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Entry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FindWindowHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Hooking.h">
@@ -37,6 +31,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InstallHooks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
