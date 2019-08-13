@@ -416,7 +416,7 @@ namespace UniversalSplitScreen.Core
 		{
 			while(true)
 			{
-				Thread.Sleep(1000);//TODO: configurable this
+				Thread.Sleep(10);//TODO: configurable this
 
 				if (Options.CurrentOptions.SendWM_ACTIVATE)
 				{
