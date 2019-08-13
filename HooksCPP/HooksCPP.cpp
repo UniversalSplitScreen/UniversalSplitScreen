@@ -1303,7 +1303,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (HookXInput)
 		{
 			LPCSTR xinputNames[] = {
-				"xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll", "xinput1_5.dll"
+				"xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll"
 			};
 
 			for (auto& xinputName : xinputNames)
