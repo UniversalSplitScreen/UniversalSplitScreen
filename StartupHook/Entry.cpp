@@ -9,6 +9,7 @@
  *	Byte 0 : 1 if dinput hook is enabled
  *	Byte 1 : 1 if FindWindow hook is enabled
  *	byte 2 : The controllerIndex
+ *	byte 3 : If RhWakeUpProcess needs to be called (ie it is suspended)
  */
 
 extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
@@ -31,6 +32,8 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 	if (findWindowHookEnabled)
 		installFindWindowHooks();
+
+	installFindMutexHooks();
 
 	if (needWakeUpProcess)
 	{

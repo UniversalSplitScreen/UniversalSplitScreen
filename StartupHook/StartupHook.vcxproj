@@ -198,6 +198,7 @@ copy $(SolutionDir)$(PlatformTarget)\$(Configuration)\$(TargetName).dll $(Soluti
     <ClCompile Include="DirectInputHook.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Entry.cpp" />
+    <ClCompile Include="FindMutexHooks.cpp" />
     <ClCompile Include="FindWindowHook.cpp" />
     <ClCompile Include="Hooking.cpp" />
     <ClCompile Include="stdafx.cpp">
