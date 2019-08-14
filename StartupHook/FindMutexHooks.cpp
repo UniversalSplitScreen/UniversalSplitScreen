@@ -20,6 +20,20 @@ t_NtCreateMutant NtCreateMutant()
 	return f_NtCreateMutant;
 }
 
+typedef NTSTATUS(NTAPI* t_NtOpenMutant)(PHANDLE MutantHandle, ULONG DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes);
+
+//Returns STATUS_OBJECT_NAME_NOT_FOUND or STATUS_SUCCESS (or STATUS_OBJECT_NAME_COLLISION if OBJ_OPENIF is specified in OBJECT_ATTRIBUTES)
+t_NtOpenMutant NtOpenMutant()
+{
+	static t_NtOpenMutant f_NtOpenMutant = NULL;
+	if (!f_NtOpenMutant)
+	{
+		HMODULE h_NtDll = GetModuleHandle("Ntdll.dll");
+		f_NtOpenMutant = (t_NtOpenMutant)GetProcAddress(h_NtDll, "NtOpenMutant");
+	}
+	return f_NtOpenMutant;
+}
+
 bool isHandleToFakeSignal(HANDLE handle)
 {
 	return handlesToFakeSignal.empty() ? false : 
@@ -31,50 +45,17 @@ DWORD WINAPI WaitForSingleObject_Hook(
 	DWORD  dwMilliseconds
 )
 {
-	if (isHandleToFakeSignal(hHandle))
-	{
-		//MessageBox(NULL, "A", "1", MB_OK);
-		return WAIT_OBJECT_0;//Already signaled
-	}
-
-	auto ret = WaitForSingleObject(hHandle, dwMilliseconds);
-	return ret == WAIT_FAILED ? WAIT_OBJECT_0 : ret;
+	return isHandleToFakeSignal(hHandle) ? WAIT_OBJECT_0 : WaitForSingleObject(hHandle, dwMilliseconds);
 }
 
-/*HANDLE WINAPI CreateMutexA_Hook(
-	LPSECURITY_ATTRIBUTES lpMutexAttributes,
-	BOOL                  bInitialOwner,
-	LPCSTR                lpName
+DWORD WINAPI WaitForSingleObjectEx_Hook(
+	HANDLE hHandle,
+	DWORD  dwMilliseconds,
+	BOOL   bAlertable
 )
 {
-	if (isTargetName(lpName))
-	{
-		MessageBox(NULL, lpName, "0A", MB_OK);
-		HANDLE handle = CreateMutexA(lpMutexAttributes, bInitialOwner, lpName);
-
-		//MessageBox(NULL, "B", "0", MB_OK);
-		//If bInitialOwner is TRUE, the mutex is set to NOT signaled. (It is signaled if NO thread owns it).
-		//Hence there is no point returning WAIT_OBJECT_0 in WaitForSignalObject (ie already signaled)
-		if (bInitialOwner == FALSE)
-		{
-			//MessageBox(NULL, "C", "0", MB_OK);
-			handlesToFakeSignal.push_back(handle);
-			//MessageBox(NULL, "D", "0", MB_OK);
-		}
-		//MessageBox(NULL, "E", "0", MB_OK);
-
-		//CreateMutex sets this to ERROR_ALREADY_EXISTS
-		SetLastError(ERROR_SUCCESS);
-		//MessageBox(NULL, "F", "0", MB_OK);
-		MessageBox(NULL, ("handle = " + std::to_string((int)handle)).c_str(), "handle", 0);
-		//return NULL;
-		return handle;
-	}
-	else
-	{
-		return CreateMutexA(lpMutexAttributes, bInitialOwner, lpName);
-	}
-}*/
+	return isHandleToFakeSignal(hHandle) ? WAIT_OBJECT_0 : WaitForSingleObjectEx(hHandle, dwMilliseconds, bAlertable);
+}
 
 bool isTargetName(UNICODE_STRING name)
 {
@@ -94,15 +75,12 @@ bool isTargetName(UNICODE_STRING name)
 	return false;
 }
 
-NTSTATUS WINAPI NtCreateMutant_Hook(PHANDLE MutantHandle, DWORD DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, BOOLEAN InitialOwner)
+NTSTATUS WINAPI NtCreateMutant_Hook(OUT PHANDLE MutantHandle, IN ULONG DesiredAccess, IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL, IN BOOLEAN InitialOwner)
 {
 	const NTSTATUS ret = NtCreateMutant()(MutantHandle, DesiredAccess, ObjectAttributes, InitialOwner);
 
 	if (ObjectAttributes != nullptr && ObjectAttributes->ObjectName != nullptr && isTargetName(*(ObjectAttributes->ObjectName)))
-	//if (false)
 	{
-		MessageBox(NULL, "A", "00A", MB_OK);
-
 		if (InitialOwner == FALSE)
 		{
 			handlesToFakeSignal.push_back(*MutantHandle);
@@ -115,9 +93,33 @@ NTSTATUS WINAPI NtCreateMutant_Hook(PHANDLE MutantHandle, DWORD DesiredAccess, P
 	return ret;
 }
 
+NTSTATUS WINAPI NtOpenMutant_Hook(PHANDLE MutantHandle, ULONG DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes)
+{
+	const auto ret = NtOpenMutant()(MutantHandle, DesiredAccess, ObjectAttributes);
+
+	if (ObjectAttributes == nullptr || ObjectAttributes->ObjectName == nullptr || !isTargetName(*ObjectAttributes->ObjectName))
+	{
+		return ret;
+	}
+
+	if (ret == STATUS_OBJECT_NAME_COLLISION)
+	{
+		SetLastError(ERROR_SUCCESS);
+		return STATUS_SUCCESS;
+	}
+	else if (ret == STATUS_SUCCESS)
+	{
+		*MutantHandle = NULL;
+		SetLastError(ERROR_OBJECT_NOT_FOUND);
+		return STATUS_OBJECT_NAME_NOT_FOUND;
+	}
+
+	return ret;
+}
+
 void installFindMutexHooks()
 {
 	installHook("ntdll.dll", "NtCreateMutant", NtCreateMutant_Hook);
-	//installHook("kernel32.dll", "CreateMutexA", CreateMutexA_Hook);
+	installHook("ntdll.dll", "NtOpenMutant", NtOpenMutant_Hook);
 	installHook("kernel32.dll", "WaitForSingleObject", WaitForSingleObject_Hook);
 }
