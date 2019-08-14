@@ -15,7 +15,8 @@
   "Hook_GetCursorPos": true,
   "Hook_SetCursorPos": true,
   "Hook_GetAsyncKeyState": true,
-  "Hook_GetKeyState": false,
+  "Hook_GetKeyState": true,
+  "Hook_GetKeyboardState": true,
   "Hook_XInput": true,
   "EndVKey": 35
 }

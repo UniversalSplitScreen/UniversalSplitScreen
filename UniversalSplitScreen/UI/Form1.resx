@@ -120,6 +120,12 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <data name="UnlockHandleButton.ToolTip" xml:space="preserve">
+    <value>This will close the handle named above in the target game. 
+Use this to run multiple instances, similar to Unlock Source engine.
+You will need to find the handle name with Process Explorer. (Press Ctrl+H in Process Explorer to view handles).
+You can unlock multiple handles at once by separating with 5 &amp; symbols, e.g. handle1&amp;&amp;&amp;&amp;&amp;handle2</value>
+  </data>
   <data name="Button_UnlockSourceEngine.ToolTip" xml:space="preserve">
     <value>Games made in the Source engine (most Valve games, e.g. Team Fortress 2, Left 4 Dead 2, CS:GO, etc.) will prevent you from opening multiple instances.
 If you target a game window and click this button, it will "unlock" it so you can open another instance.</value>
@@ -141,6 +147,17 @@ Very few games use raw keyboard input, so this will likely have no effect.</valu
 Useful if the game doesn't listen to raw input unless it is in the foreground.
 Use this if a game is not responding to mouse input.</value>
   </data>
+  <data name="RefCheckbox_Hook_GetKeyboardState.ToolTip" xml:space="preserve">
+    <value>Somes games will use GetKeyboardState to get keyboard input.
+Windows should in theory only report input from the message queue (ie Send normal keyboard input) but sometimes using two keyboards at once will interfere with the function.
+Use this hook if the game is responding to multiple keyboards.</value>
+  </data>
+  <data name="RefCheckbox_Hook_Dinput.ToolTip" xml:space="preserve">
+    <value>XInput is used by most games for controller input. However, XInput supports only up to 4 controllers.
+DirectInput supports effectively unlimited controllers. This hook translating DInput into XInput so you can use more than 4 controllers.
+This hook requires 'Hook XInput for gamepads'
+If you want to hook DInput for controller input in games that use DInput natively, see 'Hook DInput' in the Utilities tab.</value>
+  </data>
   <data name="RefCheckbox_UpdateAbsoluteFlagInMouseMessage.ToolTip" xml:space="preserve">
     <value>If checked, the absolute cursor position (ie the cursor position in UI menus) will be updated when the game processes a mouse move message.
 This will only have an effect if legacy input is enabled.
@@ -157,6 +174,34 @@ This hook will automatically switch between delta mouse input (ie first person c
 If you need this hook, make sure all "raw input" options are turned OFF in this page and in the games options.
 You will need the GetCursorPos and SetCursorPos hooks turned ON.
 "Send normal mouse input" is highly recommended to make menus work properly.</value>
+  </data>
+  <data name="RefCheckbox_Hook_XInput.ToolTip" xml:space="preserve">
+    <value>Redirects controller input to the selected controller index.
+This hook is required if you want to use gamepad/controller input on games that use xinput (most modern games).
+XInput only supports 4 controllers. Do not use a controller index higher than 4 if the game only uses XInput.</value>
+  </data>
+  <data name="RefCheckbox_Hook_GetAsyncKeyState.ToolTip" xml:space="preserve">
+    <value>This hook will overload GetAsyncKeyState for mouse buttons and all keyboard keys.
+Use this if a game is not responding to mouse buttons or keyboard keys.
+This will often fix issues with the shift/control/alt keys.</value>
+  </data>
+  <data name="CheckBox_StartupHook_UseWaitForIdle.ToolTip" xml:space="preserve">
+    <value>Some games will crash if hooks are injected before the process has properly initialised.
+Some games may also crash if hooks are injected afterwards.
+If the startup hooks are crashing, try with this on and off.
+If both options don't work, try turning this off and enabling '640x480 compatibility mode' on the game's executable.</value>
+  </data>
+  <data name="CheckBox_StartupHook_Dinput.ToolTip" xml:space="preserve">
+    <value>Redirects controller input within the Direct Input API.
+Direct Input is an old API, so it is mostly only used by old games.
+Direct Input supports an effectively unlimited number of controllers, so you can use more than 4 controllers.
+</value>
+  </data>
+  <data name="CheckBox_StartupHook_FindWindow.ToolTip" xml:space="preserve">
+    <value>Some games will use FindWindow at launch to detect if any instances of the game are already running.
+Launching a game with this utility will hook FindWindow so the game cannot detect other instances.
+As with the other hooks, this may be detected as a false positive by an anti-virus or anti-cheat system.
+</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>MIT License
@@ -181,6 +226,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.</value>
   </data>
+  <metadata name="FileDialog_FindWindowHook.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>115, 15</value>
+  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

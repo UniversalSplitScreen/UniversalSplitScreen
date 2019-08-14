@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO.Pipes;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using UniversalSplitScreen.Core;
 
 namespace UniversalSplitScreen.Piping
@@ -243,7 +240,9 @@ namespace UniversalSplitScreen.Piping
 
 			StringBuilder sb = new StringBuilder();
 
-			for (int i = 0; i < 30; i++)
+			sb.Append("USS");
+
+			for (int i = 3; i < 30; i++)
 			{
 				byte b = (byte)(data[i] % 62);
 

@@ -1,18 +1,14 @@
-﻿using AutoHotkey.Interop;
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using UniversalSplitScreen.Core;
 using UniversalSplitScreen.SendInput;
 
 namespace UniversalSplitScreen.RawInput
 {
-	class MessageProcessor
+	internal class MessageProcessor
 	{
 		/// <summary>
 		/// Only updated when split screen is deactivated
@@ -20,7 +16,7 @@ namespace UniversalSplitScreen.RawInput
 		public IntPtr LastKeyboardPressed { get; private set; } = IntPtr.Zero;
 		
 		//leftMiddleRight: left=1, middle=2, right=3, xbutton1=4, xbutton2=5
-		readonly Dictionary<ButtonFlags, (MouseInputNotifications msg, uint wParam, ushort leftMiddleRight, bool isButtonDown, int VKey)> ButtonFlagToMouseInputNotifications = new Dictionary<ButtonFlags, (MouseInputNotifications, uint, ushort, bool, int)>()
+		private readonly Dictionary<ButtonFlags, (MouseInputNotifications msg, uint wParam, ushort leftMiddleRight, bool isButtonDown, int VKey)> _buttonFlagToMouseInputNotifications = new Dictionary<ButtonFlags, (MouseInputNotifications, uint, ushort, bool, int)>()
 		{
 			{ ButtonFlags.RI_MOUSE_LEFT_BUTTON_DOWN,	(MouseInputNotifications.WM_LBUTTONDOWN ,	0x0001,		1, true,    0x01) },
 			{ ButtonFlags.RI_MOUSE_LEFT_BUTTON_UP,		(MouseInputNotifications.WM_LBUTTONUP,		0,			1, false,   0x01) },
@@ -39,27 +35,27 @@ namespace UniversalSplitScreen.RawInput
 		};
 
 		#region End key
-		private ushort endVKey = 0x23;//End. 0x23 = 35
-		private bool WaitingToSetEndKey = false;
+		private ushort _endVKey = 0x23;//End. 0x23 = 35
+		private bool _waitingToSetEndKey = false;
 
 
 		public void WaitToSetEndKey()
 		{
-			WaitingToSetEndKey = true;
+			_waitingToSetEndKey = true;
 			Program.Form.SetEndButtonText("Press a key...");
 		}
 
 		public void StopWaitingToSetEndKey()
 		{
-			WaitingToSetEndKey = false;
-			Program.Form.SetEndButtonText($"Stop button = {System.Windows.Input.KeyInterop.KeyFromVirtualKey(endVKey)}");
-			Options.CurrentOptions.EndVKey = endVKey;
+			_waitingToSetEndKey = false;
+			Program.Form.SetEndButtonText($"Stop button = {System.Windows.Input.KeyInterop.KeyFromVirtualKey(_endVKey)}");
+			Options.CurrentOptions.EndVKey = _endVKey;
 		}
 		#endregion
 		
 		public MessageProcessor()
 		{
-			endVKey = Options.CurrentOptions.EndVKey;
+			_endVKey = Options.CurrentOptions.EndVKey;
 		}
 
 		public void WndProc(ref Message msg)
@@ -71,11 +67,10 @@ namespace UniversalSplitScreen.RawInput
 				Process(hRawInput);
 			}
 		}
-		
-		void PostMessageA(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam)
+
+		static void PostMessageA(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
 		{
-			SendInput.WinApi.PostMessageA(hWnd, Msg, wParam, lParam);
-			return;
+			SendInput.WinApi.PostMessageA(hWnd, msg, wParam, lParam);
 		}
 		
 		private void Process(IntPtr hRawInput)
@@ -85,7 +80,7 @@ namespace UniversalSplitScreen.RawInput
 			Type: UINT
 			If pData is NULL and the function is successful, the return value is 0.If pData is not NULL and the function is successful, the return value is the number of bytes copied into pData.
 			If there is an error, the return value is (UINT) - 1.*/
-			var ret = WinApi.GetRawInputData(hRawInput, DataCommand.RID_INPUT, IntPtr.Zero, ref pbDataSize, Marshal.SizeOf(typeof(RAWINPUTHEADER)));
+			int ret = WinApi.GetRawInputData(hRawInput, DataCommand.RID_INPUT, IntPtr.Zero, ref pbDataSize, Marshal.SizeOf(typeof(RAWINPUTHEADER)));
 
 			if (ret == 0 && pbDataSize == WinApi.GetRawInputData(hRawInput, DataCommand.RID_INPUT, out RAWINPUT rawBuffer, ref pbDataSize, Marshal.SizeOf(typeof(RAWINPUTHEADER))))
 			{
@@ -102,9 +97,9 @@ namespace UniversalSplitScreen.RawInput
 							{
 								if (keyUpOrDown)
 								{
-									if (WaitingToSetEndKey)
+									if (_waitingToSetEndKey)
 									{
-										endVKey = rawBuffer.data.keyboard.VKey;
+										_endVKey = rawBuffer.data.keyboard.VKey;
 										StopWaitingToSetEndKey();
 									}
 
@@ -114,7 +109,7 @@ namespace UniversalSplitScreen.RawInput
 							}
 							else
 							{ 
-								if (keyUpOrDown && rawBuffer.data.keyboard.VKey == endVKey)//End key
+								if (keyUpOrDown && rawBuffer.data.keyboard.VKey == _endVKey)//End key
 								{
 									Logger.WriteLine("End key pressed");
 									Intercept.InterceptEnabled = false;
@@ -131,19 +126,20 @@ namespace UniversalSplitScreen.RawInput
 										if (Options.CurrentOptions.SendNormalKeyboardInput)
 										{
 											uint scanCode = rawBuffer.data.keyboard.MakeCode;
-											ushort VKey = rawBuffer.data.keyboard.VKey;
+											ushort vKey = rawBuffer.data.keyboard.VKey;
 											
 											bool keyDown = keyboardMessage == (uint)KeyboardMessages.WM_KEYDOWN;
 
 											//uint code = 0x000000000000001 | (scanCode << 16);//32-bit
-											uint code = (scanCode << 16);//32-bit
+											uint code = scanCode << 16;//32-bit
 
-											var keysDown = window.keysDown;
+											BitArray keysDown = window.keysDown;
+											bool stateChangedSinceLast = keyDown != keysDown[vKey];
 
 											if (keyDown)
 											{
 												//bit 30 : The previous key state. The value is 1 if the key is down before the message is sent, or it is zero if the key is up.
-												if (VKey < keysDown.Length && keysDown[VKey])
+												if (vKey < keysDown.Length && keysDown[vKey])
 												{
 													code |= 0x40000000;
 												}
@@ -156,25 +152,18 @@ namespace UniversalSplitScreen.RawInput
 
 											code |= 1;
 
-											if (VKey < keysDown.Length) keysDown[VKey] = keyDown;
+											if (vKey < keysDown.Length) keysDown[vKey] = keyDown;
 											
-											if (Options.CurrentOptions.Hook_GetKeyState)
+											if (Options.CurrentOptions.Hook_GetKeyState || Options.CurrentOptions.Hook_GetAsyncKeyState)
 											{
-												byte shift = (byte)(VKey == 0x41 ? 0b0001 : (VKey == 0x44 ? 0b0010 : (VKey == 0x53 ? 0b0100 : (VKey == 0x57 ? 0b1000 : 0))));
-												if (((window.WASD_State & shift) == 0 ? false : true) != keyDown)
-												{
-													if (keyDown)
-														window.WASD_State |= shift;
-													else
-														window.WASD_State &= (byte)~shift;
-
-													window.HooksCPPNamedPipe?.WriteMessage(0x02, VKey, keyDown ? 1 : 0);
-
+												if(stateChangedSinceLast)
+												{ 
+													window.HooksCPPNamedPipe?.WriteMessage(0x02, vKey, keyDown ? 1 : 0);
 												}
 											}
 
 											//This also makes GetKeyboardState work, as windows uses the message queue for GetKeyboardState
-											SendInput.WinApi.PostMessageA(hWnd, keyboardMessage, (IntPtr)VKey, (UIntPtr)code);
+											SendInput.WinApi.PostMessageA(hWnd, keyboardMessage, (IntPtr)vKey, (UIntPtr)code);
 										}
 
 										//Resend raw input to application. Works for some games only
@@ -227,7 +216,7 @@ namespace UniversalSplitScreen.RawInput
 									window.HooksCPPNamedPipe?.SendMousePosition(deltaX, deltaY, mouseVec.x, mouseVec.y);
 								}
 								
-								long packedXY = (mouseVec.y * 0x10000) + mouseVec.x;
+								long packedXY = mouseVec.y * 0x10000 + mouseVec.x;
 
 								window.UpdateCursorPosition();
 
@@ -235,56 +224,58 @@ namespace UniversalSplitScreen.RawInput
 								ushort f = mouse.usButtonFlags;
 								if (f != 0)
 								{
-									foreach (var pair in ButtonFlagToMouseInputNotifications)
+									foreach (var pair in _buttonFlagToMouseInputNotifications)
 									{
 										if ((f & (ushort)pair.Key) > 0)
 										{
-											var (msg, wParam, leftMiddleRight, isButtonDown, VKey) = pair.Value;
+											(MouseInputNotifications msg, uint wParam, ushort leftMiddleRight, bool isButtonDown, int vKey) = pair.Value;
 											//Logger.WriteLine(pair.Key);
 
 											var state = window.MouseState;
 
 											bool oldBtnState = false;
-											switch (leftMiddleRight)
-											{
-												case 1:
-													oldBtnState = state.l; break;
-												case 2:
-													oldBtnState = state.r; break;
-												case 3:
-													oldBtnState = state.m; break;
-												case 4:
-													oldBtnState = state.x1; break;
-												case 5:
-													oldBtnState = state.x2; break;
-											}
-											
+											if (leftMiddleRight == 1)
+												oldBtnState = state.l;
+											else if (leftMiddleRight == 2)
+												oldBtnState = state.r;
+											else if (leftMiddleRight == 3)
+												oldBtnState = state.m;
+											else if (leftMiddleRight == 4)
+												oldBtnState = state.x1;
+											else if (leftMiddleRight == 5)
+												oldBtnState = state.x2;
+
 											if (oldBtnState != isButtonDown)
 												SendInput.WinApi.PostMessageA(hWnd, (uint)msg, (IntPtr)wParam, (IntPtr)packedXY);
 											
 											if (Options.CurrentOptions.Hook_GetAsyncKeyState || Options.CurrentOptions.Hook_GetKeyState && (oldBtnState != isButtonDown))
-												window.HooksCPPNamedPipe?.WriteMessage(0x02, VKey, isButtonDown ? 1 : 0);
+												window.HooksCPPNamedPipe?.WriteMessage(0x02, vKey, isButtonDown ? 1 : 0);
 
-											
-											switch (leftMiddleRight)
+
+											if (leftMiddleRight == 1)
 											{
-												case 1:
-													state.l = isButtonDown;
+												state.l = isButtonDown;
 
-													if (Options.CurrentOptions.RefreshWindowBoundsOnMouseClick)
-														window.UpdateBounds();
-
-													break;
-												case 2:
-													state.r = isButtonDown; break;
-												case 3:
-													state.m = isButtonDown; break;
-												case 4:
-													state.x1 = isButtonDown; break;
-												case 5:
-													state.x2 = isButtonDown; break;
-
+												if (Options.CurrentOptions.RefreshWindowBoundsOnMouseClick)
+													window.UpdateBounds();
 											}
+											else if (leftMiddleRight == 2)
+											{
+												state.r = isButtonDown;
+											}
+											else if (leftMiddleRight == 3)
+											{
+												state.m = isButtonDown;
+											}
+											else if (leftMiddleRight == 4)
+											{
+												state.x1 = isButtonDown;
+											}
+											else if (leftMiddleRight == 5)
+											{
+												state.x2 = isButtonDown;
+											}
+
 											window.MouseState = state;
 										}
 									}
@@ -299,7 +290,7 @@ namespace UniversalSplitScreen.RawInput
 								if (Options.CurrentOptions.SendNormalMouseInput)
 								{
 									ushort mouseMoveState = 0x0000;
-									var (l, m, r, x1, x2) = window.MouseState;
+									(bool l, bool m, bool r, bool x1, bool x2) = window.MouseState;
 									if (l) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_LBUTTON;
 									if (m) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_MBUTTON;
 									if (r) mouseMoveState |= (ushort)WM_MOUSEMOVE_wParam.MK_RBUTTON;
@@ -312,7 +303,6 @@ namespace UniversalSplitScreen.RawInput
 
 							break;
 						}
-					default: break;//HID
 				}
 			}
 

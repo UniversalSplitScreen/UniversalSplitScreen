@@ -20,6 +20,8 @@ namespace UniversalSplitScreen.Core
 
 		public bool DrawMouse						{ get; set; } = true;
 
+		public string AutofillHandleName			{ get; set; } = string.Empty;
+
 		public bool Hook_FilterRawInput				{ get; set; } = false;
 		public bool Hook_FilterWindowsMouseInput	{ get; set; } = false;
 		public bool Hook_GetForegroundWindow		{ get; set; } = false;
@@ -27,7 +29,9 @@ namespace UniversalSplitScreen.Core
 		public bool Hook_SetCursorPos				{ get; set; } = false;
 		public bool Hook_GetAsyncKeyState			{ get; set; } = false;
 		public bool Hook_GetKeyState				{ get; set; } = false;
+		public bool Hook_GetKeyboardState			{ get; set; } = false;
 		public bool Hook_XInput						{ get; set; } = false;
+		public bool Hook_DInput						{ get; set; } = false;
 		public bool Hook_UseLegacyInput				{ get; set; } = false;
 		public bool UpdateAbsoluteFlagInMouseMessage { get; set; } = true; //Only does something if legacy input is on
 		public bool Hook_MouseVisibility			{ get; set; } = false;

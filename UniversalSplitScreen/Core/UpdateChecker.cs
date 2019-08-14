@@ -1,24 +1,22 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
+using UniversalSplitScreen.UI;
 
 namespace UniversalSplitScreen.Core
 {
 	public static class UpdateChecker
 	{
-		public const string currentVersion = "v1.0.0";
+		public const string currentVersion = "v1.1.0";
 		const string request = @"https://api.github.com/repos/UniversalSplitScreen/UniversalSplitScreen/releases/latest";
 
 		/// <summary>
 		/// Returns empty string if no update availible, and the new version tag name otherwise
 		/// </summary>
 		/// <returns></returns>
-		public static async Task<string> IsThereAnUpdate()
+		private static async Task<string> IsThereAnUpdate()
 		{
 			using (HttpClient client = new HttpClient())
 			{
@@ -57,6 +55,19 @@ namespace UniversalSplitScreen.Core
 					return string.Empty;
 				}
 			}
+		}
+
+		public static void CheckUpdateDialog(bool showDialogIfNoUpdates)
+		{
+			IsThereAnUpdate().ContinueWith(versionNameTask =>
+			{
+				string versionName = versionNameTask.Result;
+				bool isThereAnUpdate = !string.IsNullOrWhiteSpace(versionName);
+				if (isThereAnUpdate || showDialogIfNoUpdates)
+				{
+					new UpdateForm(isThereAnUpdate ? $"Found new version: {versionName}" : "No new version found", isThereAnUpdate).ShowDialog();
+				}
+			});
 		}
 	}
 }

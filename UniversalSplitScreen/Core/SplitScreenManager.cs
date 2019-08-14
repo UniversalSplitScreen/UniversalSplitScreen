@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Pipes;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using UniversalSplitScreen.Piping;
-using UniversalSplitScreen.RawInput;
 using UniversalSplitScreen.SendInput;
 
 namespace UniversalSplitScreen.Core
@@ -19,24 +16,24 @@ namespace UniversalSplitScreen.Core
 	{
 		public bool IsRunningInSplitScreen { get; private set; } = false;
 
-		Dictionary<Task, CancellationTokenSource> setFocusTasks = new Dictionary<Task, CancellationTokenSource>();
+		readonly Dictionary<Task, CancellationTokenSource> _setFocusTasks = new Dictionary<Task, CancellationTokenSource>();
 
 		//Sometimes the game can be focused, which can break input. Fix: every X seconds, focus the desktop
-		(Task, CancellationTokenSource) autoUnfocusTask;
+		(Task, CancellationTokenSource) _autoUnfocusTask;
 
-		IntPtr active_hWnd = IntPtr.Zero;//Excludes self
-		IntPtr desktop_hWnd = IntPtr.Zero;
+		IntPtr _activeHWnd = IntPtr.Zero;//Excludes self
+		IntPtr _desktopHWnd = IntPtr.Zero;
 
-		WinApi.WinEventDelegate EVENT_SYSTEM_FOREGROUND_delegate = null;
-		const ushort EVENT_SYSTEM_FOREGROUND = 0x0003;//https://docs.microsoft.com/en-us/windows/desktop/WinAuto/event-constants
+		private WinApi.WinEventDelegate _eventSystemForegroundDelegate = null;
+		private const ushort EVENT_SYSTEM_FOREGROUND = 0x0003;//https://docs.microsoft.com/en-us/windows/desktop/WinAuto/event-constants
 		const ushort WINEVENT_OUTOFCONTEXT = 0x0000;
 
 		public readonly Dictionary<IntPtr, Window> windows = new Dictionary<IntPtr, Window>();
-		private readonly Dictionary<IntPtr, Window[]> deviceToWindows = new Dictionary<IntPtr, Window[]>();
+		private readonly Dictionary<IntPtr, Window[]> _deviceToWindows = new Dictionary<IntPtr, Window[]>();
 
 		public Window[] GetWindowsForDevice(IntPtr hDevice)
 		{
-			return deviceToWindows.TryGetValue(hDevice, out Window[] windows) ? windows : new Window[0];
+			return _deviceToWindows.TryGetValue(hDevice, out var windows) ? windows : new Window[0];
 		}
 
 		#region Public methods
@@ -47,25 +44,25 @@ namespace UniversalSplitScreen.Core
 		public void Init()
 		{
 			Logger.WriteLine("Registering EVENT_SYSTEM_FOREGROUND hook");
-			EVENT_SYSTEM_FOREGROUND_delegate = new WinApi.WinEventDelegate(EVENT_SYSTEM_FOREGROUND_Proc);
-			IntPtr m_hhook = WinApi.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, EVENT_SYSTEM_FOREGROUND_delegate, 0, 0, WINEVENT_OUTOFCONTEXT);
+			_eventSystemForegroundDelegate = EVENT_SYSTEM_FOREGROUND_Proc;
+			WinApi.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, _eventSystemForegroundDelegate, 0, 0, WINEVENT_OUTOFCONTEXT);
 		}
 
 		/// <summary>
 		/// deviceToWindows is a Dictionary with device handle as the key and the attached windows as the value.
 		/// </summary>
-		void InitDeviceToWindows()
+		private void InitDeviceToWindows()
 		{
-			deviceToWindows.Clear();
+			_deviceToWindows.Clear();
 			foreach (var pair in windows)
 			{
-				Window window = pair.Value;
+				var window = pair.Value;
 				
-				if (!deviceToWindows.ContainsKey(window.MouseAttached))
-					deviceToWindows[window.MouseAttached] = windows.Values.Where(x => x.MouseAttached == window.MouseAttached).ToArray();
+				if (!_deviceToWindows.ContainsKey(window.MouseAttached))
+					_deviceToWindows[window.MouseAttached] = windows.Values.Where(x => x.MouseAttached == window.MouseAttached).ToArray();
 
-				if (!deviceToWindows.ContainsKey(window.KeyboardAttached))
-					deviceToWindows[window.KeyboardAttached] = windows.Values.Where(x => x.KeyboardAttached == window.KeyboardAttached).ToArray();
+				if (!_deviceToWindows.ContainsKey(window.KeyboardAttached))
+					_deviceToWindows[window.KeyboardAttached] = windows.Values.Where(x => x.KeyboardAttached == window.KeyboardAttached).ToArray();
 			}
 		}
 
@@ -74,14 +71,40 @@ namespace UniversalSplitScreen.Core
 		/// </summary>
 		public void ActivateSplitScreen()
 		{
+			#region XInput/DInput warnings
+			bool needXinputHook = false;
+			bool needDinputTranslationHook = false;
+			foreach (var window in windows.Values)
+			{
+				if (window.ControllerIndex > 0 && !Options.CurrentOptions.Hook_XInput)
+					needXinputHook = true;
+
+				if (window.ControllerIndex > 4 && (!Options.CurrentOptions.Hook_DInput || !Options.CurrentOptions.Hook_XInput))
+					needDinputTranslationHook = true;
+			}
+
+			if (needXinputHook &&
+			    MessageBox.Show(
+				    @"You need to enable the XInput hook to use controllers. Do you want to continue anyway?", @"Warning",
+				    MessageBoxButtons.YesNo) != DialogResult.Yes)
+				return;
+
+			if (needDinputTranslationHook &&
+			    MessageBox.Show(
+				    @"You need to enable the XInput hook and the DInput to XInput translation hook to use more than 4 controllers. Do you want to continue anyway?", @"Warning",
+				    MessageBoxButtons.YesNo) != DialogResult.Yes)
+				return;
+			#endregion
+
 			var options = Options.CurrentOptions;
 
 			//Check if windows still exist
 			{
 				var toRemove = new List<IntPtr>();
+				// ReSharper disable once LoopCanBeConvertedToQuery
 				for (int i = 0; i < windows.Count; i++)
 				{
-					IntPtr hWnd = windows.ElementAt(i).Key;
+					var hWnd = windows.ElementAt(i).Key;
 					if (!WinApi.IsWindow(hWnd))
 						toRemove.Add(hWnd);
 				}
@@ -92,8 +115,8 @@ namespace UniversalSplitScreen.Core
 
 			foreach (var pair in windows)
 			{
-				IntPtr hWnd = pair.Key;
-				Window window = pair.Value;
+				var hWnd = pair.Key;
+				var window = pair.Value;
 
 				Logger.WriteLine($"hWnd={hWnd}, mouse={window.MouseAttached}, kb={window.KeyboardAttached}");
 				
@@ -108,11 +131,11 @@ namespace UniversalSplitScreen.Core
 
 					int WindowEnum(IntPtr _hWnd, int lParam)
 					{
-						int threadID = WinApi.GetWindowThreadProcessId(_hWnd, out int pid);
-						if (threadID == lParam)
+						var threadId = WinApi.GetWindowThreadProcessId(_hWnd, out int pid);
+						if (threadId == lParam)
 						{
 							string windowText = WinApi.GetWindowText(_hWnd);
-							Logger.WriteLine($" - thread id=0x{threadID:x}, _hWnd=0x{_hWnd:x}, window text={windowText}");
+							Logger.WriteLine($" - thread id=0x{threadId:x}, _hWnd=0x{_hWnd:x}, window text={windowText}");
 
 							if (windowText != null && windowText.ToLower().Contains("DIEmWin".ToLower()))//TODO: make configurable
 							{
@@ -129,10 +152,10 @@ namespace UniversalSplitScreen.Core
 				//WM_ACTIVATE/WM_SETFOCUS tasks
 				if (options.SendWM_ACTIVATE || options.SendWM_SETFOCUS)
 				{
-					CancellationTokenSource c = new CancellationTokenSource();
-					Task task = new Task(() => SetFocus(pair.Key, c.Token), c.Token);
+					var c = new CancellationTokenSource();
+					var task = new Task(() => SetFocus(pair.Key, c.Token), c.Token);
 					task.Start();
-					setFocusTasks.Add(task, c);
+					_setFocusTasks.Add(task, c);
 				}
 								
 				//EasyHook
@@ -141,42 +164,49 @@ namespace UniversalSplitScreen.Core
 					options.Hook_GetForegroundWindow || 
 					options.Hook_GetCursorPos || 
 					options.Hook_GetKeyState || 
+					options.Hook_GetKeyboardState || 
 					options.Hook_GetAsyncKeyState ||
 					options.Hook_SetCursorPos ||
 					options.Hook_XInput ||
+					options.Hook_DInput ||
 					options.Hook_UseLegacyInput ||
 					options.Hook_MouseVisibility)
 				{
 
 
 					//bool needPipe = options.Hook_GetCursorPos || options.Hook_GetAsyncKeyState || options.Hook_GetKeyState;
-					bool needPipe = true;//Need it for shutting down, etc.
 					bool needWritePipe = options.Hook_MouseVisibility;
-					NamedPipe pipe = needPipe ? new NamedPipe(hWnd, window, needWritePipe) : null;
+					var pipe = new NamedPipe(hWnd, window, needWritePipe);
 					window.HooksCPPNamedPipe = pipe;
 						
-					string hooksLibrary32 = Path.Combine(Path.GetDirectoryName(
-						System.Reflection.Assembly.GetExecutingAssembly().Location),
-						"HooksCPP32.dll");
+					string GetFilePath(string file) => Path.Combine(Path.GetDirectoryName(
+							System.Reflection.Assembly.GetExecutingAssembly().Location),
+							file);
 
-					string hooksLibrary64 = Path.Combine(Path.GetDirectoryName(
-						System.Reflection.Assembly.GetExecutingAssembly().Location),
-						"HooksCPP64.dll");
+					string hooksLibrary32 = GetFilePath("HooksCPP32.dll");
+
+					string hooksLibrary64 = GetFilePath("HooksCPP64.dll");
 
 
 					bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
-						
-					Process proc = new Process();
-					proc.StartInfo.FileName = is64 ? "IJx64.exe" : "IJx86.exe";
+
+					var proc = new Process
+					{
+						StartInfo =
+						{
+							FileName = GetFilePath(is64 ? "IJx64.exe" : "IJx86.exe")
+						}
+					};
 
 					//Arguments
+					string arguments;
 					{
 						object[] args = new object[]
 						{
 							window.pid,
-							$"\"{(is64 ? hooksLibrary64 : hooksLibrary32)}\"",
+							(is64 ? hooksLibrary64 : hooksLibrary32),
 							window.hWnd,
-							needPipe        ? pipe.pipeNameRead  : "USS_NO_READ_PIPE_NEEDED",
+							pipe.pipeNameRead,
 							needWritePipe   ? pipe.pipeNameWrite : "USS_NO_WRITE_PIPE_NEEDED",
 							window.ControllerIndex,
 							(int)window.MouseAttached,
@@ -186,20 +216,25 @@ namespace UniversalSplitScreen.Core
 							options.Hook_GetForegroundWindow,
 							options.Hook_GetAsyncKeyState,
 							options.Hook_GetKeyState,
+							options.Hook_GetKeyboardState,
 							options.Hook_FilterWindowsMouseInput,
 							options.Hook_FilterRawInput,
 							options.Hook_SetCursorPos,
 							options.Hook_XInput,
-							options.Hook_MouseVisibility
+							options.Hook_MouseVisibility,
+							options.Hook_DInput
 						};
 
-						StringBuilder sb = new StringBuilder();
-						foreach (var arg in args)
+						var sbArgs = new StringBuilder();
+						foreach (object arg in args)
 						{
-							sb.Append(" " + arg);
+							sbArgs.Append(" \"");
+							sbArgs.Append(arg);
+							sbArgs.Append("\"");
 						}
 
-						proc.StartInfo.Arguments = sb.ToString();
+						arguments = sbArgs.ToString();
+						proc.StartInfo.Arguments = arguments;
 					}
 
 					proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
@@ -207,10 +242,10 @@ namespace UniversalSplitScreen.Core
 					proc.WaitForExit();
 
 					uint exitCode = (uint)proc.ExitCode;
-					Logger.WriteLine($"InjectorCPP.Inject result = 0x{exitCode:x}. is64={is64}, needPipe={needPipe}");
+					Logger.WriteLine($"InjectorCPP.Inject result = 0x{exitCode:x}. is64={is64}, needPipe={true}");
 					if (exitCode != 0 )
 					{
-						MessageBox.Show($"Error injecting hooks into pid={window.pid}, Error = 0x{exitCode:x}", "Error");
+						MessageBox.Show($@"Error injecting hooks into pid={window.pid}, Error = 0x{exitCode:x}, arguments={arguments}", @"Error");
 						DeactivateSplitScreen();
 						return;
 					}
@@ -219,16 +254,16 @@ namespace UniversalSplitScreen.Core
 
 			//Auto unfocus task
 			{
-				CancellationTokenSource c = new CancellationTokenSource();
-				Task task = new Task(() => AutoUnfocusTask(c.Token), c.Token);
+				var c = new CancellationTokenSource();
+				var task = new Task(() => AutoUnfocusTask(c.Token), c.Token);
 				task.Start();
-				autoUnfocusTask = (task, c);
+				_autoUnfocusTask = (task, c);
 			}
 			
 			IsRunningInSplitScreen = true;
 			InputDisabler.Lock();
 			Intercept.InterceptEnabled = true;
-			deviceToWindows.Clear();
+			_deviceToWindows.Clear();
 			InitDeviceToWindows();
 			Cursor.Position = new System.Drawing.Point(0, 0);
 			WinApi.SetForegroundWindow((int)WinApi.GetDesktopWindow());//Loses focus of all windows, without minimizing
@@ -243,36 +278,50 @@ namespace UniversalSplitScreen.Core
 			InputDisabler.Unlock();
 			Intercept.InterceptEnabled = false;
 
-			foreach (var thread in setFocusTasks)
+			foreach (var thread in _setFocusTasks)
 				thread.Value.Cancel();
 			
-			autoUnfocusTask.Item2?.Cancel();
+			_autoUnfocusTask.Item2?.Cancel();
 
-			foreach (var window in windows.Values.ToArray())
+			foreach (Window window in windows.Values.ToArray())
 			{
 				window.HooksCPPNamedPipe?.Close();
 				window.KillCursor();
 			}
 
-			setFocusTasks.Clear();
+			_setFocusTasks.Clear();
 
 			Program.Form.OnSplitScreenEnd();
 			Program.Form.WindowState = FormWindowState.Normal;
 		}
 
+		private const string HandleSeparator = "&&&&&";
 		public void UnlockHandle(string targetName = "")
 		{
-			string title = "";
-			string msg = "";
+			if (targetName.Contains(HandleSeparator))
+			{
+				foreach (string name in targetName.Split(new string[] { HandleSeparator }, StringSplitOptions.None))
+				{
+					if (string.IsNullOrEmpty(name)) continue;
+					Logger.WriteLine($"Unlocking '{name}'");
+					UnlockHandle(name);
+				}
+				return;
+			}
+
+			string title;
+			string msg;
 			try
 			{
-				WinApi.GetWindowThreadProcessId(active_hWnd, out int pid);
+				WinApi.GetWindowThreadProcessId(_activeHWnd, out int pid);
 				int seu = WinApi.SourceEngineUnlock(pid, targetName);//Defaults to source/goldsrc mutexes if targetName == ""
 				Logger.WriteLine($"SourceEngineUnlock return = {seu}");
 
 				msg = seu == 1 ?	"Successfully unlocked game. Launch another instance from the exe file." : 
 					(seu == 0 ?		(targetName != "" ? "Couldn't find the target handle" : "Couldn't find the Source/Goldsrc engine mutex") : 
 									$"Error while finding mutex/handle: {seu}");
+
+				if (!string.IsNullOrEmpty(targetName)) msg += "\nHandle name: " + targetName;
 
 				title = seu == 1 ? "Success" : "Error";
 			}
@@ -287,60 +336,63 @@ namespace UniversalSplitScreen.Core
 
 		public void AllowWindowResize()
 		{
-			int x = (int)WinApi.GetWindowLongPtr32(active_hWnd, WinApi.GWL_STYLE);
+			var x = (int)WinApi.GetWindowLongPtr32(_activeHWnd, WinApi.GWL_STYLE);
 			x |= 0x00040000;
 			//int x = 0 | 0x00020000 | 0x00080000 | 0x00010000 | 0x00C00000 | 0x10000000 | 0x00040000;
-			WinApi.SetWindowLong32(active_hWnd, WinApi.GWL_STYLE, x);
-			WinApi.RefreshWindow(active_hWnd);
+			WinApi.SetWindowLong32(_activeHWnd, WinApi.GWL_STYLE, x);
+			WinApi.RefreshWindow(_activeHWnd);
 		}
 
 		public void ToggleWindowBorders()
 		{
-			const int flip = 0x00C00000 | 0x00080000;//WS_BORDER | WS_SYSMENU
+			const int flip = 0x00C00000 | 0x00080000 | 0x00040000;//WS_BORDER | WS_SYSMENU
 
-			int x = (int)WinApi.GetWindowLongPtr32(active_hWnd, WinApi.GWL_STYLE);
-			x ^= flip;
-			WinApi.SetWindowLong32(active_hWnd, WinApi.GWL_STYLE, x);
-			WinApi.RefreshWindow(active_hWnd);
+			var x = (int)WinApi.GetWindowLongPtr32(_activeHWnd, WinApi.GWL_STYLE);
+			if ((x & flip) > 0)//has a border
+				x &= (~flip);
+			else
+				x |= flip;
+			WinApi.SetWindowLong32(_activeHWnd, WinApi.GWL_STYLE, x);
+			WinApi.RefreshWindow(_activeHWnd);
 		}
 
 		#region Set handles
 		public void SetMouseHandle(IntPtr mouse)
 		{
-			if (!windows.ContainsKey(active_hWnd))
-				windows[active_hWnd] = new Window(active_hWnd);
+			if (!windows.ContainsKey(_activeHWnd))
+				windows[_activeHWnd] = new Window(_activeHWnd);
 
-			Window window = windows[active_hWnd];
+			Window window = windows[_activeHWnd];
 			window.MouseAttached = mouse;
 
 			Program.Form.MouseHandleText = mouse.ToString();
 
 			if ((int)mouse == 0 && (int)window.KeyboardAttached == 0 && window.ControllerIndex == 0)
-				windows.Remove(active_hWnd);
+				windows.Remove(_activeHWnd);
 		}
 
 		public void SetKeyboardHandle(IntPtr keyboard)
 		{
-			if (!windows.ContainsKey(active_hWnd)) windows[active_hWnd] = new Window(active_hWnd);
+			if (!windows.ContainsKey(_activeHWnd)) windows[_activeHWnd] = new Window(_activeHWnd);
 
-			Window window = windows[active_hWnd];
+			Window window = windows[_activeHWnd];
 			window.KeyboardAttached = keyboard;
 
 			Program.Form.KeyboardHandleText = keyboard.ToString();
 
 			if ((int)keyboard == 0 && (int)window.MouseAttached == 0 && window.ControllerIndex == 0)
-				windows.Remove(active_hWnd);
+				windows.Remove(_activeHWnd);
 		}
 
 		public void SetControllerIndex(int index)
 		{
-			if (!windows.ContainsKey(active_hWnd)) windows[active_hWnd] = new Window(active_hWnd);
+			if (!windows.ContainsKey(_activeHWnd)) windows[_activeHWnd] = new Window(_activeHWnd);
 
-			Window window = windows[active_hWnd];
+			Window window = windows[_activeHWnd];
 			window.ControllerIndex = index;
 
 			if ((int)window.KeyboardAttached == 0 && (int)window.MouseAttached == 0 && window.ControllerIndex == 0)
-				windows.Remove(active_hWnd);
+				windows.Remove(_activeHWnd);
 		}
 
 		public void ResetAllHandles()
@@ -360,14 +412,19 @@ namespace UniversalSplitScreen.Core
 		/// </summary>
 		/// <param name="hWnd"></param>
 		/// <param name="token"></param>
-		private void SetFocus(IntPtr hWnd, CancellationToken token)
+		private static void SetFocus(IntPtr hWnd, CancellationToken token)
 		{
 			while(true)
 			{
-				Thread.Sleep(1000);//TODO: configurable this
+				Thread.Sleep(10);//TODO: configurable this
 
 				if (Options.CurrentOptions.SendWM_ACTIVATE)
+				{
 					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_ACTIVATE, (IntPtr)2, (IntPtr)null);//2 or 1?
+					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_ACTIVATEAPP, (IntPtr)1, IntPtr.Zero);
+					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_NCACTIVATE, (IntPtr)0, IntPtr.Zero);//Title bar will be redrawn as if focused if wParam == 1
+					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_MOUSEACTIVATE, (IntPtr)hWnd, (IntPtr)1);//Title bar will be redrawn as if focused if wParam == 1
+				}
 
 				if (Options.CurrentOptions.SendWM_SETFOCUS)
 					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_SETFOCUS, (IntPtr)null, (IntPtr)null);
@@ -409,14 +466,70 @@ namespace UniversalSplitScreen.Core
 		/// <param name="hWnd"></param>
 		public void CheckIfWindowExists(IntPtr hWnd)
 		{
-			if (!WinApi.IsWindow(hWnd))
+			if (WinApi.IsWindow(hWnd)) return;
+			Logger.WriteLine($"Removing hWnd {hWnd}");
+
+			windows.Remove(hWnd);
+
+			InitDeviceToWindows();
+		}
+
+		public void CreateAndInjectStartupHook(bool is64, string exePath, string cmdLineArgs, bool useWaitForIdle, bool dinputHook, bool findWindowHook, byte controllerIndex = 0)
+		{
+			string GetFile(string fileName) => Path.Combine(Path.GetDirectoryName(
+					System.Reflection.Assembly.GetExecutingAssembly().Location),
+					fileName);
+
+			string findWindowHookLibraryPath = GetFile(is64 ? "StartupHook64.dll" : "StartupHook32.dll");
+
+			
+
+			//Arguments
+			string arguments;
 			{
-				Logger.WriteLine($"Removing hWnd {hWnd}");
+				string base64CmdLineArgs = Convert.ToBase64String(Encoding.UTF8.GetBytes(cmdLineArgs));
+				var args = new object[]{ findWindowHookLibraryPath, exePath, base64CmdLineArgs, useWaitForIdle, dinputHook, findWindowHook, controllerIndex };
 
-				windows.Remove(hWnd);
+				var sbArgs = new StringBuilder();
+				foreach (object arg in args)
+				{
+					sbArgs.Append(" \"");
+					sbArgs.Append(arg.ToString());
+					sbArgs.Append("\"");
+				}
 
-				InitDeviceToWindows();
+				arguments = sbArgs.ToString();
 			}
+
+			var proc = new Process
+			{
+				StartInfo =
+				{
+					FileName = GetFile(is64 ? "IJx64.exe" : "IJx86.exe"),
+					Arguments = arguments,
+					WindowStyle = ProcessWindowStyle.Hidden,
+					CreateNoWindow = true,
+					RedirectStandardError = true,
+					UseShellExecute = false
+				},
+				
+			};
+			proc.Start();
+			Task.Run(delegate
+			{
+				proc.WaitForExit();
+
+				var exitCode = (uint) proc.ExitCode;
+				Logger.WriteLine($"InjectorLoader.CreateAndInjectStartupHook result = 0x{exitCode:x}. is64={is64}");
+				if (exitCode != 0)
+				{
+					string stdcerr = proc.StandardError.ReadToEnd();
+					string x = (exitCode == 0xC0009898) ? $"Is the game {(is64 ? 32 : 64)}-bit?\n" : "";
+					MessageBox.Show(
+						$@"Error injecting StartupHook hook. {x}Error = 0x{exitCode:x}, arguments={arguments}, stcerr={stdcerr}",
+						@"Error", MessageBoxButtons.OK);
+				}
+			});
 		}
 
 		/// <summary>
@@ -435,22 +548,22 @@ namespace UniversalSplitScreen.Core
 			if (IsRunningInSplitScreen)
 				return;
 
-			IntPtr our_hWnd = Program.Form_hWnd;
-			desktop_hWnd = WinApi.GetDesktopWindow();
+			IntPtr ourHWnd = Program.Form_hWnd;
+			_desktopHWnd = WinApi.GetDesktopWindow();
 			string title = WinApi.GetWindowText(hWnd);
-			Logger.WriteLine($"Activated hWnd {hWnd}, self = {our_hWnd == hWnd}, Title = {title}");
+			Logger.WriteLine($"Activated hWnd {hWnd}, self = {ourHWnd == hWnd}, Title = {title}");
 
 			//"Task Switching" is alt+tab and "Cortana" is the start menu.
-			if (our_hWnd != hWnd && desktop_hWnd != hWnd && !string.IsNullOrWhiteSpace(title) && title != "Task Switching" && title != "Cortana")
+			if (ourHWnd != hWnd && _desktopHWnd != hWnd && !string.IsNullOrWhiteSpace(title) && title != "Task Switching" && title != "Cortana")
 			{
 				WinApi.GetWindowThreadProcessId(hWnd, out int pid);
 				if (pid != Process.GetCurrentProcess().Id)
 				{
-					active_hWnd = hWnd;
+					_activeHWnd = hWnd;
 					Program.Form.WindowTitleText = title;
 					Program.Form.WindowHandleText = hWnd.ToString();
 
-					if (windows.TryGetValue(hWnd, out var x))
+					if (windows.TryGetValue(hWnd, out Window x))
 					{
 						//We have devices attached to this window, so display the handles.
 						Program.Form.MouseHandleText = x.MouseAttached.ToString();
@@ -469,7 +582,7 @@ namespace UniversalSplitScreen.Core
 
 			if (IsRunningInSplitScreen)
 			{
-				if (our_hWnd == hWnd)
+				if (ourHWnd == hWnd)
 					InputDisabler.Unlock();
 				else
 					InputDisabler.Lock();

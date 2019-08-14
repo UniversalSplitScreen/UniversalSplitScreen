@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Linq;
-using AutoHotkey.Interop;
-using System.Windows.Forms;
-using UniversalSplitScreen.SendInput;
 using UniversalSplitScreen.Core;
 
 namespace UniversalSplitScreen.RawInput

@@ -11,6 +11,8 @@ Compile InjectorLoader in x86 and x64. Copy IJx86.exe and IJx64.exe to the folde
 
 Compile HooksCPP in x86 and x64. Copy HooksCPP32.dll and HooksCPP64.dll to the folder.
 
+Compile StartupHook in x86 and x64. Copy StartupHook32.dll and StartupHook64.dll to the folder.
+
 The post-build options in the projects should automatically rename and copy as necessary.
 
 You can use Batch build in Visual Studio to compile all the projects at once.

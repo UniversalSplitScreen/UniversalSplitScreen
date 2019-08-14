@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using UniversalSplitScreen.Core;
-using UniversalSplitScreen.RawInput;
-using UniversalSplitScreen.SendInput;
 
 namespace UniversalSplitScreen.UI
 {
@@ -25,6 +18,9 @@ namespace UniversalSplitScreen.UI
 
 		public ComboBox OptionsComboBox => optionsComboBox;
 
+		private string goldbergAccountNamePath;
+		private string goldbergSteamIDPath;
+
 		public Form1()
 		{
 			InitializeComponent();
@@ -37,6 +33,22 @@ namespace UniversalSplitScreen.UI
 			PopulateOptionsRefTypes(Options.CurrentOptions);
 
 			Label_CurrentVersion.Text = $"Current version: {UpdateChecker.currentVersion}";
+
+			uint controllerLimit = Program.Config.ControllerLimit;
+			ControllerIndexComboBox.Items.Clear();
+			ControllerIndexComboBox.Items.Add("No controller");
+			ComboBox_DinputControllerIndex.Items.Clear();
+			ComboBox_DinputControllerIndex.Items.Add("No controller");
+			if (controllerLimit > 0)
+			{
+				for (uint i = 1; i <= controllerLimit; i++)
+				{
+					ControllerIndexComboBox.Items.Add(i.ToString());
+					ComboBox_DinputControllerIndex.Items.Add(i.ToString());
+				}
+			}
+
+			LoadGoldbergData();
 		}
 
 		public void PopulateOptionsRefTypes(OptionsStructure options)
@@ -60,12 +72,17 @@ namespace UniversalSplitScreen.UI
 			RefCheckbox_Hook_SetCursorPos.RefType				= new RefType<bool>("Hook_SetCursorPos");
 			RefCheckbox_Hook_GetAsyncKeyState.RefType			= new RefType<bool>("Hook_GetAsyncKeyState");
 			RefCheckbox_Hook_GetKeyState.RefType				= new RefType<bool>("Hook_GetKeyState");
+			RefCheckbox_Hook_GetKeyboardState.RefType			= new RefType<bool>("Hook_GetKeyboardState");
 			RefCheckbox_Hook_XInput.RefType						= new RefType<bool>("Hook_XInput");
+			RefCheckbox_Hook_Dinput.RefType						= new RefType<bool>("Hook_DInput");
 			RefCheckbox_Hook_UseLegacyInput.RefType				= new RefType<bool>("Hook_UseLegacyInput");
 			RefCheckbox_UpdateAbsoluteFlagInMouseMessage.RefType= new RefType<bool>("UpdateAbsoluteFlagInMouseMessage");
 			RefCheckbox_Hook_MouseVisibility.RefType			= new RefType<bool>("Hook_MouseVisibility");
+
+			var handleNameRef = new RefType<string>("AutofillHandleName");
+			RefTextbox_AutofillHandleName.RefType = handleNameRef;
+			if (!string.IsNullOrEmpty(handleNameRef)) textBoxHandleName.Text = handleNameRef;
 		}
-		
 
 		protected override void WndProc(ref Message msg)
 		{
@@ -216,10 +233,9 @@ namespace UniversalSplitScreen.UI
 			Program.Form.Opacity = CheckBox_Transparency.Checked ? 0.90 : 1.00;
 		}
 
-		private async void Button_CheckUpdates_Click(object sender, EventArgs e)
+		private void Button_CheckUpdates_Click(object sender, EventArgs e)
 		{
-			string versionName = await UpdateChecker.IsThereAnUpdate();
-			MessageBox.Show(string.IsNullOrWhiteSpace(versionName) ? "No new version found" : $"Found new version: {versionName}\nDownload the latest version from the website.");
+			UpdateChecker.CheckUpdateDialog(true);
 		}
 
 		private void UnlockHandleButton_Click(object sender, EventArgs e)
@@ -228,6 +244,119 @@ namespace UniversalSplitScreen.UI
 				MessageBox.Show("Handle name cannot be empty.", "Error");
 			else
 				Program.SplitScreenManager.UnlockHandle(textBoxHandleName.Text);
+		}
+
+		private void Button_BrowseFindWindowHookExe_Click(object sender, EventArgs e)
+		{
+			//DialogResult result = FileDialog_FindWindowHook.ShowDialog();
+			//using (OpenFileDialog openFileDialog = new OpenFileDialog())
+			{
+				/*openFileDialog.InitialDirectory = "c:\\";
+				openFileDialog.Filter = "executable files (*.exe)|*.exe";
+				openFileDialog.FilterIndex = 1;
+				openFileDialog.RestoreDirectory = true;
+				openFileDialog.ShowHelp = true;*/
+				FileDialog_FindWindowHook.ShowHelp = true;//Whole application freezes otherwise
+
+				if (FileDialog_FindWindowHook.ShowDialog() == DialogResult.OK)
+				{
+					Label_FindWindowHookExe.Text = FileDialog_FindWindowHook.FileName;
+				}
+			}
+		}
+
+		private void Button_FindWindowHookLaunch_Click(object sender, EventArgs e)
+		{
+			string fileName = FileDialog_FindWindowHook.FileName;
+			string args = TextBox_FindWindowHookArgs.Text;
+			bool is64 = Checkbox_FindWindowHookIs64.Checked;
+			Logger.WriteLine($"FindWindowHook Launch button clicked. FileName='{fileName}', arguments='{args}', is64={is64}");
+
+			if (System.IO.File.Exists(fileName))
+			{
+				Program.SplitScreenManager.CreateAndInjectStartupHook(is64, fileName, args, CheckBox_StartupHook_UseWaitForIdle.Checked, CheckBox_StartupHook_Dinput.Checked, CheckBox_StartupHook_FindWindow.Checked, (byte)dinputControllerIndex);
+			}
+			else
+			{
+				MessageBox.Show("Executable not found", "Error", MessageBoxButtons.OK);
+			}
+		}
+
+		private int dinputControllerIndex;
+		private void ComboBox_DinputControllerIndex_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			dinputControllerIndex = ComboBox_DinputControllerIndex.SelectedIndex;
+			Logger.WriteLine($"Set dinput controller index = {dinputControllerIndex}");
+		}
+
+		public void SetAutomaticallyCheckUpdatesChecked(bool value)
+		{
+			Checkbox_AutomaticallyCheckForUpdates.Checked = value;
+		}
+
+		#region Goldberg
+		private void LoadGoldbergData()
+		{
+			string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Goldberg SteamEmu Saves", "settings");
+			goldbergAccountNamePath = Path.Combine(folder, "account_name.txt");
+			goldbergSteamIDPath = Path.Combine(folder, "user_steam_id.txt");
+
+			string ReadLine(string path)
+			{
+				try
+				{
+					return File.ReadLines(path).First();
+				}
+				catch (Exception)
+				{
+					return string.Empty;
+				}
+			}
+
+			TextBox_Goldberg_Username.Text = ReadLine(goldbergAccountNamePath);
+			TextBox_Goldberg_ID.Text = ReadLine(goldbergSteamIDPath);
+		}
+
+		private void Button_Goldberg_Username_Set_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				if (!File.Exists(goldbergAccountNamePath))
+					File.CreateText(goldbergAccountNamePath).Dispose();
+				File.WriteAllText(goldbergAccountNamePath, TextBox_Goldberg_Username.Text);
+			}
+			catch (Exception ex)
+			{
+				string msg = (ex.GetType() == typeof(DirectoryNotFoundException))
+					? "Goldberg has not been set up. Try running a game with it at least once.\n"
+					: "";
+				MessageBox.Show($@"{msg}Error: {ex}", @"Error", MessageBoxButtons.OK);
+			}
+		}
+
+		private void Button_Goldberg_ID_Set_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				if (!File.Exists(goldbergSteamIDPath))
+					File.CreateText(goldbergSteamIDPath).Dispose();
+				File.WriteAllText(goldbergSteamIDPath, TextBox_Goldberg_ID.Text);
+			}
+			catch (Exception ex)
+			{
+				string msg = (ex.GetType() == typeof(DirectoryNotFoundException))
+					? "Goldberg has not been set up. Try running a game with it at least once.\n"
+					: "";
+				MessageBox.Show($@"{msg}Error: {ex}", @"Error", MessageBoxButtons.OK);
+			}
+		}
+		#endregion
+
+		private void Checkbox_AutomaticallyCheckForUpdates_CheckedChanged(object sender, EventArgs e)
+		{
+			if (Program.Config == null) return;
+			Program.Config.AutomaticallyCheckForUpdatesOnStartup = Checkbox_AutomaticallyCheckForUpdates.Checked;
+			Program.Config.SaveConfig();
 		}
 	}
 }

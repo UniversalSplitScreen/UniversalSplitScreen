@@ -6,7 +6,7 @@
   "SendNormalKeyboardInput": true,
   "SendScrollwheel": true,
   "SendWM_ACTIVATE": true,
-  "SendWM_SETFOCUS": false,
+  "SendWM_SETFOCUS": true,
   "RefreshWindowBoundsOnMouseClick": false,
   "DrawMouse": true,
   "Hook_FilterRawInput": false,
