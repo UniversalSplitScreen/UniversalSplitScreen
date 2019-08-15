@@ -20,13 +20,13 @@ typedef enum _EVENT_TYPE {
 typedef NTSTATUS(NTAPI* t_NtCreateMutant)(PHANDLE MutantHandle, DWORD DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, BOOLEAN InitialOwner);
 typedef NTSTATUS(NTAPI* t_NtOpenMutant)(PHANDLE MutantHandle, ULONG DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes);
 typedef NTSTATUS(NTAPI* t_NtCreateEvent)(PHANDLE EventHandle, DWORD DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, EVENT_TYPE EventType, BOOLEAN InitialState);
+typedef NTSTATUS(NTAPI* t_NtOpenEvent)(PHANDLE EventHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes);
 
 static t_NtCreateMutant NtCreateMutant;
-
-//Returns STATUS_OBJECT_NAME_NOT_FOUND or STATUS_SUCCESS (or STATUS_OBJECT_NAME_COLLISION if OBJ_OPENIF is specified in OBJECT_ATTRIBUTES)
 static t_NtOpenMutant NtOpenMutant;
 
 static t_NtCreateEvent NtCreateEvent;
+static t_NtOpenEvent NtOpenEvent;
 
 inline UNICODE_STRING stdWStringToUnicodeString(const std::wstring& str) {
 	UNICODE_STRING unicodeString;
@@ -91,6 +91,12 @@ NTSTATUS NTAPI NtCreateEvent_Hook(PHANDLE EventHandle, DWORD DesiredAccess, POBJ
 	return NtCreateEvent(EventHandle, DesiredAccess, ObjectAttributes, EventType, InitialState);
 }
 
+NTSTATUS NTAPI NtOpenEvent_Hook(PHANDLE EventHandle, DWORD DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes)
+{
+	updateNameObject(ObjectAttributes);
+	return NtOpenEvent(EventHandle, DesiredAccess, ObjectAttributes);
+}
+
 void installFindMutexHooks()
 {
 	//Random
@@ -105,9 +111,13 @@ void installFindMutexHooks()
 
 	//Ntdll functions
 #define GET_NT_PROC(name, type) (type)GetProcAddress(GetModuleHandle("ntdll.dll"), name)
+
 	NtCreateMutant = GET_NT_PROC("NtCreateMutant", t_NtCreateMutant);
 	NtOpenMutant = GET_NT_PROC("NtOpenMutant", t_NtOpenMutant);
+
 	NtCreateEvent = GET_NT_PROC("NtCreateEvent", t_NtCreateEvent);
+	NtOpenEvent = GET_NT_PROC("NtOpenEvent", t_NtOpenEvent);
+
 #undef GET_NT_PROC
 
 	//Hooks
@@ -115,4 +125,5 @@ void installFindMutexHooks()
 	installHook("ntdll.dll", "NtOpenMutant", NtOpenMutant_Hook);
 
 	installHook("ntdll.dll", "NtCreateEvent", NtCreateEvent_Hook);
+	installHook("ntdll.dll", "NtOpenEvent", NtOpenEvent_Hook);
 }
