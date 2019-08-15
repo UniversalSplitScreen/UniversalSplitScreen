@@ -5,11 +5,15 @@
 #include <ntstatus.h>
 #include <winternl.h>
 #include <random>
+#include <map>
 
 std::mt19937 randomGenerator;
 
 //The state of a mutex object is signaled when it is not owned by any thread
 std::vector<HANDLE> handlesToFakeSignal;
+
+//Key: search term. Value: the assigned name that is replaced for every name that matched the search term. (value is empty if needs generating)
+std::map <std::wstring, std::wstring> searchTermsToAssignedNames;
 
 typedef enum _EVENT_TYPE {
 	NotificationEvent,
@@ -50,22 +54,40 @@ DWORD WINAPI WaitForSingleObjectEx_Hook(
 	return isHandleToFakeSignal(hHandle) ? WAIT_OBJECT_0 : WaitForSingleObjectEx(hHandle, dwMilliseconds, bAlertable);
 }
 
-bool isTargetName(UNICODE_STRING name)
+UNICODE_STRING stdWStringToUnicodeString(const std::wstring& str) {
+	UNICODE_STRING lsaWStr;
+	DWORD len = 0;
+
+	len = str.length();
+	LPWSTR cstr = new WCHAR[len + 1];
+	memcpy(cstr, str.c_str(), (len + 1) * sizeof(WCHAR));
+	lsaWStr.Buffer = cstr;
+	lsaWStr.Length = (USHORT)((len) * sizeof(WCHAR));
+	lsaWStr.MaximumLength = (USHORT)((len + 1) * sizeof(WCHAR));
+	return lsaWStr;
+}
+
+void updateName(PUNICODE_STRING inputName)
 {
-	if (name.Length > 0 && name.Length <= name.MaximumLength)
+	if (!(inputName->Length > 0 && inputName->Length <= inputName->MaximumLength)) return;
+
+	for (auto& pair : searchTermsToAssignedNames)
 	{
-		std::wstring hl2 = L"Overkill Engine";
-		return wcsstr(name.Buffer, hl2.c_str()) != nullptr;
-
-		/*std::wstring wStrBuf(name.Buffer, name.Length / sizeof(WCHAR));
-		const wchar_t *wStr = wStrBuf.c_str();
-		if (name.Length == wStrBuf.length())
+		if (wcsstr(inputName->Buffer, pair.first.c_str()) != nullptr)
 		{
-			return wcsstr(wStr, hl2.c_str()) != nullptr;
-		}*/
-	}
+			if (pair.second.empty())
+			{
+				const auto rand = std::to_wstring(randomGenerator());
 
-	return false;
+				const std::wstring oldName = inputName->Buffer;
+				const auto newName = oldName + rand;
+
+				pair.second = newName;
+			}
+
+			*inputName = stdWStringToUnicodeString(pair.second);
+		}
+	}
 }
 
 NTSTATUS NTAPI NtCreateMutant_Hook(OUT PHANDLE MutantHandle, IN ULONG DesiredAccess, IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL, IN BOOLEAN InitialOwner)
@@ -110,19 +132,6 @@ NTSTATUS NTAPI NtOpenMutant_Hook(PHANDLE MutantHandle, ULONG DesiredAccess, POBJ
 	return ret;
 }
 
-UNICODE_STRING stdStringToUnicodeString(const std::wstring& str) {
-	UNICODE_STRING lsaWStr;
-	DWORD len = 0;
-
-	len = str.length();
-	LPWSTR cstr = new WCHAR[len + 1];
-	memcpy(cstr, str.c_str(), (len + 1) * sizeof(WCHAR));
-	lsaWStr.Buffer = cstr;
-	lsaWStr.Length = (USHORT)((len) * sizeof(WCHAR));
-	lsaWStr.MaximumLength = (USHORT)((len + 1) * sizeof(WCHAR));
-	return lsaWStr;
-}
-
 NTSTATUS NTAPI NtCreateEvent_Hook(PHANDLE EventHandle, DWORD DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, EVENT_TYPE EventType, BOOLEAN InitialState)
 {
 	if (ObjectAttributes != nullptr && ObjectAttributes->ObjectName != nullptr && isTargetName(*(ObjectAttributes->ObjectName)))
@@ -136,7 +145,7 @@ NTSTATUS NTAPI NtCreateEvent_Hook(PHANDLE EventHandle, DWORD DesiredAccess, POBJ
 
 		MessageBoxW(NULL, nameWC, L"nameWC", 0);
 
-		auto s = stdStringToUnicodeString(name);
+		auto s = stdWStringToUnicodeString(name);
 		ObjectAttributes->ObjectName = &s;
 	}
 
@@ -145,15 +154,24 @@ NTSTATUS NTAPI NtCreateEvent_Hook(PHANDLE EventHandle, DWORD DesiredAccess, POBJ
 
 void installFindMutexHooks()
 {
+	//Random
 	std::random_device rd;
 	randomGenerator = static_cast<std::mt19937>(rd());
 
+	//Search terms
+#define ADD_SEARCH_TERM(term) searchTermsToAssignedNames.insert((term), L"")
+	ADD_SEARCH_TERM(L"Overkill Engine Game");
+	ADD_SEARCH_TERM(L"hl2_singleton_mutex");
+#undef ADD_SEARCH_TERM
+
+	//Ntdll functions
 #define GET_NT_PROC(name, type) (type)GetProcAddress(GetModuleHandle("ntdll.dll"), name)
 	NtCreateMutant = GET_NT_PROC("NtCreateMutant", t_NtCreateMutant);
 	NtOpenMutant = GET_NT_PROC("NtOpenMutant", t_NtOpenMutant);
 	NtCreateEvent = GET_NT_PROC("NtCreateEvent", t_NtCreateEvent);
 #undef GET_NT_PROC
 
+	//Hooks
 	installHook("ntdll.dll", "NtCreateMutant", NtCreateMutant_Hook);
 	installHook("ntdll.dll", "NtOpenMutant", NtOpenMutant_Hook);
 
