@@ -71,7 +71,7 @@ void updateName(PUNICODE_STRING inputName)
 {
 	if (!(inputName->Length > 0 && inputName->Length <= inputName->MaximumLength)) return;
 
-	for (auto& pair : searchTermsToAssignedNames)
+	for (std::map<std::wstring, std::wstring>::value_type& pair : searchTermsToAssignedNames)
 	{
 		if (wcsstr(inputName->Buffer, pair.first.c_str()) != nullptr)
 		{
@@ -83,6 +83,8 @@ void updateName(PUNICODE_STRING inputName)
 				const auto newName = oldName + rand;
 
 				pair.second = newName;
+				//searchTermsToAssignedNames[pair.first] = newName;
+				MessageBoxW(NULL, newName.c_str(), oldName.c_str(), 0);
 			}
 
 			*inputName = stdWStringToUnicodeString(pair.second);
@@ -90,65 +92,29 @@ void updateName(PUNICODE_STRING inputName)
 	}
 }
 
+void updateNameObject(POBJECT_ATTRIBUTES ObjectAttributes)
+{
+	if (ObjectAttributes != NULL && ObjectAttributes->ObjectName != NULL)
+	{
+		updateName(ObjectAttributes->ObjectName);
+	}
+}
+
 NTSTATUS NTAPI NtCreateMutant_Hook(OUT PHANDLE MutantHandle, IN ULONG DesiredAccess, IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL, IN BOOLEAN InitialOwner)
 {
-	const NTSTATUS ret = NtCreateMutant(MutantHandle, DesiredAccess, ObjectAttributes, InitialOwner);
-
-	if (ObjectAttributes != nullptr && ObjectAttributes->ObjectName != nullptr && isTargetName(*(ObjectAttributes->ObjectName)))
-	{
-		if (InitialOwner == FALSE)
-		{
-			handlesToFakeSignal.push_back(*MutantHandle);
-		}
-
-		SetLastError(ERROR_SUCCESS);
-		return STATUS_SUCCESS;
-	}
-
-	return ret;
+	updateNameObject(ObjectAttributes);
+	return NtCreateMutant(MutantHandle, DesiredAccess, ObjectAttributes, InitialOwner);
 }
 
 NTSTATUS NTAPI NtOpenMutant_Hook(PHANDLE MutantHandle, ULONG DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes)
 {
-	const auto ret = NtOpenMutant(MutantHandle, DesiredAccess, ObjectAttributes);
-
-	if (ObjectAttributes == nullptr || ObjectAttributes->ObjectName == nullptr || !isTargetName(*ObjectAttributes->ObjectName))
-	{
-		return ret;
-	}
-
-	if (ret == STATUS_OBJECT_NAME_COLLISION)
-	{
-		SetLastError(ERROR_SUCCESS);
-		return STATUS_SUCCESS;
-	}
-	else if (ret == STATUS_SUCCESS)
-	{
-		*MutantHandle = NULL;
-		SetLastError(ERROR_OBJECT_NOT_FOUND);
-		return STATUS_OBJECT_NAME_NOT_FOUND;
-	}
-
-	return ret;
+	updateNameObject(ObjectAttributes);
+	return NtOpenMutant(MutantHandle, DesiredAccess, ObjectAttributes);
 }
 
 NTSTATUS NTAPI NtCreateEvent_Hook(PHANDLE EventHandle, DWORD DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, EVENT_TYPE EventType, BOOLEAN InitialState)
 {
-	if (ObjectAttributes != nullptr && ObjectAttributes->ObjectName != nullptr && isTargetName(*(ObjectAttributes->ObjectName)))
-	{
-		auto rand = std::to_wstring(randomGenerator());
-		MessageBoxW(NULL, rand.c_str(), L"rand", 0);
-		std::wstring name0 = ObjectAttributes->ObjectName->Buffer;
-		std::wstring name = name0 + rand;
-		//auto nameWC = const_cast<wchar_t*>(name.c_str());
-		auto nameWC = name.c_str();
-
-		MessageBoxW(NULL, nameWC, L"nameWC", 0);
-
-		auto s = stdWStringToUnicodeString(name);
-		ObjectAttributes->ObjectName = &s;
-	}
-
+	updateNameObject(ObjectAttributes);
 	return NtCreateEvent(EventHandle, DesiredAccess, ObjectAttributes, EventType, InitialState);
 }
 
@@ -159,7 +125,7 @@ void installFindMutexHooks()
 	randomGenerator = static_cast<std::mt19937>(rd());
 
 	//Search terms
-#define ADD_SEARCH_TERM(term) searchTermsToAssignedNames.insert((term), L"")
+#define ADD_SEARCH_TERM(term) searchTermsToAssignedNames.insert(std::make_pair((term), L""));
 	ADD_SEARCH_TERM(L"Overkill Engine Game");
 	ADD_SEARCH_TERM(L"hl2_singleton_mutex");
 #undef ADD_SEARCH_TERM
