@@ -17,16 +17,23 @@ typedef enum _EVENT_TYPE {
 	SynchronizationEvent
 } EVENT_TYPE, *PEVENT_TYPE;
 
-typedef NTSTATUS(NTAPI* t_NtCreateMutant)(PHANDLE MutantHandle, DWORD DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, BOOLEAN InitialOwner);
-typedef NTSTATUS(NTAPI* t_NtOpenMutant)(PHANDLE MutantHandle, ULONG DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes);
-typedef NTSTATUS(NTAPI* t_NtCreateEvent)(PHANDLE EventHandle, DWORD DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, EVENT_TYPE EventType, BOOLEAN InitialState);
+typedef NTSTATUS(NTAPI* t_NtCreateMutant)(PHANDLE MutantHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, BOOLEAN InitialOwner);
+typedef NTSTATUS(NTAPI* t_NtOpenMutant)(PHANDLE MutantHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes);
+
+typedef NTSTATUS(NTAPI* t_NtCreateEvent)(PHANDLE EventHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, EVENT_TYPE EventType, BOOLEAN InitialState);
 typedef NTSTATUS(NTAPI* t_NtOpenEvent)(PHANDLE EventHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes);
+
+typedef NTSTATUS(NTAPI* t_NtCreateSemaphore)(PHANDLE SemaphoreHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, ULONG InitialCount, ULONG MaximumCount);
+typedef NTSTATUS(NTAPI* t_NtOpenSemaphore)(PHANDLE SemaphoreHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes);
 
 static t_NtCreateMutant NtCreateMutant;
 static t_NtOpenMutant NtOpenMutant;
 
 static t_NtCreateEvent NtCreateEvent;
 static t_NtOpenEvent NtOpenEvent;
+
+static t_NtCreateSemaphore NtCreateSemaphore;
+static t_NtOpenSemaphore NtOpenSemaphore;
 
 inline UNICODE_STRING stdWStringToUnicodeString(const std::wstring& str) {
 	UNICODE_STRING unicodeString;
@@ -57,7 +64,6 @@ void updateName(PUNICODE_STRING inputName)
 				const auto newName = oldName + rand;
 
 				pair.second = newName;
-				MessageBoxW(NULL, newName.c_str(), oldName.c_str(), 0);
 			}
 
 			*inputName = stdWStringToUnicodeString(pair.second);
@@ -97,17 +103,33 @@ NTSTATUS NTAPI NtOpenEvent_Hook(PHANDLE EventHandle, DWORD DesiredAccess, POBJEC
 	return NtOpenEvent(EventHandle, DesiredAccess, ObjectAttributes);
 }
 
+NTSTATUS NTAPI NtCreateSemaphore_Hook(PHANDLE SemaphoreHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, ULONG InitialCount, ULONG MaximumCounts)
+{
+	updateNameObject(ObjectAttributes);
+	return NtCreateSemaphore(SemaphoreHandle, DesiredAccess, ObjectAttributes, InitialCount, MaximumCounts);
+}
+
+NTSTATUS NTAPI NtOpenSemaphore_Hook(PHANDLE SemaphoreHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes)
+{
+	updateNameObject(ObjectAttributes);
+	return NtOpenSemaphore(SemaphoreHandle, DesiredAccess, ObjectAttributes);
+}
+
 void installFindMutexHooks()
 {
 	//Random
 	std::random_device rd;
 	randomGenerator = static_cast<std::mt19937>(rd());
 
+
 	//Search terms
 #define ADD_SEARCH_TERM(term) searchTermsToAssignedNames.insert(std::make_pair((term), L""));
+	
 	ADD_SEARCH_TERM(L"Overkill Engine Game");
 	ADD_SEARCH_TERM(L"hl2_singleton_mutex");
+	
 #undef ADD_SEARCH_TERM
+
 
 	//Ntdll functions
 #define GET_NT_PROC(name, type) (type)GetProcAddress(GetModuleHandle("ntdll.dll"), name)
@@ -118,7 +140,11 @@ void installFindMutexHooks()
 	NtCreateEvent = GET_NT_PROC("NtCreateEvent", t_NtCreateEvent);
 	NtOpenEvent = GET_NT_PROC("NtOpenEvent", t_NtOpenEvent);
 
+	NtCreateSemaphore = GET_NT_PROC("NtCreateSemaphore", t_NtCreateSemaphore);
+	NtOpenSemaphore = GET_NT_PROC("NtOpenSemaphore", t_NtOpenSemaphore);
+
 #undef GET_NT_PROC
+
 
 	//Hooks
 	installHook("ntdll.dll", "NtCreateMutant", NtCreateMutant_Hook);
@@ -126,4 +152,7 @@ void installFindMutexHooks()
 
 	installHook("ntdll.dll", "NtCreateEvent", NtCreateEvent_Hook);
 	installHook("ntdll.dll", "NtOpenEvent", NtOpenEvent_Hook);
+
+	installHook("ntdll.dll", "NtCreateSemaphore", NtCreateSemaphore_Hook);
+	installHook("ntdll.dll", "NtOpenSemaphore", NtOpenSemaphore_Hook);
 }
