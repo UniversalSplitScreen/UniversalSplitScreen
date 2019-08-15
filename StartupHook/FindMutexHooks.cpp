@@ -9,9 +9,6 @@
 
 std::mt19937 randomGenerator;
 
-//The state of a mutex object is signaled when it is not owned by any thread
-std::vector<HANDLE> handlesToFakeSignal;
-
 //Key: search term. Value: the assigned name that is replaced for every name that matched the search term. (value is empty if needs generating)
 std::map <std::wstring, std::wstring> searchTermsToAssignedNames;
 
@@ -31,40 +28,17 @@ static t_NtOpenMutant NtOpenMutant;
 
 static t_NtCreateEvent NtCreateEvent;
 
-bool isHandleToFakeSignal(HANDLE handle)
-{
-	return handlesToFakeSignal.empty() ? false : 
-		std::find(handlesToFakeSignal.begin(), handlesToFakeSignal.end(), handle) != handlesToFakeSignal.end();
-}
-
-DWORD WINAPI WaitForSingleObject_Hook(
-	HANDLE hHandle,
-	DWORD  dwMilliseconds
-)
-{
-	return isHandleToFakeSignal(hHandle) ? WAIT_OBJECT_0 : WaitForSingleObject(hHandle, dwMilliseconds);
-}
-
-DWORD WINAPI WaitForSingleObjectEx_Hook(
-	HANDLE hHandle,
-	DWORD  dwMilliseconds,
-	BOOL   bAlertable
-)
-{
-	return isHandleToFakeSignal(hHandle) ? WAIT_OBJECT_0 : WaitForSingleObjectEx(hHandle, dwMilliseconds, bAlertable);
-}
-
-UNICODE_STRING stdWStringToUnicodeString(const std::wstring& str) {
-	UNICODE_STRING lsaWStr;
+inline UNICODE_STRING stdWStringToUnicodeString(const std::wstring& str) {
+	UNICODE_STRING unicodeString;
 	DWORD len = 0;
 
 	len = str.length();
 	LPWSTR cstr = new WCHAR[len + 1];
 	memcpy(cstr, str.c_str(), (len + 1) * sizeof(WCHAR));
-	lsaWStr.Buffer = cstr;
-	lsaWStr.Length = (USHORT)((len) * sizeof(WCHAR));
-	lsaWStr.MaximumLength = (USHORT)((len + 1) * sizeof(WCHAR));
-	return lsaWStr;
+	unicodeString.Buffer = cstr;
+	unicodeString.Length = (USHORT)(len * sizeof(WCHAR));
+	unicodeString.MaximumLength = (USHORT)((len + 1) * sizeof(WCHAR));
+	return unicodeString;
 }
 
 void updateName(PUNICODE_STRING inputName)
@@ -83,7 +57,6 @@ void updateName(PUNICODE_STRING inputName)
 				const auto newName = oldName + rand;
 
 				pair.second = newName;
-				//searchTermsToAssignedNames[pair.first] = newName;
 				MessageBoxW(NULL, newName.c_str(), oldName.c_str(), 0);
 			}
 
@@ -92,7 +65,7 @@ void updateName(PUNICODE_STRING inputName)
 	}
 }
 
-void updateNameObject(POBJECT_ATTRIBUTES ObjectAttributes)
+inline void updateNameObject(POBJECT_ATTRIBUTES ObjectAttributes)
 {
 	if (ObjectAttributes != NULL && ObjectAttributes->ObjectName != NULL)
 	{
@@ -142,6 +115,4 @@ void installFindMutexHooks()
 	installHook("ntdll.dll", "NtOpenMutant", NtOpenMutant_Hook);
 
 	installHook("ntdll.dll", "NtCreateEvent", NtCreateEvent_Hook);
-
-	installHook("kernel32.dll", "WaitForSingleObject", WaitForSingleObject_Hook);
 }
