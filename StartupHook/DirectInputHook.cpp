@@ -4,18 +4,6 @@
 #include <dinput.h>
 #include <iostream>
 
-#if _WIN64
-#define X64
-#else
-#define X86
-#endif
-
-#ifdef X64
-using PtrSize = long long;//64 bit pointers
-#else
-using PtrSize = int; //32 bit pointers
-#endif
-
 extern HMODULE DllHandle;
 
 LPDIRECTINPUT8 pDinput8A;

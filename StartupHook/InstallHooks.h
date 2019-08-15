@@ -4,4 +4,4 @@ void installDirectInputHooks(int _controllerIndex);
 
 void installFindWindowHooks();
 
-void installFindMutexHooks();
+void installFindMutexHooks(LPCWSTR targets);

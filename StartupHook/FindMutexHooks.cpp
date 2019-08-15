@@ -2,7 +2,6 @@
 #include "InstallHooks.h"
 #include "Hooking.h"
 #include <vector>
-#include <ntstatus.h>
 #include <winternl.h>
 #include <random>
 #include <map>
@@ -115,7 +114,7 @@ NTSTATUS NTAPI NtOpenSemaphore_Hook(PHANDLE SemaphoreHandle, ACCESS_MASK Desired
 	return NtOpenSemaphore(SemaphoreHandle, DesiredAccess, ObjectAttributes);
 }
 
-void installFindMutexHooks()
+void installFindMutexHooks(LPCWSTR targets)
 {
 	//Random
 	std::random_device rd;
@@ -124,9 +123,27 @@ void installFindMutexHooks()
 
 	//Search terms
 #define ADD_SEARCH_TERM(term) searchTermsToAssignedNames.insert(std::make_pair((term), L""));
-	
-	ADD_SEARCH_TERM(L"Overkill Engine Game");
-	ADD_SEARCH_TERM(L"hl2_singleton_mutex");
+
+	{
+		std::wstring target_s(targets);
+		std::wstring splitter = L"&&&&&";
+		unsigned int startIndex = 0;
+		unsigned int endIndex = 0;
+
+		while ((endIndex = target_s.find(splitter, startIndex)) < target_s.size())
+		{
+			std::wstring sub = target_s.substr(startIndex, endIndex - startIndex);
+			ADD_SEARCH_TERM(sub);
+			startIndex = endIndex + splitter.size();
+		}
+
+		if (startIndex < target_s.size())
+		{
+			//No splitters in string
+			std::wstring sub = target_s.substr(startIndex);
+			ADD_SEARCH_TERM(sub);
+		}
+	}
 	
 #undef ADD_SEARCH_TERM
 
