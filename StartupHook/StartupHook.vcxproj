@@ -188,10 +188,9 @@ copy $(SolutionDir)$(PlatformTarget)\$(Configuration)\$(TargetName).dll $(Soluti
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="DirectInputHook.h" />
     <ClInclude Include="Entry.h" />
-    <ClInclude Include="FindWindowHook.h" />
     <ClInclude Include="Hooking.h" />
+    <ClInclude Include="InstallHooks.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -200,6 +199,7 @@ copy $(SolutionDir)$(PlatformTarget)\$(Configuration)\$(TargetName).dll $(Soluti
     <ClCompile Include="DirectInputHook.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Entry.cpp" />
+    <ClCompile Include="FindMutexHooks.cpp" />
     <ClCompile Include="FindWindowHook.cpp" />
     <ClCompile Include="Hooking.cpp" />
     <ClCompile Include="stdafx.cpp">

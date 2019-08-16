@@ -19,15 +19,12 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FindMutexHooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DirectInputHook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Entry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FindWindowHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Hooking.h">
@@ -38,6 +35,9 @@
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InstallHooks.h">
+       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>

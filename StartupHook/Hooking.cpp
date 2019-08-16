@@ -31,20 +31,20 @@ NTSTATUS installHook(void* entryPoint, void* inCallback, std::string name)
 	return hookResult;
 }
 
-NTSTATUS installHook(const LPCSTR moduleHandle, std::string lpProcName, void* inCallback)
+NTSTATUS installHook(const LPCSTR moduleHandle, std::string lpProcName, void* inCallback, HOOK_TRACE_INFO* phHook)
 {
-	HOOK_TRACE_INFO hHook = { NULL };
+	*phHook = { NULL };
 
 	const NTSTATUS hookResult = LhInstallHook(
 		GetProcAddress(GetModuleHandle(moduleHandle), lpProcName.c_str()),
 		inCallback,
 		nullptr,
-		&hHook);
+		phHook);
 
 	if (!FAILED(hookResult))
 	{
 		ULONG ACLEntries[1] = { 0 };
-		LhSetExclusiveACL(ACLEntries, 1, &hHook);
+		LhSetExclusiveACL(ACLEntries, 1, phHook);
 		std::cout << "Successfully installed hook " << lpProcName << " in module '" << moduleHandle << "'\n";
 	}
 	else
@@ -55,4 +55,10 @@ NTSTATUS installHook(const LPCSTR moduleHandle, std::string lpProcName, void* in
 	}
 
 	return hookResult;
+}
+
+NTSTATUS installHook(const LPCSTR moduleHandle, std::string lpProcName, void* inCallback)
+{
+	HOOK_TRACE_INFO hHook;
+	return installHook(moduleHandle, lpProcName, inCallback, &hHook);
 }

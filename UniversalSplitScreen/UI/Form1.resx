@@ -185,6 +185,19 @@ XInput only supports 4 controllers. Do not use a controller index higher than 4 
 Use this if a game is not responding to mouse buttons or keyboard keys.
 This will often fix issues with the shift/control/alt keys.</value>
   </data>
+  <data name="CheckBox_StartupHook_FindMutexHook.ToolTip" xml:space="preserve">
+    <value>Most games will use Mutexes/Events/Semaphores to prevent multiple instances from opening.
+This hook will prevent any new instances from detecting if a handle with the same name already exists by appending a random number to the name.
+Use this to quickly launch multiple instances of a game or if the handle unlocker does not work (e.g. the game crashes immediately).
+You will need to find the handle names in Process Explorer (Press Ctrl+H to view handles).
+Separate multiple names with 5 &amp; symbols, e.g. name1&amp;&amp;&amp;&amp;&amp;name2</value>
+  </data>
+  <data name="CheckBox_StartupHook_FindWindow.ToolTip" xml:space="preserve">
+    <value>Some games will use FindWindow at launch to detect if any instances of the game are already running.
+Launching a game with this utility will hook FindWindow so the game cannot detect other instances.
+As with the other hooks, this may be detected as a false positive by an anti-virus or anti-cheat system.
+</value>
+  </data>
   <data name="CheckBox_StartupHook_UseWaitForIdle.ToolTip" xml:space="preserve">
     <value>Some games will crash if hooks are injected before the process has properly initialised.
 Some games may also crash if hooks are injected afterwards.
@@ -195,12 +208,6 @@ If both options don't work, try turning this off and enabling '640x480 compatibi
     <value>Redirects controller input within the Direct Input API.
 Direct Input is an old API, so it is mostly only used by old games.
 Direct Input supports an effectively unlimited number of controllers, so you can use more than 4 controllers.
-</value>
-  </data>
-  <data name="CheckBox_StartupHook_FindWindow.ToolTip" xml:space="preserve">
-    <value>Some games will use FindWindow at launch to detect if any instances of the game are already running.
-Launching a game with this utility will hook FindWindow so the game cannot detect other instances.
-As with the other hooks, this may be detected as a false positive by an anti-virus or anti-cheat system.
 </value>
   </data>
   <data name="label1.Text" xml:space="preserve">

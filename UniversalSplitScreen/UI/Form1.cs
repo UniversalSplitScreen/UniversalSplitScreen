@@ -81,7 +81,11 @@ namespace UniversalSplitScreen.UI
 
 			var handleNameRef = new RefType<string>("AutofillHandleName");
 			RefTextbox_AutofillHandleName.RefType = handleNameRef;
-			if (!string.IsNullOrEmpty(handleNameRef)) textBoxHandleName.Text = handleNameRef;
+			if (!string.IsNullOrEmpty(handleNameRef))
+			{
+				textBoxHandleName.Text = handleNameRef;
+				StartupHook_MutexTargets.Text = handleNameRef;
+			}
 		}
 
 		protected override void WndProc(ref Message msg)
@@ -270,11 +274,21 @@ namespace UniversalSplitScreen.UI
 			string fileName = FileDialog_FindWindowHook.FileName;
 			string args = TextBox_FindWindowHookArgs.Text;
 			bool is64 = Checkbox_FindWindowHookIs64.Checked;
-			Logger.WriteLine($"FindWindowHook Launch button clicked. FileName='{fileName}', arguments='{args}', is64={is64}");
+			Logger.WriteLine($"StartupHook Launch button clicked. FileName='{fileName}', arguments='{args}', is64={is64}");
 
 			if (System.IO.File.Exists(fileName))
 			{
-				Program.SplitScreenManager.CreateAndInjectStartupHook(is64, fileName, args, CheckBox_StartupHook_UseWaitForIdle.Checked, CheckBox_StartupHook_Dinput.Checked, CheckBox_StartupHook_FindWindow.Checked, (byte)dinputControllerIndex);
+				Program.SplitScreenManager.CreateAndInjectStartupHook(
+					is64, 
+					fileName, 
+					args,
+					CheckBox_StartupHook_UseWaitForIdle.Checked,
+					CheckBox_StartupHook_Dinput.Checked,
+					CheckBox_StartupHook_FindWindow.Checked,
+					(byte) dinputControllerIndex,
+					CheckBox_StartupHook_FindMutexHook.Checked,
+					StartupHook_MutexTargets.Text
+					);
 			}
 			else
 			{

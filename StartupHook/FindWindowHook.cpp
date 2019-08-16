@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "FindWindowHook.h"
+#include "InstallHooks.h"
 #include "Hooking.h"
 
 //FindWindowA/FindWindowW
@@ -32,7 +32,7 @@ void installFindWindowHooks()
 	installHook("user32.dll", "FindWindowExA", FindWindowEx_Hook);
 	installHook("user32.dll", "FindWindowExW", FindWindowEx_Hook);
 
-	installHook("kernel32.dll", "OpenProcess", OpenProcess_Hook);
+	//installHook("kernel32.dll", "OpenProcess", OpenProcess_Hook);
 
 	installHook("user32.dll", "EnumWindows", EnumWindows_Hook);
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 
 //Output file is named IJ not InjectorLoader because "InjectorLoader" is picked up by some antiviruses
@@ -190,12 +191,25 @@ namespace InjectorLoader
 		public static void Main(string[] args)
 		{
 			const int argsLengthHooksCPP = 20;
-			const int argsLengthStartupHook = 7;
+			const int argsLengthStartupHook = 9;
 
-			//dllpath, exePath, base64CmdArgs, dinputHookEnabled, findWindowHookEnabled, controllerIndex
+			//dllpath, exePath, base64CmdArgs, dinputHookEnabled, findWindowHookEnabled, controllerIndex, findMutexHookEnabled, mutexTargets
 			if (args.Length == argsLengthStartupHook)
 			{
-				int ntFwh = CreateAndInjectStartupHook(args[0], args[1], args[2], args[3].ToLower().Equals("true"), args[4].ToLower().Equals("true"), args[5].ToLower().Equals("true"), byte.Parse(args[6]));
+				bool Bfs(string s) => s.ToLower().Equals("true");
+
+				int ntFwh = CreateAndInjectStartupHook(
+					args[0], 
+					args[1], 
+					args[2], 
+					Bfs(args[3]), 
+					Bfs(args[4]), 
+					Bfs(args[5]), 
+					byte.Parse(args[6]), 
+					Bfs(args[7]),
+					args[8]
+					);
+
 				Environment.Exit(ntFwh);
 				return;
 			}
@@ -306,28 +320,39 @@ namespace InjectorLoader
 			Environment.Exit((int)nt);
 		}
 		
-		private static int CreateAndInjectStartupHook(string hookDllPath, string exePath, string base64CommandLineArgs, bool useWaitForIdle, bool dinputHookEnabled, bool findWindowHookEnabled, byte controllerIndex)
+		private static int CreateAndInjectStartupHook(string hookDllPath, string exePath, string base64CommandLineArgs, bool useWaitForIdle, bool dinputHookEnabled, bool findWindowHookEnabled, byte controllerIndex, bool findMutexHookEnabled, string mutexTargets)
 		{
 			string cmdLineArgs = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64CommandLineArgs));
 			IntPtr pOutPID = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(uint)));
-			//System.Windows.Forms.MessageBox.Show(hookDllPath, "hello", System.Windows.Forms.MessageBoxButtons.OK);
-			
-			const int size = 4;
+
+			//"hl2_singleton_mutex&&&&&ValveHalfLifeLauncherMutex&&&&&Overkill Engine Game"
+			var targetsBytes = Encoding.Unicode.GetBytes(mutexTargets);
+			int targetsBytesLength = targetsBytes.Length;
+
+			int size = 64 + targetsBytesLength;
 			var data = new byte[size];
 			data[0] = dinputHookEnabled ? (byte)1 : (byte)0;
 			data[1] = findWindowHookEnabled ? (byte)1 : (byte)0;
 			data[2] = controllerIndex;
 			data[3] = useWaitForIdle ? (byte) 0 : (byte) 1;
+			data[4] = findMutexHookEnabled ? (byte) 1 : (byte) 0;
 
+			data[5] = (byte)(targetsBytesLength >> 24);
+			data[6] = (byte)(targetsBytesLength >> 16);
+			data[7] = (byte)(targetsBytesLength >> 8);
+			data[8] = (byte) targetsBytesLength;
+
+			Array.Copy(targetsBytes, 0, data, 9, targetsBytesLength);
+			
 			IntPtr ptr = Marshal.AllocHGlobal(size);
 			Marshal.Copy(data, 0, ptr, size);
 			
 			if (!useWaitForIdle)
 			{
 				if (Environment.Is64BitProcess)
-					return Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, "", hookDllPath, ptr, size, pOutPID);
+					return Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, "", hookDllPath, ptr, (uint)size, pOutPID);
 				else
-					return Injector32.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, hookDllPath, "", ptr, size, pOutPID);
+					return Injector32.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, hookDllPath, "", ptr, (uint)size, pOutPID);
 
 			}
 			

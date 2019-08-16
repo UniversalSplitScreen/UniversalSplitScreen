@@ -9,6 +9,7 @@
   "SendWM_SETFOCUS": false,
   "RefreshWindowBoundsOnMouseClick": false,
   "DrawMouse": true,
+  "AutofillHandleName": "hl2_singleton_mutex",
   "Hook_FilterRawInput": true,
   "Hook_FilterWindowsMouseInput": false,
   "Hook_GetForegroundWindow": true,
