@@ -84,6 +84,7 @@
 			this.tabControl3 = new System.Windows.Forms.TabControl();
 			this.tabPage7 = new System.Windows.Forms.TabPage();
 			this.panel6 = new System.Windows.Forms.Panel();
+			this.CheckBox_StartupHook_UseWaitForIdle = new System.Windows.Forms.CheckBox();
 			this.Button_BrowseFindWindowHookExe = new System.Windows.Forms.Button();
 			this.flowLayoutPanel3 = new System.Windows.Forms.FlowLayoutPanel();
 			this.Label_FindWindowHookExe = new System.Windows.Forms.Label();
@@ -117,7 +118,11 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.FileDialog_FindWindowHook = new System.Windows.Forms.OpenFileDialog();
-			this.CheckBox_StartupHook_UseWaitForIdle = new System.Windows.Forms.CheckBox();
+			this.panel7 = new System.Windows.Forms.Panel();
+			this.panel8 = new System.Windows.Forms.Panel();
+			this.CheckBox_StartupHook_FindMutexHook = new System.Windows.Forms.CheckBox();
+			this.StartupHook_MutexTargets = new System.Windows.Forms.TextBox();
+			this.label2 = new System.Windows.Forms.Label();
 			this.RefTextbox_AutofillHandleName = new UniversalSplitScreen.UI.RefTextbox();
 			this.RefCheckbox_SendScrollwheel = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_DrawMouse = new UniversalSplitScreen.UI.RefCheckbox();
@@ -179,6 +184,8 @@
 			this.tabPage5.SuspendLayout();
 			this.tabPage6.SuspendLayout();
 			this.GroupBoxLicense.SuspendLayout();
+			this.panel7.SuspendLayout();
+			this.panel8.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -773,9 +780,10 @@
 			// 
 			// tabPage7
 			// 
+			this.tabPage7.Controls.Add(this.panel8);
+			this.tabPage7.Controls.Add(this.panel7);
 			this.tabPage7.Controls.Add(this.panel6);
 			this.tabPage7.Controls.Add(this.panel5);
-			this.tabPage7.Controls.Add(this.CheckBox_StartupHook_FindWindow);
 			this.tabPage7.Location = new System.Drawing.Point(4, 22);
 			this.tabPage7.Name = "tabPage7";
 			this.tabPage7.Padding = new System.Windows.Forms.Padding(3);
@@ -798,6 +806,17 @@
 			this.panel6.Name = "panel6";
 			this.panel6.Size = new System.Drawing.Size(742, 204);
 			this.panel6.TabIndex = 11;
+			// 
+			// CheckBox_StartupHook_UseWaitForIdle
+			// 
+			this.CheckBox_StartupHook_UseWaitForIdle.AutoSize = true;
+			this.CheckBox_StartupHook_UseWaitForIdle.Location = new System.Drawing.Point(6, 175);
+			this.CheckBox_StartupHook_UseWaitForIdle.Name = "CheckBox_StartupHook_UseWaitForIdle";
+			this.CheckBox_StartupHook_UseWaitForIdle.Size = new System.Drawing.Size(159, 17);
+			this.CheckBox_StartupHook_UseWaitForIdle.TabIndex = 8;
+			this.CheckBox_StartupHook_UseWaitForIdle.Text = "Wait for process initialisation";
+			this.toolTip1.SetToolTip(this.CheckBox_StartupHook_UseWaitForIdle, resources.GetString("CheckBox_StartupHook_UseWaitForIdle.ToolTip"));
+			this.CheckBox_StartupHook_UseWaitForIdle.UseVisualStyleBackColor = true;
 			// 
 			// Button_BrowseFindWindowHookExe
 			// 
@@ -852,7 +871,7 @@
 			this.TextBox_FindWindowHookArgs.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.TextBox_FindWindowHookArgs.Location = new System.Drawing.Point(6, 122);
 			this.TextBox_FindWindowHookArgs.Name = "TextBox_FindWindowHookArgs";
-			this.TextBox_FindWindowHookArgs.Size = new System.Drawing.Size(738, 23);
+			this.TextBox_FindWindowHookArgs.Size = new System.Drawing.Size(731, 23);
 			this.TextBox_FindWindowHookArgs.TabIndex = 4;
 			// 
 			// Checkbox_FindWindowHookIs64
@@ -871,7 +890,7 @@
 			this.panel5.Controls.Add(this.Label_DinputControllerIndex);
 			this.panel5.Controls.Add(this.ComboBox_DinputControllerIndex);
 			this.panel5.Controls.Add(this.CheckBox_StartupHook_Dinput);
-			this.panel5.Location = new System.Drawing.Point(6, 29);
+			this.panel5.Location = new System.Drawing.Point(6, 35);
 			this.panel5.Name = "panel5";
 			this.panel5.Size = new System.Drawing.Size(129, 85);
 			this.panel5.TabIndex = 10;
@@ -926,7 +945,7 @@
 			// CheckBox_StartupHook_FindWindow
 			// 
 			this.CheckBox_StartupHook_FindWindow.AutoSize = true;
-			this.CheckBox_StartupHook_FindWindow.Location = new System.Drawing.Point(6, 6);
+			this.CheckBox_StartupHook_FindWindow.Location = new System.Drawing.Point(3, 3);
 			this.CheckBox_StartupHook_FindWindow.Name = "CheckBox_StartupHook_FindWindow";
 			this.CheckBox_StartupHook_FindWindow.Size = new System.Drawing.Size(112, 17);
 			this.CheckBox_StartupHook_FindWindow.TabIndex = 8;
@@ -1136,7 +1155,7 @@
 			// 
 			// toolTip1
 			// 
-			this.toolTip1.AutoPopDelay = 100000;
+			this.toolTip1.AutoPopDelay = 1000000;
 			this.toolTip1.InitialDelay = 500;
 			this.toolTip1.ReshowDelay = 100;
 			// 
@@ -1145,16 +1164,53 @@
 			this.FileDialog_FindWindowHook.Filter = "Executable files|*.exe";
 			this.FileDialog_FindWindowHook.Title = "Select game executable";
 			// 
-			// CheckBox_StartupHook_UseWaitForIdle
+			// panel7
 			// 
-			this.CheckBox_StartupHook_UseWaitForIdle.AutoSize = true;
-			this.CheckBox_StartupHook_UseWaitForIdle.Location = new System.Drawing.Point(6, 175);
-			this.CheckBox_StartupHook_UseWaitForIdle.Name = "CheckBox_StartupHook_UseWaitForIdle";
-			this.CheckBox_StartupHook_UseWaitForIdle.Size = new System.Drawing.Size(159, 17);
-			this.CheckBox_StartupHook_UseWaitForIdle.TabIndex = 8;
-			this.CheckBox_StartupHook_UseWaitForIdle.Text = "Wait for process initialisation";
-			this.toolTip1.SetToolTip(this.CheckBox_StartupHook_UseWaitForIdle, resources.GetString("CheckBox_StartupHook_UseWaitForIdle.ToolTip"));
-			this.CheckBox_StartupHook_UseWaitForIdle.UseVisualStyleBackColor = true;
+			this.panel7.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.panel7.Controls.Add(this.CheckBox_StartupHook_FindWindow);
+			this.panel7.Location = new System.Drawing.Point(6, 6);
+			this.panel7.Name = "panel7";
+			this.panel7.Size = new System.Drawing.Size(129, 23);
+			this.panel7.TabIndex = 12;
+			// 
+			// panel8
+			// 
+			this.panel8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.panel8.Controls.Add(this.label2);
+			this.panel8.Controls.Add(this.StartupHook_MutexTargets);
+			this.panel8.Controls.Add(this.CheckBox_StartupHook_FindMutexHook);
+			this.panel8.Location = new System.Drawing.Point(141, 6);
+			this.panel8.Name = "panel8";
+			this.panel8.Size = new System.Drawing.Size(343, 78);
+			this.panel8.TabIndex = 13;
+			// 
+			// CheckBox_StartupHook_FindMutexHook
+			// 
+			this.CheckBox_StartupHook_FindMutexHook.AutoSize = true;
+			this.CheckBox_StartupHook_FindMutexHook.Location = new System.Drawing.Point(3, 3);
+			this.CheckBox_StartupHook_FindMutexHook.Name = "CheckBox_StartupHook_FindMutexHook";
+			this.CheckBox_StartupHook_FindMutexHook.Size = new System.Drawing.Size(197, 17);
+			this.CheckBox_StartupHook_FindMutexHook.TabIndex = 14;
+			this.CheckBox_StartupHook_FindMutexHook.Text = "Find Mutex/Event/Semaphore hook";
+			this.toolTip1.SetToolTip(this.CheckBox_StartupHook_FindMutexHook, resources.GetString("CheckBox_StartupHook_FindMutexHook.ToolTip"));
+			this.CheckBox_StartupHook_FindMutexHook.UseVisualStyleBackColor = true;
+			// 
+			// StartupHook_MutexTargets
+			// 
+			this.StartupHook_MutexTargets.Location = new System.Drawing.Point(3, 52);
+			this.StartupHook_MutexTargets.Name = "StartupHook_MutexTargets";
+			this.StartupHook_MutexTargets.Size = new System.Drawing.Size(335, 20);
+			this.StartupHook_MutexTargets.TabIndex = 15;
+			this.toolTip1.SetToolTip(this.StartupHook_MutexTargets, "Separate multiple names with 5 & symbols, e.g. name1&&&&&name2");
+			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Location = new System.Drawing.Point(3, 36);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(78, 13);
+			this.label2.TabIndex = 16;
+			this.label2.Text = "Handle names:";
 			// 
 			// RefTextbox_AutofillHandleName
 			// 
@@ -1599,7 +1655,6 @@
 			this.tabPage4.ResumeLayout(false);
 			this.tabControl3.ResumeLayout(false);
 			this.tabPage7.ResumeLayout(false);
-			this.tabPage7.PerformLayout();
 			this.panel6.ResumeLayout(false);
 			this.panel6.PerformLayout();
 			this.flowLayoutPanel3.ResumeLayout(false);
@@ -1619,6 +1674,10 @@
 			this.tabPage6.ResumeLayout(false);
 			this.GroupBoxLicense.ResumeLayout(false);
 			this.GroupBoxLicense.PerformLayout();
+			this.panel7.ResumeLayout(false);
+			this.panel7.PerformLayout();
+			this.panel8.ResumeLayout(false);
+			this.panel8.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -1743,5 +1802,10 @@
 		private RefCheckbox RefCheckbox_Hook_GetKeyboardState;
 		private System.Windows.Forms.CheckBox Checkbox_AutomaticallyCheckForUpdates;
 		private System.Windows.Forms.CheckBox CheckBox_StartupHook_UseWaitForIdle;
+		private System.Windows.Forms.Panel panel8;
+		private System.Windows.Forms.CheckBox CheckBox_StartupHook_FindMutexHook;
+		private System.Windows.Forms.Panel panel7;
+		private System.Windows.Forms.TextBox StartupHook_MutexTargets;
+		private System.Windows.Forms.Label label2;
 	}
 }

@@ -474,7 +474,7 @@ namespace UniversalSplitScreen.Core
 			InitDeviceToWindows();
 		}
 
-		public void CreateAndInjectStartupHook(bool is64, string exePath, string cmdLineArgs, bool useWaitForIdle, bool dinputHook, bool findWindowHook, byte controllerIndex = 0)
+		public void CreateAndInjectStartupHook(bool is64, string exePath, string cmdLineArgs, bool useWaitForIdle, bool dinputHook, bool findWindowHook, byte controllerIndex, bool findMutexHook, string mutexTargets)
 		{
 			string GetFile(string fileName) => Path.Combine(Path.GetDirectoryName(
 					System.Reflection.Assembly.GetExecutingAssembly().Location),
@@ -488,7 +488,18 @@ namespace UniversalSplitScreen.Core
 			string arguments;
 			{
 				string base64CmdLineArgs = Convert.ToBase64String(Encoding.UTF8.GetBytes(cmdLineArgs));
-				var args = new object[]{ findWindowHookLibraryPath, exePath, base64CmdLineArgs, useWaitForIdle, dinputHook, findWindowHook, controllerIndex };
+				var args = new object[]
+				{
+					findWindowHookLibraryPath,
+					exePath,
+					base64CmdLineArgs,
+					useWaitForIdle,
+					dinputHook,
+					findWindowHook,
+					controllerIndex,
+					findMutexHook,
+					mutexTargets
+				};
 
 				var sbArgs = new StringBuilder();
 				foreach (object arg in args)
