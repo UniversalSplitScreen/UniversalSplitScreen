@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 
 //Output file is named IJ not InjectorLoader because "InjectorLoader" is picked up by some antiviruses
@@ -310,24 +311,36 @@ namespace InjectorLoader
 		{
 			string cmdLineArgs = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64CommandLineArgs));
 			IntPtr pOutPID = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(uint)));
-			//System.Windows.Forms.MessageBox.Show(hookDllPath, "hello", System.Windows.Forms.MessageBoxButtons.OK);
-			
-			const int size = 4;
+
+			var targetsBytes = Encoding.Unicode.GetBytes("hl2_singleton_mutex&&&&&ValveHalfLifeLauncherMutex&&&&&Overkill Engine Game");
+			int targetsBytesLength = targetsBytes.Length;
+
+			int size = 64 + targetsBytesLength;
 			var data = new byte[size];
 			data[0] = dinputHookEnabled ? (byte)1 : (byte)0;
 			data[1] = findWindowHookEnabled ? (byte)1 : (byte)0;
 			data[2] = controllerIndex;
 			data[3] = useWaitForIdle ? (byte) 0 : (byte) 1;
 
+			bool findMutexHookEnabled = true;//TODO: change
+			data[4] = findMutexHookEnabled ? (byte) 1 : (byte) 0;
+
+			data[5] = (byte)(targetsBytesLength >> 24);
+			data[6] = (byte)(targetsBytesLength >> 16);
+			data[7] = (byte)(targetsBytesLength >> 8);
+			data[8] = (byte) targetsBytesLength;
+
+			Array.Copy(targetsBytes, 0, data, 9, targetsBytesLength);
+			
 			IntPtr ptr = Marshal.AllocHGlobal(size);
 			Marshal.Copy(data, 0, ptr, size);
 			
 			if (!useWaitForIdle)
 			{
 				if (Environment.Is64BitProcess)
-					return Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, "", hookDllPath, ptr, size, pOutPID);
+					return Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, "", hookDllPath, ptr, (uint)size, pOutPID);
 				else
-					return Injector32.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, hookDllPath, "", ptr, size, pOutPID);
+					return Injector32.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, hookDllPath, "", ptr, (uint)size, pOutPID);
 
 			}
 			

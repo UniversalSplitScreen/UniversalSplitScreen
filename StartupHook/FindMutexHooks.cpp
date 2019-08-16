@@ -5,6 +5,7 @@
 #include <winternl.h>
 #include <random>
 #include <map>
+#include <iostream>
 
 std::mt19937 randomGenerator;
 
@@ -122,7 +123,7 @@ void installFindMutexHooks(LPCWSTR targets)
 
 
 	//Search terms
-#define ADD_SEARCH_TERM(term) searchTermsToAssignedNames.insert(std::make_pair((term), L""));
+#define ADD_SEARCH_TERM(term) searchTermsToAssignedNames.insert(std::make_pair((term), L"")); std::wcout << L"Added search term: " << sub << std::endl;
 
 	{
 		std::wstring target_s(targets);
