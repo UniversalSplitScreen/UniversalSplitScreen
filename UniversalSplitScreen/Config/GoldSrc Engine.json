@@ -9,6 +9,7 @@
   "SendWM_SETFOCUS": false,
   "RefreshWindowBoundsOnMouseClick": false,
   "DrawMouse": true,
+  "AutofillHandleName": "LauncherMutex",
   "Hook_FilterRawInput": false,
   "Hook_FilterWindowsMouseInput": false,
   "Hook_GetForegroundWindow": true,

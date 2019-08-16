@@ -8,6 +8,7 @@ namespace UniversalSplitScreen.Core
 	{
 		#region Properties
 		public bool AutomaticallyCheckForUpdatesOnStartup { get; set; } = true;
+		public uint ControllerLimit { get; set; } = 16;
 		#endregion
 
 		#region Methods

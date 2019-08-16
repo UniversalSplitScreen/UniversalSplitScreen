@@ -34,6 +34,20 @@ namespace UniversalSplitScreen.UI
 
 			Label_CurrentVersion.Text = $"Current version: {UpdateChecker.currentVersion}";
 
+			uint controllerLimit = Program.Config.ControllerLimit;
+			ControllerIndexComboBox.Items.Clear();
+			ControllerIndexComboBox.Items.Add("No controller");
+			ComboBox_DinputControllerIndex.Items.Clear();
+			ComboBox_DinputControllerIndex.Items.Add("No controller");
+			if (controllerLimit > 0)
+			{
+				for (uint i = 1; i <= controllerLimit; i++)
+				{
+					ControllerIndexComboBox.Items.Add(i.ToString());
+					ComboBox_DinputControllerIndex.Items.Add(i.ToString());
+				}
+			}
+
 			LoadGoldbergData();
 		}
 

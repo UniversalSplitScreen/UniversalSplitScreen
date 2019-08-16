@@ -9,7 +9,7 @@ namespace UniversalSplitScreen.Core
 {
 	public static class UpdateChecker
 	{
-		public const string currentVersion = "v1.0.0-testpleaseremove";
+		public const string currentVersion = "v1.1.0";
 		const string request = @"https://api.github.com/repos/UniversalSplitScreen/UniversalSplitScreen/releases/latest";
 
 		/// <summary>

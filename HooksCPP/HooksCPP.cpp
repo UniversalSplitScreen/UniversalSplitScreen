@@ -332,7 +332,11 @@ DWORD WINAPI XInputSetState_Hook(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration
 {
 	if (controller_index == 0)
 		return ERROR_DEVICE_NOT_CONNECTED;
-	return XInputSetState(controller_index - 1, pVibration);
+
+	if (controller_index <= 4)
+		return XInputSetState(controller_index - 1, pVibration);
+
+	return ERROR_SUCCESS;
 }
 
 DWORD WINAPI XInputGetCapabilities_Hook(DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES *pCapabilities)
@@ -340,7 +344,10 @@ DWORD WINAPI XInputGetCapabilities_Hook(DWORD dwUserIndex, DWORD dwFlags, XINPUT
 	if (controller_index == 0) // user wants no controller on this game
 		return ERROR_DEVICE_NOT_CONNECTED;
 
-	return XInputGetCapabilities(controller_index - 1, dwFlags, pCapabilities);
+	if (controller_index <= 4)
+		return XInputGetCapabilities(controller_index - 1, dwFlags, pCapabilities);
+
+	return XInputGetCapabilities(0, dwFlags, pCapabilities);
 }
 
 inline int bytesToInt(BYTE* bytes)
@@ -1303,7 +1310,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 		if (HookXInput)
 		{
 			LPCSTR xinputNames[] = {
-				"xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll", "xinput1_5.dll"
+				"xinput1_3.dll", "xinput1_4.dll", "xinput1_2.dll", "xinput1_1.dll", "xinput9_1_0.dll"
 			};
 
 			for (auto& xinputName : xinputNames)
