@@ -124,5 +124,8 @@ namespace UniversalSplitScreen.Core
 
 		[DllImport("user32.dll")]
 		public static extern bool ClientToScreen(IntPtr hWnd, ref System.Drawing.Point lpPoint);
+
+		[DllImport("EasyHook32.dll", CallingConvention = CallingConvention.StdCall)]
+		public static extern int RhIsX64Process(int InProcessId, out bool OutResult);
 	}
 }

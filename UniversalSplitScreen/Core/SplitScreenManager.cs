@@ -188,7 +188,7 @@ namespace UniversalSplitScreen.Core
 					string hooksLibrary64 = GetFilePath("HooksCPP64.dll");
 
 
-					bool is64 = EasyHook.RemoteHooking.IsX64Process(window.pid);
+					WinApi.RhIsX64Process(window.pid, out bool is64);
 
 					var proc = new Process
 					{
