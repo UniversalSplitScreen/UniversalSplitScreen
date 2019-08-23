@@ -261,19 +261,6 @@ BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT
 	return true;
 }
 
-//https://gitlab.com/Kaldaien/SpecialK/blob/0.10.xdr/include/SpecialK/input/xinput.h#L79-110
-//Used in XinputGetStateEx
-typedef struct _XINPUT_GAMEPAD_EX {
-	WORD  wButtons;
-	BYTE  bLeftTrigger;
-	BYTE  bRightTrigger;
-	SHORT sThumbLX;
-	SHORT sThumbLY;
-	SHORT sThumbRX;
-	SHORT sThumbRY;
-	DWORD dwUnknown;
-} XINPUT_GAMEPAD_EX, *PXINPUT_GAMEPAD_EX;
-
 DWORD packetNumber = 0;
 DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
 {
@@ -286,7 +273,7 @@ DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
 	}
 
 	pState->dwPacketNumber = packetNumber++;
-	memset(&(pState->Gamepad), 0, sizeof(XINPUT_GAMEPAD_EX));
+	memset(&(pState->Gamepad), 0, sizeof(XINPUT_GAMEPAD));
 
 	dinput_device->Poll();
 	DIJOYSTATE2 diState;
