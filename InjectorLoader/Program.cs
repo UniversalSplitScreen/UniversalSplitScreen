@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -349,12 +350,51 @@ namespace InjectorLoader
 			
 			if (!useWaitForIdle)
 			{
-				if (Environment.Is64BitProcess)
-					return Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, "", hookDllPath, ptr, (uint)size, pOutPID);
-				else
-					return Injector32.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, hookDllPath, "", ptr, (uint)size, pOutPID);
-
+				int ret = Environment.Is64BitProcess ? 
+					Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, "", hookDllPath, ptr, (uint)size, pOutPID) : 
+					Injector32.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, hookDllPath, "", ptr, (uint)size, pOutPID);
+				
+				return ret;
 			}
+
+
+
+
+			var appdataIndex = "index2";
+			
+			var sb = new StringBuilder();
+			IDictionary envVars = Environment.GetEnvironmentVariables();
+			envVars["USERPROFILE"] =	$@"C:\Users\{Environment.UserName}\AppData\Roaming\UniversalSplitScreen\USERPROFILE\{appdataIndex}";
+			envVars["HOMEPATH"] =		$@"\Users\{Environment.UserName}\AppData\Roaming\UniversalSplitScreen\USERPROFILE\{appdataIndex}";
+			envVars["APPDATA"] =		$@"C:\Users\{Environment.UserName}\AppData\Roaming\UniversalSplitScreen\USERPROFILE\{appdataIndex}\AppData\Roaming";
+			envVars["LOCALAPPDATA"] =	$@"C:\Users\{Environment.UserName}\AppData\Roaming\UniversalSplitScreen\USERPROFILE\{appdataIndex}\AppData\Local";
+
+			//Some games will crash if the directories don't exist
+			Directory.CreateDirectory(envVars["USERPROFILE"].ToString());
+			Directory.CreateDirectory(Path.Combine(envVars["USERPROFILE"].ToString(), "Documents"));
+			Directory.CreateDirectory(envVars["APPDATA"].ToString());
+			Directory.CreateDirectory(envVars["LOCALAPPDATA"].ToString());
+
+			foreach (object envVarKey in envVars.Keys)
+			{
+				if (envVarKey != null)
+				{
+					string key = envVarKey.ToString();
+					string value = envVars[envVarKey].ToString();
+					
+					sb.Append(key);
+					sb.Append("=");
+					sb.Append(value);
+					sb.Append("\0");
+					
+				}
+			}
+
+			sb.Append("\0");
+
+			byte[] envBytes = Encoding.Unicode.GetBytes(sb.ToString());
+			IntPtr envPtr = Marshal.AllocHGlobal(envBytes.Length);
+			Marshal.Copy(envBytes, 0, envPtr, envBytes.Length);
 			
 			string directoryPath = Path.GetDirectoryName(exePath);
 
@@ -364,18 +404,18 @@ namespace InjectorLoader
 			//startup.wShowWindow = 1;//SW_SHOWNORMAL
 
 			bool success = CreateProcess(exePath, cmdLineArgs, IntPtr.Zero, IntPtr.Zero, false,
-				0x00000004, //Suspended
-				IntPtr.Zero, directoryPath, ref startup, out PROCESS_INFORMATION processInformation);
+				0x00000004 | 0x00000400, //Suspended | CREATE_UNICODE_ENVIRONMENT
+				envPtr, directoryPath, ref startup, out PROCESS_INFORMATION processInformation);
 
 			if (!success) return -1;
-
-			ResumeThread(processInformation.hThread);
+			
+			//ResumeThread(processInformation.hThread);
 
 			//Inject can crash without waiting for process to initialise
-			WaitForInputIdle(processInformation.hProcess, uint.MaxValue);
+			//WaitForInputIdle(processInformation.hProcess, uint.MaxValue);
 
-			SuspendThread(processInformation.hThread);
-
+			//SuspendThread(processInformation.hThread);
+			
 			int injectResult = Environment.Is64BitProcess ? 
 				Injector64.RhInjectLibrary((uint)processInformation.dwProcessId, 0, 0, "", hookDllPath, ptr, (uint)size) : 
 				Injector32.RhInjectLibrary((uint)processInformation.dwProcessId, 0, 0, hookDllPath, "", ptr, (uint)size);
