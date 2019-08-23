@@ -261,6 +261,19 @@ BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT
 	return true;
 }
 
+//https://gitlab.com/Kaldaien/SpecialK/blob/0.10.xdr/include/SpecialK/input/xinput.h#L79-110
+//Used in XinputGetStateEx
+typedef struct _XINPUT_GAMEPAD_EX {
+	WORD  wButtons;
+	BYTE  bLeftTrigger;
+	BYTE  bRightTrigger;
+	SHORT sThumbLX;
+	SHORT sThumbLY;
+	SHORT sThumbRX;
+	SHORT sThumbRY;
+	DWORD dwUnknown;
+} XINPUT_GAMEPAD_EX, *PXINPUT_GAMEPAD_EX;
+
 DWORD packetNumber = 0;
 DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
 {
@@ -273,7 +286,7 @@ DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
 	}
 
 	pState->dwPacketNumber = packetNumber++;
-	memset(&(pState->Gamepad), 0, sizeof(XINPUT_GAMEPAD));
+	memset(&(pState->Gamepad), 0, sizeof(XINPUT_GAMEPAD_EX));
 
 	dinput_device->Poll();
 	DIJOYSTATE2 diState;
@@ -486,7 +499,12 @@ NTSTATUS installHook(LPCSTR moduleHandle, LPCSTR lpProcName, void* InCallback)
 	{
 		ULONG ACLEntries[1] = {0};
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
-		std::cout << "Successfully installed hook " << lpProcName << " in module '" << moduleHandle << "'\n";
+
+		//XinputGetStateEx ordinal
+		if (lpProcName != (LPCSTR)100)
+		{
+			std::cout << "Successfully installed hook " << lpProcName << " in module '" << moduleHandle << "'\n";
+		}
 	}
 	else
 	{
@@ -1327,11 +1345,16 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 					}
 					else
 					{
-						installHook(xinputName, "XInputGetState", XInputGetState_Hook);
+						//installHook(xinputName, "XInputGetState", XInputGetState_Hook);
 						installHook(xinputName, "XInputSetState", XInputSetState_Hook);
 						installHook(xinputName, "XInputGetCapabilities", XInputGetCapabilities_Hook);
 					}
 				}
+
+				//XinputGetStateEx (hidden call, ordinal 100). Only present in xinput1_4.dll and xinput1_3.dll. Used by EtG and DoS2
+				//DWORD as 1st param and similar structure pointer for 2nd param (with an extra DWORD at the end). Can be treated as a normal XINPUT_STATE.
+				if (LoadLibrary("xinput1_4.dll")) installHook("xinput1_4.dll", (LPCSTR)(100), XInputGetState_Hook);
+				if (LoadLibrary("xinput1_3.dll")) installHook("xinput1_3.dll", (LPCSTR)(100), XInputGetState_Hook);
 			}
 		}
 
