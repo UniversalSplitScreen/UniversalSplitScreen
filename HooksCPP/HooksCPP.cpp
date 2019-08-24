@@ -13,6 +13,8 @@
 #include <windowsx.h>
 #include <dinput.h>
 #include <winuser.h>
+#include <vector>
+#include <algorithm>
 using namespace std;
 
 #if _WIN64
@@ -79,6 +81,9 @@ int dinput_device_data_format = 2; //c_dfDIJoystick : 1, c_dfDIJoystick2 : 2
 int dinput_device_data_format7 = 2; //for dinput7
 LPDIRECTINPUT7 p_dinput7;
 LPDIRECTINPUTDEVICE p_ctrlr7;
+
+HANDLE allowedCtrler;
+vector<HANDLE> rawInputControllers;
 
 void update_absolute_cursor_check()
 {
@@ -555,6 +560,9 @@ BOOL FilterMessage(LPMSG lpMsg)
 	WPARAM _wParam = lpMsg->wParam;
 	LPARAM _lParam = lpMsg->lParam;
 
+#define ALLOW return 1;
+#define BLOCK memset(lpMsg, 0, sizeof(MSG)); return -1;
+
 	//Filter raw input
 	if (Msg == WM_INPUT && filter_raw_input)
 	{
@@ -566,15 +574,56 @@ BOOL FilterMessage(LPMSG lpMsg)
 
 		if ((0 == GetRawInputData((HRAWINPUT)lpMsg->lParam, RID_HEADER, nullptr, &dwSize, sorh)) &&
 			(dwSize == sorh) &&
-			(dwSize == GetRawInputData((HRAWINPUT)lpMsg->lParam, RID_HEADER, raw, &dwSize, sorh)) &&
-			(raw->header.dwType == RIM_TYPEMOUSE))
+			(dwSize == GetRawInputData((HRAWINPUT)lpMsg->lParam, RID_HEADER, raw, &dwSize, sorh)))
 		{
-			if (raw->header.hDevice == allowed_mouse_handle)
+			if ((raw->header.dwType == RIM_TYPEMOUSE))
 			{
-				return 1;
+				if (raw->header.hDevice == allowed_mouse_handle)
+				{
+					ALLOW;
+				}
+				BLOCK;
 			}
-			memset(lpMsg, 0, sizeof(MSG));
-			return -1;
+			else if (raw->header.dwType == RIM_TYPEHID)
+			{
+				HANDLE hDev = raw->header.hDevice;
+
+				RID_DEVICE_INFO info;
+				info.cbSize = sizeof(RID_DEVICE_INFO);
+				UINT pcbSize = 0;
+
+				if (GetRawInputDeviceInfo(hDev, RIDI_DEVICEINFO, &info, &pcbSize) > 0)
+				{
+					const USHORT usage = info.hid.usUsage;
+					USHORT usagePage = info.hid.usUsagePage;
+					if (usage == 4 || usage == 5)//Joystick/Gamepad
+					{
+						if (controller_index == 0)
+						{
+							BLOCK;
+						}
+
+						if (rawInputControllers.empty() || 
+							std::find(rawInputControllers.begin(), rawInputControllers.end(), hDev) == rawInputControllers.end())
+						{
+							// Add it to the list and recalculate allowed controller
+							rawInputControllers.push_back(hDev);
+							sort(rawInputControllers.begin(), rawInputControllers.end());
+							if (rawInputControllers.size() <= controller_index)
+							{
+								allowedCtrler = rawInputControllers.at(controller_index - 1);
+							}
+						}
+
+						if (hDev == allowedCtrler)
+						{
+							ALLOW;
+						}
+
+						BLOCK;
+					}
+				}
+			}
 		}
 	}
 
@@ -653,6 +702,9 @@ BOOL FilterMessage(LPMSG lpMsg)
 	}
 
 	return 1;
+
+#undef ALLOW
+#undef BLOCK
 }
 
 BOOL WINAPI GetMessageA_Hook(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
