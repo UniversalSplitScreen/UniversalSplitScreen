@@ -192,9 +192,9 @@ namespace InjectorLoader
 		public static void Main(string[] args)
 		{
 			const int argsLengthHooksCPP = 20;
-			const int argsLengthStartupHook = 9;
+			const int argsLengthStartupHook = 10;
 
-			//dllpath, exePath, base64CmdArgs, dinputHookEnabled, findWindowHookEnabled, controllerIndex, findMutexHookEnabled, mutexTargets
+			//dllpath, exePath, base64CmdArgs, useAppdataSwitch, appdataSwitchIndex, dinputHookEnabled, findWindowHookEnabled, controllerIndex, findMutexHookEnabled, mutexTargets
 			if (args.Length == argsLengthStartupHook)
 			{
 				bool Bfs(string s) => s.ToLower().Equals("true");
@@ -203,12 +203,13 @@ namespace InjectorLoader
 					args[0], 
 					args[1], 
 					args[2], 
-					Bfs(args[3]), 
-					Bfs(args[4]), 
+					Bfs(args[3]),
+					int.Parse(args[4]), 
 					Bfs(args[5]), 
-					byte.Parse(args[6]), 
-					Bfs(args[7]),
-					args[8]
+					Bfs(args[6]), 
+					byte.Parse(args[7]), 
+					Bfs(args[8]),
+					args[9]
 					);
 
 				Environment.Exit(ntFwh);
@@ -321,7 +322,7 @@ namespace InjectorLoader
 			Environment.Exit((int)nt);
 		}
 		
-		private static int CreateAndInjectStartupHook(string hookDllPath, string exePath, string base64CommandLineArgs, bool useWaitForIdle, bool dinputHookEnabled, bool findWindowHookEnabled, byte controllerIndex, bool findMutexHookEnabled, string mutexTargets)
+		private static int CreateAndInjectStartupHook(string hookDllPath, string exePath, string base64CommandLineArgs, bool useAppdataSwitch, int appdataSwitchIndex, bool dinputHookEnabled, bool findWindowHookEnabled, byte controllerIndex, bool findMutexHookEnabled, string mutexTargets)
 		{
 			string cmdLineArgs = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64CommandLineArgs));
 			IntPtr pOutPID = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(uint)));
@@ -335,7 +336,7 @@ namespace InjectorLoader
 			data[0] = dinputHookEnabled ? (byte)1 : (byte)0;
 			data[1] = findWindowHookEnabled ? (byte)1 : (byte)0;
 			data[2] = controllerIndex;
-			data[3] = useWaitForIdle ? (byte) 0 : (byte) 1;
+			data[3] = useAppdataSwitch ? (byte) 0 : (byte) 1;
 			data[4] = findMutexHookEnabled ? (byte) 1 : (byte) 0;
 
 			data[5] = (byte)(targetsBytesLength >> 24);
@@ -348,7 +349,7 @@ namespace InjectorLoader
 			IntPtr ptr = Marshal.AllocHGlobal(size);
 			Marshal.Copy(data, 0, ptr, size);
 			
-			if (!useWaitForIdle)
+			if (!(appdataSwitchIndex > 0 && useAppdataSwitch))
 			{
 				int ret = Environment.Is64BitProcess ? 
 					Injector64.RhCreateAndInject(exePath, cmdLineArgs, 0, 0, "", hookDllPath, ptr, (uint)size, pOutPID) : 
@@ -357,24 +358,22 @@ namespace InjectorLoader
 				return ret;
 			}
 
-
-
-
-			var appdataIndex = "index2";
+			var appdataIndex = "index" + appdataSwitchIndex;
 			
 			var sb = new StringBuilder();
 			IDictionary envVars = Environment.GetEnvironmentVariables();
-			envVars["USERPROFILE"] =	$@"C:\Users\{Environment.UserName}\AppData\Roaming\UniversalSplitScreen\USERPROFILE\{appdataIndex}";
-			envVars["HOMEPATH"] =		$@"\Users\{Environment.UserName}\AppData\Roaming\UniversalSplitScreen\USERPROFILE\{appdataIndex}";
-			envVars["APPDATA"] =		$@"C:\Users\{Environment.UserName}\AppData\Roaming\UniversalSplitScreen\USERPROFILE\{appdataIndex}\AppData\Roaming";
-			envVars["LOCALAPPDATA"] =	$@"C:\Users\{Environment.UserName}\AppData\Roaming\UniversalSplitScreen\USERPROFILE\{appdataIndex}\AppData\Local";
+			var username = Environment.UserName;
+			envVars["USERPROFILE"] =	$@"C:\Users\{username}\UniversalSplitScreen\{appdataIndex}";
+			envVars["HOMEPATH"] =		$@"\Users\{username}\UniversalSplitScreen\{appdataIndex}";
+			envVars["APPDATA"] =		$@"C:\Users\{username}\UniversalSplitScreen\{appdataIndex}\AppData\Roaming";
+			envVars["LOCALAPPDATA"] =	$@"C:\Users\{username}\UniversalSplitScreen\{appdataIndex}\AppData\Local";
 
 			//Some games will crash if the directories don't exist
 			Directory.CreateDirectory(envVars["USERPROFILE"].ToString());
 			Directory.CreateDirectory(Path.Combine(envVars["USERPROFILE"].ToString(), "Documents"));
 			Directory.CreateDirectory(envVars["APPDATA"].ToString());
 			Directory.CreateDirectory(envVars["LOCALAPPDATA"].ToString());
-
+			
 			foreach (object envVarKey in envVars.Keys)
 			{
 				if (envVarKey != null)
@@ -402,26 +401,19 @@ namespace InjectorLoader
 			startup.cb = Marshal.SizeOf(startup);
 			//startup.dwFlags = 0x1;//STARTF_USESHOWWINDOW
 			//startup.wShowWindow = 1;//SW_SHOWNORMAL
-
+			
 			bool success = CreateProcess(exePath, cmdLineArgs, IntPtr.Zero, IntPtr.Zero, false,
 				0x00000004 | 0x00000400, //Suspended | CREATE_UNICODE_ENVIRONMENT
 				envPtr, directoryPath, ref startup, out PROCESS_INFORMATION processInformation);
-
-			if (!success) return -1;
 			
-			//ResumeThread(processInformation.hThread);
-
-			//Inject can crash without waiting for process to initialise
-			//WaitForInputIdle(processInformation.hProcess, uint.MaxValue);
-
-			//SuspendThread(processInformation.hThread);
+			if (!success) return -1;
 			
 			int injectResult = Environment.Is64BitProcess ? 
 				Injector64.RhInjectLibrary((uint)processInformation.dwProcessId, 0, 0, "", hookDllPath, ptr, (uint)size) : 
 				Injector32.RhInjectLibrary((uint)processInformation.dwProcessId, 0, 0, hookDllPath, "", ptr, (uint)size);
 			
 			ResumeThread(processInformation.hThread);
-
+			
 			return injectResult;
 
 		}

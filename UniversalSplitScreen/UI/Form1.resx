@@ -198,11 +198,13 @@ Launching a game with this utility will hook FindWindow so the game cannot detec
 As with the other hooks, this may be detected as a false positive by an anti-virus or anti-cheat system.
 </value>
   </data>
-  <data name="CheckBox_StartupHook_UseWaitForIdle.ToolTip" xml:space="preserve">
-    <value>Some games will crash if hooks are injected before the process has properly initialised.
-Some games may also crash if hooks are injected afterwards.
-If the startup hooks are crashing, try with this on and off.
-If both options don't work, try turning this off and enabling '640x480 compatibility mode' on the game's executable.</value>
+  <data name="CheckBox_StartupHook_UseAppdataSwitch.ToolTip" xml:space="preserve">
+    <value>If this is enabled, whenever a game tries to access appdata or your user folder (e.g. the Documents sub-folder), it will instead be rerouted to a unique folder for the instance.
+Selecting Index 1, for example, will reroute C:\Users\Username and all sub-folders to C:\Users\Username\UniversalSplitScreen\index1
+
+This can be used to launch multiple instances if a game locks on a file.
+This will also allow you to use different save folders for each instance.
+The Goldberg Emulator saves its user ID and emulated Steam cloud in appdata, so this will also allow you to have separate Goldberg IDs for each instance.</value>
   </data>
   <data name="CheckBox_StartupHook_Dinput.ToolTip" xml:space="preserve">
     <value>Redirects controller input within the Direct Input API.

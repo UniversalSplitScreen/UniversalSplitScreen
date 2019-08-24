@@ -48,6 +48,10 @@ namespace UniversalSplitScreen.UI
 				}
 			}
 
+			ComboBox_AppdataSwitch_Selector.SelectedIndex = 0;
+
+			toolTip1.AutoPopDelay = int.MaxValue;
+
 			LoadGoldbergData();
 		}
 
@@ -282,7 +286,8 @@ namespace UniversalSplitScreen.UI
 					is64, 
 					fileName, 
 					args,
-					CheckBox_StartupHook_UseWaitForIdle.Checked,
+					CheckBox_StartupHook_UseAppdataSwitch.Checked,
+					ComboBox_AppdataSwitch_Selector.SelectedIndex,
 					CheckBox_StartupHook_Dinput.Checked,
 					CheckBox_StartupHook_FindWindow.Checked,
 					(byte) dinputControllerIndex,
