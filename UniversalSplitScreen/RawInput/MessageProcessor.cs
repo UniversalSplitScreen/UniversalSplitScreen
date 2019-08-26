@@ -168,7 +168,8 @@ namespace UniversalSplitScreen.RawInput
 
 										//Resend raw input to application. Works for some games only
 										if (Options.CurrentOptions.SendRawKeyboardInput)
-											PostMessageA(hWnd, (uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0001, (IntPtr)hRawInput);
+											SendInput.WinApi.PostMessageA(window.borderlands2_DIEmWin_hWnd == IntPtr.Zero ? hWnd : window.borderlands2_DIEmWin_hWnd,
+												(uint)SendMessageTypes.WM_INPUT, (IntPtr)0x0000, hRawInput);
 									}
 								}
 							}
