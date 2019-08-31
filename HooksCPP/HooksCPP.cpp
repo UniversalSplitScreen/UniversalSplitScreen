@@ -85,6 +85,9 @@ LPDIRECTINPUTDEVICE p_ctrlr7;
 HANDLE allowedCtrler;
 vector<HANDLE> rawInputControllers;
 
+typedef DWORD(WINAPI* t_XInputGetStateEx)(DWORD dwUserIndex, void* pState);
+static t_XInputGetStateEx XInputGetStateEx = nullptr;
+
 void update_absolute_cursor_check()
 {
 	if (enable_legacy_input && use_absolute_cursor_pos == FALSE)
@@ -266,19 +269,34 @@ BOOL WINAPI RegisterRawInputDevices_Hook(PCRAWINPUTDEVICE pRawInputDevices, UINT
 	return true;
 }
 
+typedef struct _XINPUT_GAMEPAD_EX {
+	WORD  wButtons;
+	BYTE  bLeftTrigger;
+	BYTE  bRightTrigger;
+	SHORT sThumbLX;
+	SHORT sThumbLY;
+	SHORT sThumbRX;
+	SHORT sThumbRY;
+	DWORD dwUnknown;
+} XINPUT_GAMEPAD_EX, *PXINPUT_GAMEPAD_EX;
+
 DWORD packetNumber = 0;
-DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
+inline DWORD WINAPI XInputGetState_Inline(DWORD dwUserIndex, XINPUT_STATE* pState, bool extended)
 {
 	if (controller_index == 0) // user wants no controller on this game
 		return ERROR_DEVICE_NOT_CONNECTED;
 		
 	if (!HookDinput)
 	{
+		if (extended && XInputGetStateEx != nullptr)
+		{
+			return XInputGetStateEx(controller_index - 1, pState);
+		}
 		return XInputGetState(controller_index - 1, pState);
 	}
 
 	pState->dwPacketNumber = packetNumber++;
-	memset(&(pState->Gamepad), 0, sizeof(XINPUT_GAMEPAD));
+	memset(&(pState->Gamepad), 0, extended ? sizeof(XINPUT_GAMEPAD_EX) : sizeof(XINPUT_GAMEPAD));
 
 	dinput_device->Poll();
 	DIJOYSTATE2 diState;
@@ -331,6 +349,16 @@ DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
 #undef TRIGGERDEADZONE
 
 	return ERROR_SUCCESS;
+}
+
+DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
+{
+	return XInputGetState_Inline(dwUserIndex, pState, false);
+}
+
+DWORD WINAPI XInputGetStateEx_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
+{
+	return XInputGetState_Inline(dwUserIndex, pState, true);
 }
 
 DWORD WINAPI XInputSetState_Hook(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration)
@@ -1392,8 +1420,12 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 
 				//XinputGetStateEx (hidden call, ordinal 100). Only present in xinput1_4.dll and xinput1_3.dll. Used by EtG and DoS2
 				//DWORD as 1st param and similar structure pointer for 2nd param (with an extra DWORD at the end). Can be treated as a normal XINPUT_STATE.
-				if (LoadLibrary("xinput1_4.dll")) installHook("xinput1_4.dll", (LPCSTR)(100), XInputGetState_Hook);
-				if (LoadLibrary("xinput1_3.dll")) installHook("xinput1_3.dll", (LPCSTR)(100), XInputGetState_Hook);
+				if (LoadLibrary("xinput1_4.dll")) installHook("xinput1_4.dll", (LPCSTR)(100), XInputGetStateEx_Hook);
+				if (LoadLibrary("xinput1_3.dll"))
+				{
+					installHook("xinput1_3.dll", (LPCSTR)(100), XInputGetStateEx_Hook);
+					XInputGetStateEx = t_XInputGetStateEx(GetProcAddress(GetModuleHandle("xinput1_3.dll"), (LPCSTR)(100)));
+				}
 			}
 		}
 
