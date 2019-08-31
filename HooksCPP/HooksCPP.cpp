@@ -1384,7 +1384,7 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 					}
 					else
 					{
-						//installHook(xinputName, "XInputGetState", XInputGetState_Hook);
+						installHook(xinputName, "XInputGetState", XInputGetState_Hook);
 						installHook(xinputName, "XInputSetState", XInputSetState_Hook);
 						installHook(xinputName, "XInputGetCapabilities", XInputGetCapabilities_Hook);
 					}
