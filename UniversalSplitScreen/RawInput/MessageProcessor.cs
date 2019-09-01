@@ -134,7 +134,7 @@ namespace UniversalSplitScreen.RawInput
 											uint code = scanCode << 16;//32-bit
 
 											BitArray keysDown = window.keysDown;
-											bool stateChangedSinceLast = keyDown != keysDown[vKey];
+											bool stateChangedSinceLast = vKey < keysDown.Length && keyDown != keysDown[vKey];
 
 											if (keyDown)
 											{
