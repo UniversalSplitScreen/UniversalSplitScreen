@@ -612,7 +612,8 @@ BOOL FilterMessage(LPMSG lpMsg)
 				}
 				BLOCK;
 			}
-			else if (raw->header.dwType == RIM_TYPEHID)
+			// Controller raw input filter.
+			/*else if (raw->header.dwType == RIM_TYPEHID)
 			{
 				HANDLE hDev = raw->header.hDevice;
 
@@ -651,7 +652,7 @@ BOOL FilterMessage(LPMSG lpMsg)
 						BLOCK;
 					}
 				}
-			}
+			}*/
 		}
 	}
 
