@@ -12,6 +12,19 @@ using UniversalSplitScreen.SendInput;
 
 namespace UniversalSplitScreen.Core
 {
+	//TODO add TopLeft, TopRight etc to support 4 player splitscreen
+	enum WindowPosition
+	{
+		Left,
+		Right,
+		Top,
+		Bottom,
+		TopLeft,
+		TopRight,
+		BottomLeft,
+		BottomRight
+	}
+
 	class SplitScreenManager
 	{
 		public bool IsRunningInSplitScreen { get; private set; } = false;
@@ -150,12 +163,18 @@ namespace UniversalSplitScreen.Core
 				}
 
 				//WM_ACTIVATE/WM_SETFOCUS tasks
-				if (options.SendWM_ACTIVATE || options.SendWM_SETFOCUS)
+				if (options.SendWM_SETFOCUS || (options.SendWM_ACTIVATE && !options.SendWM_ACTIVATE_AtStart))
 				{
 					var c = new CancellationTokenSource();
 					var task = new Task(() => SetFocus(pair.Key, c.Token), c.Token);
 					task.Start();
 					_setFocusTasks.Add(task, c);
+				}
+
+				// Games like Rift needs to receive the activate notification at start but only at start, otherwise the mouse won't work
+				if (options.SendWM_ACTIVATE_AtStart)
+				{
+					SendWindowActivateMessage(hWnd);
 				}
 								
 				//EasyHook
@@ -265,7 +284,20 @@ namespace UniversalSplitScreen.Core
 			Intercept.InterceptEnabled = true;
 			_deviceToWindows.Clear();
 			InitDeviceToWindows();
-			Cursor.Position = new System.Drawing.Point(0, 0);
+
+			// Games like Rift won't work correctly if the system mouse button is on the top left, so we move it to the middle of the screen
+			if(Options.CurrentOptions.SystemMouseToMiddle)
+			{
+				// TODO make the position configurable
+				int middleX = (int) (Screen.PrimaryScreen.Bounds.Width * 0.5f);
+				int middleY = (int) (Screen.PrimaryScreen.Bounds.Height * 0.5f);
+				Cursor.Position = new System.Drawing.Point(middleX, middleY);
+			}
+			else
+			{
+				Cursor.Position = new System.Drawing.Point(0, 0);
+			}
+
 			WinApi.SetForegroundWindow((int)WinApi.GetDesktopWindow());//Loses focus of all windows, without minimizing
 			Program.Form.WindowState = FormWindowState.Minimized;
 
@@ -356,6 +388,80 @@ namespace UniversalSplitScreen.Core
 			WinApi.RefreshWindow(_activeHWnd);
 		}
 
+		public void MoveWindow(WindowPosition position)
+		{
+			int screenWidth = Screen.PrimaryScreen.Bounds.Width;
+			int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+			int leftOffset = 0;
+			Int32.TryParse(Options.CurrentOptions.LeftOffset, out leftOffset);
+			int topOffset = 0;
+			Int32.TryParse(Options.CurrentOptions.TopOffset, out topOffset);
+			int extraHeight = 0;
+			Int32.TryParse(Options.CurrentOptions.ExtraHeight, out extraHeight);
+
+			int finalX = 0;
+			int finalY = 0;
+			int finalWidth = 0;
+			int finalHeight = 0;
+			switch (position)
+			{
+					// 2PlayersVertical
+				case WindowPosition.Left:
+					finalX = leftOffset;
+					finalY = topOffset;
+					finalWidth = (int)(screenWidth * 0.5f) - (leftOffset * 2);
+					finalHeight = (int)(screenHeight - topOffset + extraHeight);
+					break;
+				case WindowPosition.Right:
+					finalX = (int)(screenWidth * 0.5f) + leftOffset;
+					finalY = topOffset;
+					finalWidth = (int)(screenWidth * 0.5f) - (leftOffset * 2);
+					finalHeight = (int)(screenHeight - topOffset + extraHeight);
+					break;
+					// 2PlayersHorizontal
+				case WindowPosition.Top:
+					finalX = leftOffset;
+					finalY = topOffset;
+					finalWidth = (int)(screenWidth - (leftOffset * 2));
+					finalHeight = (int)(screenHeight * 0.5f) - topOffset + extraHeight;
+					break;
+				case WindowPosition.Bottom:
+					finalX = leftOffset;
+					finalY = (int)(screenHeight * 0.5f) + topOffset;
+					finalWidth = (int)(screenWidth - (leftOffset * 2));
+					finalHeight = (int)(screenHeight * 0.5f) - topOffset + extraHeight;
+					break;
+					// 4Players
+				case WindowPosition.TopLeft:
+					finalX = leftOffset;
+					finalY = topOffset;
+					finalWidth = (int)(screenWidth * 0.5f) - (leftOffset * 2);
+					finalHeight = (int)(screenHeight * 0.5f) - topOffset + extraHeight;
+					break;
+				case WindowPosition.TopRight:
+					finalX = (int)(screenWidth * 0.5f) + leftOffset;
+					finalY = topOffset;
+					finalWidth = (int)(screenWidth * 0.5f) - (leftOffset * 2);
+					finalHeight = (int)(screenHeight * 0.5f) - topOffset + extraHeight;
+					break;
+				case WindowPosition.BottomLeft:
+					finalX = leftOffset;
+					finalY = (int)(screenHeight * 0.5f) + topOffset;
+					finalWidth = (int)(screenWidth * 0.5f) - (leftOffset * 2);
+					finalHeight = (int)(screenHeight * 0.5f) - topOffset + extraHeight;
+					break;
+				case WindowPosition.BottomRight:
+					finalX = (int)(screenWidth * 0.5f) + leftOffset;
+					finalY = (int)(screenHeight * 0.5f) + topOffset;
+					finalWidth = (int)(screenWidth * 0.5f) - (leftOffset * 2);
+					finalHeight = (int)(screenHeight * 0.5f) - topOffset + extraHeight;
+					break;
+				default:
+					break;
+			}
+			WinApi.SetWindowPos(_activeHWnd, IntPtr.Zero, finalX, finalY, finalWidth, finalHeight, 0);
+		}
+
 		#region Set handles
 		public void SetMouseHandle(IntPtr mouse)
 		{
@@ -418,12 +524,9 @@ namespace UniversalSplitScreen.Core
 			{
 				Thread.Sleep(10);//TODO: configurable this
 
-				if (Options.CurrentOptions.SendWM_ACTIVATE)
+				if (Options.CurrentOptions.SendWM_ACTIVATE && !Options.CurrentOptions.SendWM_ACTIVATE_AtStart)
 				{
-					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_ACTIVATE, (IntPtr)2, (IntPtr)null);//2 or 1?
-					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_ACTIVATEAPP, (IntPtr)1, IntPtr.Zero);
-					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_NCACTIVATE, (IntPtr)0, IntPtr.Zero);//Title bar will be redrawn as if focused if wParam == 1
-					SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_MOUSEACTIVATE, (IntPtr)hWnd, (IntPtr)1);//Title bar will be redrawn as if focused if wParam == 1
+					SendWindowActivateMessage(hWnd);
 				}
 
 				if (Options.CurrentOptions.SendWM_SETFOCUS)
@@ -434,7 +537,15 @@ namespace UniversalSplitScreen.Core
 
 			}
 		}
-			
+
+		private static void SendWindowActivateMessage(IntPtr hWnd)
+		{
+			SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_ACTIVATE, (IntPtr)2, (IntPtr)null);//2 or 1?
+			SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_ACTIVATEAPP, (IntPtr)1, IntPtr.Zero);
+			SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_NCACTIVATE, (IntPtr)0, IntPtr.Zero);//Title bar will be redrawn as if focused if wParam == 1
+			SendInput.WinApi.PostMessageA(hWnd, (uint)SendMessageTypes.WM_MOUSEACTIVATE, (IntPtr)hWnd, (IntPtr)1);//Title bar will be redrawn as if focused if wParam == 1
+		}
+
 		/// <summary>
 		/// Periodically sets the foreground window to the desktop.
 		/// Windows will do nothing unless we are the foreground window, so this isn't particularly useful.

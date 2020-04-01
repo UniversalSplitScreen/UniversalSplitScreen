@@ -16,6 +16,12 @@ namespace UniversalSplitScreen.Core
 		public bool SendWM_ACTIVATE					{ get; set; } = true;
 		public bool SendWM_SETFOCUS					{ get; set; } = false;
 
+		public bool SendWM_ACTIVATE_AtStart			{ get; set; } = false;
+		public bool SystemMouseToMiddle				{ get; set; } = false;
+		public string LeftOffset					{ get; set; } = "0";
+		public string TopOffset						{ get; set; } = "0";
+		public string ExtraHeight					{ get; set; } = "0";
+
 		public bool RefreshWindowBoundsOnMouseClick	{ get; set; } = false;
 
 		public bool DrawMouse						{ get; set; } = true;

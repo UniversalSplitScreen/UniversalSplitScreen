@@ -108,14 +108,14 @@ namespace UniversalSplitScreen.Core
 		#endregion
 
 		[DllImport("user32.dll", SetLastError = true)]
-		private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+		public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 		
 		public static bool RefreshWindow(IntPtr hWnd)
 		{
 			return SetWindowPos(hWnd, IntPtr.Zero, 0, 0, 0, 0,
 				0x0002 | 0x0001 | 0x0004 | 0x0020);//SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED
 		}
-		
+
 		//[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
 		//public static extern bool DrawIcon(HandleRef hDC, int x, int y, HandleRef hIcon);
 
