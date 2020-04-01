@@ -12,7 +12,6 @@ using UniversalSplitScreen.SendInput;
 
 namespace UniversalSplitScreen.Core
 {
-	//TODO add TopLeft, TopRight etc to support 4 player splitscreen
 	enum WindowPosition
 	{
 		Left,
