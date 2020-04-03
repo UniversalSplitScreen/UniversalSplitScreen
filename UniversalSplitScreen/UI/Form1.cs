@@ -57,33 +57,52 @@ namespace UniversalSplitScreen.UI
 
 		public void PopulateOptionsRefTypes(OptionsStructure options)
 		{
-			RefCheckbox_SendRawMouseInput.RefType				= new RefType<bool>("SendRawMouseInput");
+			RefCheckbox_SendRawMouseInput.RefType							= new RefType<bool>("SendRawMouseInput");
 
-			RefCheckbox_SendRawKeyboardInput.RefType			= new RefType<bool>("SendRawKeyboardInput");
-			RefCheckbox_SendNormalMouseInput.RefType			= new RefType<bool>("SendNormalMouseInput");
-			RefCheckbox_SendNormalKeyboardInput.RefType			= new RefType<bool>("SendNormalKeyboardInput");
-			RefCheckbox_SendScrollwheel.RefType					= new RefType<bool>("SendScrollwheel");
-			RefCheckbox_SendFakeWindowActivateMessages.RefType	= new RefType<bool>("SendWM_ACTIVATE");
-			RefCheckbox_SendFakeWindowFocusMessages.RefType		= new RefType<bool>("SendWM_SETFOCUS");
-
-			RefCheckbox_RefreshWindowBoundsOnMouseClick.RefType	= new RefType<bool>("RefreshWindowBoundsOnMouseClick");
-			RefCheckbox_DrawMouse.RefType						= new RefType<bool>("DrawMouse");
+			RefCheckbox_SendRawKeyboardInput.RefType						= new RefType<bool>("SendRawKeyboardInput");
+			RefCheckbox_SendNormalMouseInput.RefType						= new RefType<bool>("SendNormalMouseInput");
+			RefCheckbox_SendNormalKeyboardInput.RefType						= new RefType<bool>("SendNormalKeyboardInput");
+			RefCheckbox_SendScrollwheel.RefType								= new RefType<bool>("SendScrollwheel");
+			RefCheckbox_SendFakeWindowActivateMessages.RefType				= new RefType<bool>("SendWM_ACTIVATE");
+			RefCheckbox_SendFakeWindowFocusMessages.RefType					= new RefType<bool>("SendWM_SETFOCUS");
+			RefCheckbox_SystemMouseToMiddle.RefType							= new RefType<bool>("SystemMouseToMiddle");
+			RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.RefType	= new RefType<bool>("SendWM_ACTIVATE_AtStart");
+			var leftOffsetRef												= new RefType<string>("LeftOffset");
+			refTextbox_LeftOffset.RefType = leftOffsetRef;
+			if (!string.IsNullOrEmpty(leftOffsetRef))
+			{
+				refTextbox_LeftOffset.Text = leftOffsetRef;
+			}
+			var topOffsetRef												= new RefType<string>("TopOffset");
+			refTextbox_TopOffset.RefType = topOffsetRef;
+			if (!string.IsNullOrEmpty(topOffsetRef))
+			{
+				refTextbox_TopOffset.Text = topOffsetRef;
+			}
+			var borderExtraPaddingRef										= new RefType<string>("ExtraHeight");
+			refTextbox_BorderExtraPadding.RefType = borderExtraPaddingRef;
+			if (!string.IsNullOrEmpty(borderExtraPaddingRef))
+			{
+				refTextbox_BorderExtraPadding.Text = borderExtraPaddingRef;
+			}
+			RefCheckbox_RefreshWindowBoundsOnMouseClick.RefType				= new RefType<bool>("RefreshWindowBoundsOnMouseClick");
+			RefCheckbox_DrawMouse.RefType									= new RefType<bool>("DrawMouse");
 			
-			RefCheckbox_Hook_FilterRawInput.RefType				= new RefType<bool>("Hook_FilterRawInput");
-			RefCheckbox_Hook_FilterMouseInputMessages.RefType	= new RefType<bool>("Hook_FilterWindowsMouseInput");
-			RefCheckbox_Hook_GetForegroundWindow.RefType		= new RefType<bool>("Hook_GetForegroundWindow");
-			RefCheckbox_Hook_GetCursorPos.RefType				= new RefType<bool>("Hook_GetCursorPos");
-			RefCheckbox_Hook_SetCursorPos.RefType				= new RefType<bool>("Hook_SetCursorPos");
-			RefCheckbox_Hook_GetAsyncKeyState.RefType			= new RefType<bool>("Hook_GetAsyncKeyState");
-			RefCheckbox_Hook_GetKeyState.RefType				= new RefType<bool>("Hook_GetKeyState");
-			RefCheckbox_Hook_GetKeyboardState.RefType			= new RefType<bool>("Hook_GetKeyboardState");
-			RefCheckbox_Hook_XInput.RefType						= new RefType<bool>("Hook_XInput");
-			RefCheckbox_Hook_Dinput.RefType						= new RefType<bool>("Hook_DInput");
-			RefCheckbox_Hook_UseLegacyInput.RefType				= new RefType<bool>("Hook_UseLegacyInput");
-			RefCheckbox_UpdateAbsoluteFlagInMouseMessage.RefType= new RefType<bool>("UpdateAbsoluteFlagInMouseMessage");
-			RefCheckbox_Hook_MouseVisibility.RefType			= new RefType<bool>("Hook_MouseVisibility");
+			RefCheckbox_Hook_FilterRawInput.RefType							= new RefType<bool>("Hook_FilterRawInput");
+			RefCheckbox_Hook_FilterMouseInputMessages.RefType				= new RefType<bool>("Hook_FilterWindowsMouseInput");
+			RefCheckbox_Hook_GetForegroundWindow.RefType					= new RefType<bool>("Hook_GetForegroundWindow");
+			RefCheckbox_Hook_GetCursorPos.RefType							= new RefType<bool>("Hook_GetCursorPos");
+			RefCheckbox_Hook_SetCursorPos.RefType							= new RefType<bool>("Hook_SetCursorPos");
+			RefCheckbox_Hook_GetAsyncKeyState.RefType						= new RefType<bool>("Hook_GetAsyncKeyState");
+			RefCheckbox_Hook_GetKeyState.RefType							= new RefType<bool>("Hook_GetKeyState");
+			RefCheckbox_Hook_GetKeyboardState.RefType						= new RefType<bool>("Hook_GetKeyboardState");
+			RefCheckbox_Hook_XInput.RefType									= new RefType<bool>("Hook_XInput");
+			RefCheckbox_Hook_Dinput.RefType									= new RefType<bool>("Hook_DInput");
+			RefCheckbox_Hook_UseLegacyInput.RefType							= new RefType<bool>("Hook_UseLegacyInput");
+			RefCheckbox_UpdateAbsoluteFlagInMouseMessage.RefType			= new RefType<bool>("UpdateAbsoluteFlagInMouseMessage");
+			RefCheckbox_Hook_MouseVisibility.RefType						= new RefType<bool>("Hook_MouseVisibility");
 
-			var handleNameRef = new RefType<string>("AutofillHandleName");
+			var handleNameRef												= new RefType<string>("AutofillHandleName");
 			RefTextbox_AutofillHandleName.RefType = handleNameRef;
 			if (!string.IsNullOrEmpty(handleNameRef))
 			{
@@ -376,6 +395,79 @@ namespace UniversalSplitScreen.UI
 			if (Program.Config == null) return;
 			Program.Config.AutomaticallyCheckForUpdatesOnStartup = Checkbox_AutomaticallyCheckForUpdates.Checked;
 			Program.Config.SaveConfig();
+		}
+
+		// Show the correct panel based on what type of splitscreen has been selected
+		private void Refresh_SplitscreenWindow(object sender, EventArgs e)
+		{
+			Panel_Splitscreen2PlayersHorizontal.Visible = false;
+			Panel_Splitscreen2PlayersVertical.Visible = false;
+			Panel_Splitscreen4Players.Visible = false;
+			switch (ComboBox_SplitscreenOptions.SelectedItem)
+			{
+				case "2PlayersVertical":
+					Panel_Splitscreen2PlayersVertical.Visible = true;
+					break;
+				case "2PlayersHorizontal":
+					Panel_Splitscreen2PlayersHorizontal.Visible = true;
+					break;
+				case "4Players":
+					Panel_Splitscreen4Players.Visible = true;
+					break;
+				default:
+
+					break;
+			}
+		}
+
+		private void Button_SplitscreenLeft_Click(object sender, EventArgs e)
+		{
+			Program.SplitScreenManager.MoveWindow(WindowPosition.Left);
+		}
+
+		private void Button_SplitscreenRight_Click(object sender, EventArgs e)
+		{
+			Program.SplitScreenManager.MoveWindow(WindowPosition.Right);
+		}
+
+		private void Button_SplitscreenTop_Click(object sender, EventArgs e)
+		{
+			Program.SplitScreenManager.MoveWindow(WindowPosition.Top);
+		}
+
+		private void Button_SplitscreenBottom_Click(object sender, EventArgs e)
+		{
+			Program.SplitScreenManager.MoveWindow(WindowPosition.Bottom);
+		}
+
+		// Show the option only if the normal SendFakeWindowActivate checkbox is ticked
+		private void RefCheckbox_SendFakeWindowActivateMessages_CheckedChanged(object sender, EventArgs e)
+		{
+			RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.Visible = RefCheckbox_SendFakeWindowActivateMessages.Checked;
+			if (!RefCheckbox_SendFakeWindowActivateMessages.Checked)
+			{
+				RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.Checked = false;
+			}
+		}
+
+		private void Button_SplitscreenTopLeft_Click(object sender, EventArgs e)
+		{
+			Program.SplitScreenManager.MoveWindow(WindowPosition.TopLeft);
+		}
+
+		private void Button_SplitscreenTopRight_Click(object sender, EventArgs e)
+		{
+			Program.SplitScreenManager.MoveWindow(WindowPosition.TopRight);
+		}
+
+		private void Button_SplitscreenBottomLeft_Click(object sender, EventArgs e)
+		{
+			Program.SplitScreenManager.MoveWindow(WindowPosition.BottomLeft);
+		}
+
+		private void Button_SplitscreenBottomRight_Click(object sender, EventArgs e)
+		{
+			Program.SplitScreenManager.MoveWindow(WindowPosition.BottomRight);
 		}
 	}
 }
