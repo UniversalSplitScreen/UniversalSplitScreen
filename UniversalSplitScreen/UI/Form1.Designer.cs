@@ -32,19 +32,17 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
+			this.Label_StopWarning = new System.Windows.Forms.Label();
 			this.CheckBox_Transparency = new System.Windows.Forms.CheckBox();
 			this.startButton = new System.Windows.Forms.Button();
 			this.stopButton = new System.Windows.Forms.Button();
 			this.resetAllButton = new System.Windows.Forms.Button();
 			this.activeWindowPanel = new System.Windows.Forms.Panel();
-			this.Label_StopWarning = new System.Windows.Forms.Label();
-			this.GroupBox_Utilities = new System.Windows.Forms.GroupBox();
 			this.groupBoxHandleUnlocker = new System.Windows.Forms.GroupBox();
 			this.UnlockHandleButton = new System.Windows.Forms.Button();
 			this.labelHandleName = new System.Windows.Forms.Label();
 			this.textBoxHandleName = new System.Windows.Forms.TextBox();
-			this.Button_ToggleWindowBorders = new System.Windows.Forms.Button();
-			this.Button_EnableWindowResize = new System.Windows.Forms.Button();
+			this.GroupBox_Utilities = new System.Windows.Forms.GroupBox();
 			this.Button_UnlockSourceEngine = new System.Windows.Forms.Button();
 			this.Label_CurrentWindowTabInstructions = new System.Windows.Forms.Label();
 			this.GamePadGroupBox = new System.Windows.Forms.GroupBox();
@@ -76,6 +74,8 @@
 			this.buttonOptions_delete = new System.Windows.Forms.Button();
 			this.optionsComboBox = new System.Windows.Forms.ComboBox();
 			this.panel1 = new System.Windows.Forms.Panel();
+			this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart = new UniversalSplitScreen.UI.RefCheckbox();
+			this.RefCheckbox_SystemMouseToMiddle = new UniversalSplitScreen.UI.RefCheckbox();
 			this.Label_AutofillHandleName = new System.Windows.Forms.Label();
 			this.RefTextbox_AutofillHandleName = new UniversalSplitScreen.UI.RefTextbox();
 			this.RefCheckbox_SendScrollwheel = new UniversalSplitScreen.UI.RefCheckbox();
@@ -103,6 +103,30 @@
 			this.RefCheckbox_Hook_FilterMouseInputMessages = new UniversalSplitScreen.UI.RefCheckbox();
 			this.RefCheckbox_Hook_FilterRawInput = new UniversalSplitScreen.UI.RefCheckbox();
 			this.hooksWarningLabel = new System.Windows.Forms.Label();
+			this.tabPage9 = new System.Windows.Forms.TabPage();
+			this.GroupBox_WindowOptions = new System.Windows.Forms.GroupBox();
+			this.Button_ToggleWindowBorders = new System.Windows.Forms.Button();
+			this.Button_EnableWindowResize = new System.Windows.Forms.Button();
+			this.groupBox_WindowPositionAndOffsets = new System.Windows.Forms.GroupBox();
+			this.Panel_Splitscreen4Players = new System.Windows.Forms.Panel();
+			this.Button_SplitscreenBottomRight = new System.Windows.Forms.Button();
+			this.Button_SplitscreenTopRight = new System.Windows.Forms.Button();
+			this.Button_SplitscreenBottomLeft = new System.Windows.Forms.Button();
+			this.Button_SplitscreenTopLeft = new System.Windows.Forms.Button();
+			this.Panel_Splitscreen2PlayersHorizontal = new System.Windows.Forms.Panel();
+			this.Button_SplitscreenBottom = new System.Windows.Forms.Button();
+			this.Button_SplitscreenTop = new System.Windows.Forms.Button();
+			this.Panel_Splitscreen2PlayersVertical = new System.Windows.Forms.Panel();
+			this.Button_SplitscreenRight = new System.Windows.Forms.Button();
+			this.Button_SplitscreenLeft = new System.Windows.Forms.Button();
+			this.refTextbox_LeftOffset = new UniversalSplitScreen.UI.RefTextbox();
+			this.Label_SplitscreenOptions = new System.Windows.Forms.Label();
+			this.ComboBox_SplitscreenOptions = new System.Windows.Forms.ComboBox();
+			this.refTextbox_TopOffset = new UniversalSplitScreen.UI.RefTextbox();
+			this.Label_LeftOffset = new System.Windows.Forms.Label();
+			this.refTextbox_BorderExtraPadding = new UniversalSplitScreen.UI.RefTextbox();
+			this.Label_BorderExtraPadding = new System.Windows.Forms.Label();
+			this.Label_TopOffset = new System.Windows.Forms.Label();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this.tabControl3 = new System.Windows.Forms.TabControl();
 			this.tabPage7 = new System.Windows.Forms.TabPage();
@@ -156,11 +180,12 @@
 			this.WebLinkWebsite = new UniversalSplitScreen.UI.WebLinkLabel();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.FileDialog_FindWindowHook = new System.Windows.Forms.OpenFileDialog();
+			this.webLinkLabel1 = new UniversalSplitScreen.UI.WebLinkLabel();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.activeWindowPanel.SuspendLayout();
-			this.GroupBox_Utilities.SuspendLayout();
 			this.groupBoxHandleUnlocker.SuspendLayout();
+			this.GroupBox_Utilities.SuspendLayout();
 			this.GamePadGroupBox.SuspendLayout();
 			this.windowTitleBox.SuspendLayout();
 			this.keyboardBox.SuspendLayout();
@@ -172,6 +197,12 @@
 			this.panel2.SuspendLayout();
 			this.panel1.SuspendLayout();
 			this.hooksBox.SuspendLayout();
+			this.tabPage9.SuspendLayout();
+			this.GroupBox_WindowOptions.SuspendLayout();
+			this.groupBox_WindowPositionAndOffsets.SuspendLayout();
+			this.Panel_Splitscreen4Players.SuspendLayout();
+			this.Panel_Splitscreen2PlayersHorizontal.SuspendLayout();
+			this.Panel_Splitscreen2PlayersVertical.SuspendLayout();
 			this.tabPage4.SuspendLayout();
 			this.tabControl3.SuspendLayout();
 			this.tabPage7.SuspendLayout();
@@ -195,6 +226,7 @@
 			// 
 			this.tabControl1.Controls.Add(this.tabPage1);
 			this.tabControl1.Controls.Add(this.tabPage2);
+			this.tabControl1.Controls.Add(this.tabPage9);
 			this.tabControl1.Controls.Add(this.tabPage4);
 			this.tabControl1.Controls.Add(this.tabPage3);
 			this.tabControl1.Location = new System.Drawing.Point(12, 12);
@@ -206,6 +238,7 @@
 			// 
 			// tabPage1
 			// 
+			this.tabPage1.Controls.Add(this.Label_StopWarning);
 			this.tabPage1.Controls.Add(this.CheckBox_Transparency);
 			this.tabPage1.Controls.Add(this.startButton);
 			this.tabPage1.Controls.Add(this.stopButton);
@@ -218,6 +251,17 @@
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Current window";
 			this.tabPage1.UseVisualStyleBackColor = true;
+			// 
+			// Label_StopWarning
+			// 
+			this.Label_StopWarning.AutoSize = true;
+			this.Label_StopWarning.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+			this.Label_StopWarning.Location = new System.Drawing.Point(384, 415);
+			this.Label_StopWarning.MaximumSize = new System.Drawing.Size(200, 0);
+			this.Label_StopWarning.Name = "Label_StopWarning";
+			this.Label_StopWarning.Size = new System.Drawing.Size(172, 26);
+			this.Label_StopWarning.TabIndex = 11;
+			this.Label_StopWarning.Text = "Press the End key (default) on any keyboard to stop split screen";
 			// 
 			// CheckBox_Transparency
 			// 
@@ -263,7 +307,7 @@
 			// activeWindowPanel
 			// 
 			this.activeWindowPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.activeWindowPanel.Controls.Add(this.Label_StopWarning);
+			this.activeWindowPanel.Controls.Add(this.groupBoxHandleUnlocker);
 			this.activeWindowPanel.Controls.Add(this.GroupBox_Utilities);
 			this.activeWindowPanel.Controls.Add(this.Label_CurrentWindowTabInstructions);
 			this.activeWindowPanel.Controls.Add(this.GamePadGroupBox);
@@ -276,38 +320,14 @@
 			this.activeWindowPanel.Size = new System.Drawing.Size(759, 406);
 			this.activeWindowPanel.TabIndex = 7;
 			// 
-			// Label_StopWarning
-			// 
-			this.Label_StopWarning.AutoSize = true;
-			this.Label_StopWarning.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
-			this.Label_StopWarning.Location = new System.Drawing.Point(582, 375);
-			this.Label_StopWarning.MaximumSize = new System.Drawing.Size(200, 0);
-			this.Label_StopWarning.Name = "Label_StopWarning";
-			this.Label_StopWarning.Size = new System.Drawing.Size(172, 26);
-			this.Label_StopWarning.TabIndex = 11;
-			this.Label_StopWarning.Text = "Press the End key (default) on any keyboard to stop split screen";
-			// 
-			// GroupBox_Utilities
-			// 
-			this.GroupBox_Utilities.Controls.Add(this.groupBoxHandleUnlocker);
-			this.GroupBox_Utilities.Controls.Add(this.Button_ToggleWindowBorders);
-			this.GroupBox_Utilities.Controls.Add(this.Button_EnableWindowResize);
-			this.GroupBox_Utilities.Controls.Add(this.Button_UnlockSourceEngine);
-			this.GroupBox_Utilities.Location = new System.Drawing.Point(3, 261);
-			this.GroupBox_Utilities.Name = "GroupBox_Utilities";
-			this.GroupBox_Utilities.Size = new System.Drawing.Size(454, 140);
-			this.GroupBox_Utilities.TabIndex = 10;
-			this.GroupBox_Utilities.TabStop = false;
-			this.GroupBox_Utilities.Text = "Window utilities";
-			// 
 			// groupBoxHandleUnlocker
 			// 
 			this.groupBoxHandleUnlocker.Controls.Add(this.UnlockHandleButton);
 			this.groupBoxHandleUnlocker.Controls.Add(this.labelHandleName);
 			this.groupBoxHandleUnlocker.Controls.Add(this.textBoxHandleName);
-			this.groupBoxHandleUnlocker.Location = new System.Drawing.Point(246, 14);
+			this.groupBoxHandleUnlocker.Location = new System.Drawing.Point(209, 261);
 			this.groupBoxHandleUnlocker.Name = "groupBoxHandleUnlocker";
-			this.groupBoxHandleUnlocker.Size = new System.Drawing.Size(200, 113);
+			this.groupBoxHandleUnlocker.Size = new System.Drawing.Size(200, 144);
 			this.groupBoxHandleUnlocker.TabIndex = 11;
 			this.groupBoxHandleUnlocker.TabStop = false;
 			this.groupBoxHandleUnlocker.Text = "Handle unlocker";
@@ -339,32 +359,21 @@
 			this.textBoxHandleName.Size = new System.Drawing.Size(188, 20);
 			this.textBoxHandleName.TabIndex = 0;
 			// 
-			// Button_ToggleWindowBorders
+			// GroupBox_Utilities
 			// 
-			this.Button_ToggleWindowBorders.Location = new System.Drawing.Point(7, 78);
-			this.Button_ToggleWindowBorders.Name = "Button_ToggleWindowBorders";
-			this.Button_ToggleWindowBorders.Size = new System.Drawing.Size(140, 23);
-			this.Button_ToggleWindowBorders.TabIndex = 12;
-			this.Button_ToggleWindowBorders.Text = "Toggle window borders";
-			this.Button_ToggleWindowBorders.UseVisualStyleBackColor = true;
-			this.Button_ToggleWindowBorders.Click += new System.EventHandler(this.Button_ToggleWindowBorders_Click);
-			// 
-			// Button_EnableWindowResize
-			// 
-			this.Button_EnableWindowResize.Location = new System.Drawing.Point(6, 48);
-			this.Button_EnableWindowResize.Name = "Button_EnableWindowResize";
-			this.Button_EnableWindowResize.Size = new System.Drawing.Size(141, 23);
-			this.Button_EnableWindowResize.TabIndex = 11;
-			this.Button_EnableWindowResize.Text = "Enable window resizing";
-			this.toolTip1.SetToolTip(this.Button_EnableWindowResize, "Allows target window to be resized");
-			this.Button_EnableWindowResize.UseVisualStyleBackColor = true;
-			this.Button_EnableWindowResize.Click += new System.EventHandler(this.Button_EnableWindowResize_Click);
+			this.GroupBox_Utilities.Controls.Add(this.Button_UnlockSourceEngine);
+			this.GroupBox_Utilities.Location = new System.Drawing.Point(3, 261);
+			this.GroupBox_Utilities.Name = "GroupBox_Utilities";
+			this.GroupBox_Utilities.Size = new System.Drawing.Size(200, 144);
+			this.GroupBox_Utilities.TabIndex = 10;
+			this.GroupBox_Utilities.TabStop = false;
+			this.GroupBox_Utilities.Text = "Source Engine";
 			// 
 			// Button_UnlockSourceEngine
 			// 
-			this.Button_UnlockSourceEngine.Location = new System.Drawing.Point(6, 19);
+			this.Button_UnlockSourceEngine.Location = new System.Drawing.Point(6, 50);
 			this.Button_UnlockSourceEngine.Name = "Button_UnlockSourceEngine";
-			this.Button_UnlockSourceEngine.Size = new System.Drawing.Size(234, 23);
+			this.Button_UnlockSourceEngine.Size = new System.Drawing.Size(188, 40);
 			this.Button_UnlockSourceEngine.TabIndex = 8;
 			this.Button_UnlockSourceEngine.Text = "Unlock Source engine for a new instance";
 			this.toolTip1.SetToolTip(this.Button_UnlockSourceEngine, resources.GetString("Button_UnlockSourceEngine.ToolTip"));
@@ -686,6 +695,8 @@
 			// panel1
 			// 
 			this.panel1.AutoScroll = true;
+			this.panel1.Controls.Add(this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart);
+			this.panel1.Controls.Add(this.RefCheckbox_SystemMouseToMiddle);
 			this.panel1.Controls.Add(this.Label_AutofillHandleName);
 			this.panel1.Controls.Add(this.RefTextbox_AutofillHandleName);
 			this.panel1.Controls.Add(this.RefCheckbox_SendScrollwheel);
@@ -704,10 +715,37 @@
 			this.panel1.Size = new System.Drawing.Size(755, 398);
 			this.panel1.TabIndex = 0;
 			// 
+			// RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart
+			// 
+			this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.AutoSize = true;
+			this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.Location = new System.Drawing.Point(214, 97);
+			this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.Name = "RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart";
+			this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.RefType = null;
+			this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.Size = new System.Drawing.Size(82, 17);
+			this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.TabIndex = 24;
+			this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.Text = "Only at start";
+			this.toolTip1.SetToolTip(this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart, "Send the activation message only for a brief amount of time when splitscreen star" +
+        "ts");
+			this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.UseVisualStyleBackColor = true;
+			this.RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart.Visible = false;
+			// 
+			// RefCheckbox_SystemMouseToMiddle
+			// 
+			this.RefCheckbox_SystemMouseToMiddle.AutoSize = true;
+			this.RefCheckbox_SystemMouseToMiddle.Location = new System.Drawing.Point(3, 212);
+			this.RefCheckbox_SystemMouseToMiddle.Name = "RefCheckbox_SystemMouseToMiddle";
+			this.RefCheckbox_SystemMouseToMiddle.RefType = null;
+			this.RefCheckbox_SystemMouseToMiddle.Size = new System.Drawing.Size(221, 17);
+			this.RefCheckbox_SystemMouseToMiddle.TabIndex = 23;
+			this.RefCheckbox_SystemMouseToMiddle.Text = "Set system mouse to middle of the screen";
+			this.toolTip1.SetToolTip(this.RefCheckbox_SystemMouseToMiddle, "Some games works better when the system mouse is in the middle of the screen (e.g" +
+        ". Rift)");
+			this.RefCheckbox_SystemMouseToMiddle.UseVisualStyleBackColor = true;
+			// 
 			// Label_AutofillHandleName
 			// 
 			this.Label_AutofillHandleName.AutoSize = true;
-			this.Label_AutofillHandleName.Location = new System.Drawing.Point(4, 277);
+			this.Label_AutofillHandleName.Location = new System.Drawing.Point(1, 327);
 			this.Label_AutofillHandleName.Name = "Label_AutofillHandleName";
 			this.Label_AutofillHandleName.Size = new System.Drawing.Size(157, 13);
 			this.Label_AutofillHandleName.TabIndex = 22;
@@ -715,7 +753,7 @@
 			// 
 			// RefTextbox_AutofillHandleName
 			// 
-			this.RefTextbox_AutofillHandleName.Location = new System.Drawing.Point(7, 293);
+			this.RefTextbox_AutofillHandleName.Location = new System.Drawing.Point(4, 343);
 			this.RefTextbox_AutofillHandleName.Name = "RefTextbox_AutofillHandleName";
 			this.RefTextbox_AutofillHandleName.RefType = null;
 			this.RefTextbox_AutofillHandleName.Size = new System.Drawing.Size(175, 20);
@@ -788,6 +826,7 @@
         "into thinking it is the foreground window,\r\nwhich may mean it will start listeni" +
         "ng for input.");
 			this.RefCheckbox_SendFakeWindowActivateMessages.UseVisualStyleBackColor = true;
+			this.RefCheckbox_SendFakeWindowActivateMessages.CheckedChanged += new System.EventHandler(this.RefCheckbox_SendFakeWindowActivateMessages_CheckedChanged);
 			// 
 			// RefCheckbox_SendNormalKeyboardInput
 			// 
@@ -1050,6 +1089,264 @@
 			this.hooksWarningLabel.Text = "Warning: Hooks run code in the target game process. This may be detected as a fal" +
     "se positive by an anti-cheat system or anti-virus software. See the documentatio" +
     "n for more info.";
+			// 
+			// tabPage9
+			// 
+			this.tabPage9.Controls.Add(this.GroupBox_WindowOptions);
+			this.tabPage9.Controls.Add(this.groupBox_WindowPositionAndOffsets);
+			this.tabPage9.Location = new System.Drawing.Point(4, 22);
+			this.tabPage9.Name = "tabPage9";
+			this.tabPage9.Padding = new System.Windows.Forms.Padding(3);
+			this.tabPage9.Size = new System.Drawing.Size(768, 444);
+			this.tabPage9.TabIndex = 4;
+			this.tabPage9.Text = "Window utilities";
+			this.tabPage9.UseVisualStyleBackColor = true;
+			// 
+			// GroupBox_WindowOptions
+			// 
+			this.GroupBox_WindowOptions.Controls.Add(this.Button_ToggleWindowBorders);
+			this.GroupBox_WindowOptions.Controls.Add(this.Button_EnableWindowResize);
+			this.GroupBox_WindowOptions.Location = new System.Drawing.Point(325, 5);
+			this.GroupBox_WindowOptions.Name = "GroupBox_WindowOptions";
+			this.GroupBox_WindowOptions.Size = new System.Drawing.Size(150, 170);
+			this.GroupBox_WindowOptions.TabIndex = 40;
+			this.GroupBox_WindowOptions.TabStop = false;
+			this.GroupBox_WindowOptions.Text = "Window options";
+			// 
+			// Button_ToggleWindowBorders
+			// 
+			this.Button_ToggleWindowBorders.Location = new System.Drawing.Point(5, 50);
+			this.Button_ToggleWindowBorders.Name = "Button_ToggleWindowBorders";
+			this.Button_ToggleWindowBorders.Size = new System.Drawing.Size(140, 25);
+			this.Button_ToggleWindowBorders.TabIndex = 34;
+			this.Button_ToggleWindowBorders.Text = "Toggle window borders";
+			this.Button_ToggleWindowBorders.UseVisualStyleBackColor = true;
+			this.Button_ToggleWindowBorders.Click += new System.EventHandler(this.Button_ToggleWindowBorders_Click);
+			// 
+			// Button_EnableWindowResize
+			// 
+			this.Button_EnableWindowResize.Location = new System.Drawing.Point(5, 20);
+			this.Button_EnableWindowResize.Name = "Button_EnableWindowResize";
+			this.Button_EnableWindowResize.Size = new System.Drawing.Size(141, 25);
+			this.Button_EnableWindowResize.TabIndex = 33;
+			this.Button_EnableWindowResize.Text = "Enable window resizing";
+			this.toolTip1.SetToolTip(this.Button_EnableWindowResize, "Allows target window to be resized");
+			this.Button_EnableWindowResize.UseVisualStyleBackColor = true;
+			this.Button_EnableWindowResize.Click += new System.EventHandler(this.Button_EnableWindowResize_Click);
+			// 
+			// groupBox_WindowPositionAndOffsets
+			// 
+			this.groupBox_WindowPositionAndOffsets.Controls.Add(this.Panel_Splitscreen4Players);
+			this.groupBox_WindowPositionAndOffsets.Controls.Add(this.Panel_Splitscreen2PlayersHorizontal);
+			this.groupBox_WindowPositionAndOffsets.Controls.Add(this.Panel_Splitscreen2PlayersVertical);
+			this.groupBox_WindowPositionAndOffsets.Controls.Add(this.refTextbox_LeftOffset);
+			this.groupBox_WindowPositionAndOffsets.Controls.Add(this.Label_SplitscreenOptions);
+			this.groupBox_WindowPositionAndOffsets.Controls.Add(this.ComboBox_SplitscreenOptions);
+			this.groupBox_WindowPositionAndOffsets.Controls.Add(this.refTextbox_TopOffset);
+			this.groupBox_WindowPositionAndOffsets.Controls.Add(this.Label_LeftOffset);
+			this.groupBox_WindowPositionAndOffsets.Controls.Add(this.refTextbox_BorderExtraPadding);
+			this.groupBox_WindowPositionAndOffsets.Controls.Add(this.Label_BorderExtraPadding);
+			this.groupBox_WindowPositionAndOffsets.Controls.Add(this.Label_TopOffset);
+			this.groupBox_WindowPositionAndOffsets.Location = new System.Drawing.Point(5, 5);
+			this.groupBox_WindowPositionAndOffsets.Name = "groupBox_WindowPositionAndOffsets";
+			this.groupBox_WindowPositionAndOffsets.Size = new System.Drawing.Size(315, 170);
+			this.groupBox_WindowPositionAndOffsets.TabIndex = 37;
+			this.groupBox_WindowPositionAndOffsets.TabStop = false;
+			this.groupBox_WindowPositionAndOffsets.Text = "Window position and offsets";
+			// 
+			// Panel_Splitscreen4Players
+			// 
+			this.Panel_Splitscreen4Players.Controls.Add(this.Button_SplitscreenBottomRight);
+			this.Panel_Splitscreen4Players.Controls.Add(this.Button_SplitscreenTopRight);
+			this.Panel_Splitscreen4Players.Controls.Add(this.Button_SplitscreenBottomLeft);
+			this.Panel_Splitscreen4Players.Controls.Add(this.Button_SplitscreenTopLeft);
+			this.Panel_Splitscreen4Players.Location = new System.Drawing.Point(10, 65);
+			this.Panel_Splitscreen4Players.Name = "Panel_Splitscreen4Players";
+			this.Panel_Splitscreen4Players.Size = new System.Drawing.Size(150, 85);
+			this.Panel_Splitscreen4Players.TabIndex = 39;
+			this.Panel_Splitscreen4Players.Visible = false;
+			// 
+			// Button_SplitscreenBottomRight
+			// 
+			this.Button_SplitscreenBottomRight.Location = new System.Drawing.Point(75, 45);
+			this.Button_SplitscreenBottomRight.Name = "Button_SplitscreenBottomRight";
+			this.Button_SplitscreenBottomRight.Size = new System.Drawing.Size(75, 40);
+			this.Button_SplitscreenBottomRight.TabIndex = 31;
+			this.Button_SplitscreenBottomRight.Text = "Bottom Right";
+			this.Button_SplitscreenBottomRight.UseVisualStyleBackColor = true;
+			this.Button_SplitscreenBottomRight.Click += new System.EventHandler(this.Button_SplitscreenBottomRight_Click);
+			// 
+			// Button_SplitscreenTopRight
+			// 
+			this.Button_SplitscreenTopRight.Location = new System.Drawing.Point(75, 5);
+			this.Button_SplitscreenTopRight.Name = "Button_SplitscreenTopRight";
+			this.Button_SplitscreenTopRight.Size = new System.Drawing.Size(75, 40);
+			this.Button_SplitscreenTopRight.TabIndex = 30;
+			this.Button_SplitscreenTopRight.Text = "Top Right";
+			this.Button_SplitscreenTopRight.UseVisualStyleBackColor = true;
+			this.Button_SplitscreenTopRight.Click += new System.EventHandler(this.Button_SplitscreenTopRight_Click);
+			// 
+			// Button_SplitscreenBottomLeft
+			// 
+			this.Button_SplitscreenBottomLeft.Location = new System.Drawing.Point(0, 45);
+			this.Button_SplitscreenBottomLeft.Name = "Button_SplitscreenBottomLeft";
+			this.Button_SplitscreenBottomLeft.Size = new System.Drawing.Size(75, 40);
+			this.Button_SplitscreenBottomLeft.TabIndex = 29;
+			this.Button_SplitscreenBottomLeft.Text = "Bottom\r\nLeft";
+			this.Button_SplitscreenBottomLeft.UseVisualStyleBackColor = true;
+			this.Button_SplitscreenBottomLeft.Click += new System.EventHandler(this.Button_SplitscreenBottomLeft_Click);
+			// 
+			// Button_SplitscreenTopLeft
+			// 
+			this.Button_SplitscreenTopLeft.Location = new System.Drawing.Point(0, 5);
+			this.Button_SplitscreenTopLeft.Name = "Button_SplitscreenTopLeft";
+			this.Button_SplitscreenTopLeft.Size = new System.Drawing.Size(75, 40);
+			this.Button_SplitscreenTopLeft.TabIndex = 28;
+			this.Button_SplitscreenTopLeft.Text = "Top Left";
+			this.Button_SplitscreenTopLeft.UseVisualStyleBackColor = true;
+			this.Button_SplitscreenTopLeft.Click += new System.EventHandler(this.Button_SplitscreenTopLeft_Click);
+			// 
+			// Panel_Splitscreen2PlayersHorizontal
+			// 
+			this.Panel_Splitscreen2PlayersHorizontal.Controls.Add(this.Button_SplitscreenBottom);
+			this.Panel_Splitscreen2PlayersHorizontal.Controls.Add(this.Button_SplitscreenTop);
+			this.Panel_Splitscreen2PlayersHorizontal.Location = new System.Drawing.Point(10, 65);
+			this.Panel_Splitscreen2PlayersHorizontal.Name = "Panel_Splitscreen2PlayersHorizontal";
+			this.Panel_Splitscreen2PlayersHorizontal.Size = new System.Drawing.Size(150, 85);
+			this.Panel_Splitscreen2PlayersHorizontal.TabIndex = 38;
+			this.Panel_Splitscreen2PlayersHorizontal.Visible = false;
+			// 
+			// Button_SplitscreenBottom
+			// 
+			this.Button_SplitscreenBottom.Location = new System.Drawing.Point(0, 45);
+			this.Button_SplitscreenBottom.Name = "Button_SplitscreenBottom";
+			this.Button_SplitscreenBottom.Size = new System.Drawing.Size(150, 40);
+			this.Button_SplitscreenBottom.TabIndex = 29;
+			this.Button_SplitscreenBottom.Text = "Bottom";
+			this.Button_SplitscreenBottom.UseVisualStyleBackColor = true;
+			this.Button_SplitscreenBottom.Click += new System.EventHandler(this.Button_SplitscreenBottom_Click);
+			// 
+			// Button_SplitscreenTop
+			// 
+			this.Button_SplitscreenTop.Location = new System.Drawing.Point(0, 5);
+			this.Button_SplitscreenTop.Name = "Button_SplitscreenTop";
+			this.Button_SplitscreenTop.Size = new System.Drawing.Size(150, 40);
+			this.Button_SplitscreenTop.TabIndex = 28;
+			this.Button_SplitscreenTop.Text = "Top";
+			this.Button_SplitscreenTop.UseVisualStyleBackColor = true;
+			this.Button_SplitscreenTop.Click += new System.EventHandler(this.Button_SplitscreenTop_Click);
+			// 
+			// Panel_Splitscreen2PlayersVertical
+			// 
+			this.Panel_Splitscreen2PlayersVertical.Controls.Add(this.Button_SplitscreenRight);
+			this.Panel_Splitscreen2PlayersVertical.Controls.Add(this.Button_SplitscreenLeft);
+			this.Panel_Splitscreen2PlayersVertical.Location = new System.Drawing.Point(10, 65);
+			this.Panel_Splitscreen2PlayersVertical.Name = "Panel_Splitscreen2PlayersVertical";
+			this.Panel_Splitscreen2PlayersVertical.Size = new System.Drawing.Size(150, 85);
+			this.Panel_Splitscreen2PlayersVertical.TabIndex = 39;
+			this.Panel_Splitscreen2PlayersVertical.Visible = false;
+			// 
+			// Button_SplitscreenRight
+			// 
+			this.Button_SplitscreenRight.Location = new System.Drawing.Point(75, 5);
+			this.Button_SplitscreenRight.Name = "Button_SplitscreenRight";
+			this.Button_SplitscreenRight.Size = new System.Drawing.Size(75, 80);
+			this.Button_SplitscreenRight.TabIndex = 27;
+			this.Button_SplitscreenRight.Text = "Right";
+			this.Button_SplitscreenRight.UseVisualStyleBackColor = true;
+			this.Button_SplitscreenRight.Click += new System.EventHandler(this.Button_SplitscreenRight_Click);
+			// 
+			// Button_SplitscreenLeft
+			// 
+			this.Button_SplitscreenLeft.Location = new System.Drawing.Point(0, 5);
+			this.Button_SplitscreenLeft.Name = "Button_SplitscreenLeft";
+			this.Button_SplitscreenLeft.Size = new System.Drawing.Size(75, 80);
+			this.Button_SplitscreenLeft.TabIndex = 26;
+			this.Button_SplitscreenLeft.Text = " Left";
+			this.Button_SplitscreenLeft.UseVisualStyleBackColor = true;
+			this.Button_SplitscreenLeft.Click += new System.EventHandler(this.Button_SplitscreenLeft_Click);
+			// 
+			// refTextbox_LeftOffset
+			// 
+			this.refTextbox_LeftOffset.Location = new System.Drawing.Point(190, 70);
+			this.refTextbox_LeftOffset.Name = "refTextbox_LeftOffset";
+			this.refTextbox_LeftOffset.RefType = null;
+			this.refTextbox_LeftOffset.Size = new System.Drawing.Size(35, 20);
+			this.refTextbox_LeftOffset.TabIndex = 30;
+			// 
+			// Label_SplitscreenOptions
+			// 
+			this.Label_SplitscreenOptions.AutoSize = true;
+			this.Label_SplitscreenOptions.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.Label_SplitscreenOptions.Location = new System.Drawing.Point(10, 20);
+			this.Label_SplitscreenOptions.Name = "Label_SplitscreenOptions";
+			this.Label_SplitscreenOptions.Size = new System.Drawing.Size(111, 15);
+			this.Label_SplitscreenOptions.TabIndex = 36;
+			this.Label_SplitscreenOptions.Text = "Splitscreen options";
+			// 
+			// ComboBox_SplitscreenOptions
+			// 
+			this.ComboBox_SplitscreenOptions.FormattingEnabled = true;
+			this.ComboBox_SplitscreenOptions.Items.AddRange(new object[] {
+            "2PlayersVertical",
+            "2PlayersHorizontal",
+            "4Players"});
+			this.ComboBox_SplitscreenOptions.Location = new System.Drawing.Point(10, 35);
+			this.ComboBox_SplitscreenOptions.Name = "ComboBox_SplitscreenOptions";
+			this.ComboBox_SplitscreenOptions.Size = new System.Drawing.Size(150, 21);
+			this.ComboBox_SplitscreenOptions.TabIndex = 35;
+			this.toolTip1.SetToolTip(this.ComboBox_SplitscreenOptions, "List of the most common splitscreen window positions");
+			this.ComboBox_SplitscreenOptions.SelectedIndexChanged += new System.EventHandler(this.Refresh_SplitscreenWindow);
+			// 
+			// refTextbox_TopOffset
+			// 
+			this.refTextbox_TopOffset.Location = new System.Drawing.Point(190, 100);
+			this.refTextbox_TopOffset.Name = "refTextbox_TopOffset";
+			this.refTextbox_TopOffset.RefType = null;
+			this.refTextbox_TopOffset.Size = new System.Drawing.Size(35, 20);
+			this.refTextbox_TopOffset.TabIndex = 31;
+			// 
+			// Label_LeftOffset
+			// 
+			this.Label_LeftOffset.AutoSize = true;
+			this.Label_LeftOffset.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.Label_LeftOffset.Location = new System.Drawing.Point(230, 70);
+			this.Label_LeftOffset.Name = "Label_LeftOffset";
+			this.Label_LeftOffset.Size = new System.Drawing.Size(61, 15);
+			this.Label_LeftOffset.TabIndex = 25;
+			this.Label_LeftOffset.Text = "Left Offset";
+			this.toolTip1.SetToolTip(this.Label_LeftOffset, "Useful to hide the window border");
+			// 
+			// refTextbox_BorderExtraPadding
+			// 
+			this.refTextbox_BorderExtraPadding.Location = new System.Drawing.Point(190, 130);
+			this.refTextbox_BorderExtraPadding.Name = "refTextbox_BorderExtraPadding";
+			this.refTextbox_BorderExtraPadding.RefType = null;
+			this.refTextbox_BorderExtraPadding.Size = new System.Drawing.Size(35, 20);
+			this.refTextbox_BorderExtraPadding.TabIndex = 32;
+			// 
+			// Label_BorderExtraPadding
+			// 
+			this.Label_BorderExtraPadding.AutoSize = true;
+			this.Label_BorderExtraPadding.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.Label_BorderExtraPadding.Location = new System.Drawing.Point(230, 130);
+			this.Label_BorderExtraPadding.Name = "Label_BorderExtraPadding";
+			this.Label_BorderExtraPadding.Size = new System.Drawing.Size(74, 15);
+			this.Label_BorderExtraPadding.TabIndex = 29;
+			this.Label_BorderExtraPadding.Text = "Extra Height";
+			this.toolTip1.SetToolTip(this.Label_BorderExtraPadding, "Allow to increase the size of the window beyond the calculated height (useful to " +
+        "hide title bar if it can\'t be removed safely)");
+			// 
+			// Label_TopOffset
+			// 
+			this.Label_TopOffset.AutoSize = true;
+			this.Label_TopOffset.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.Label_TopOffset.Location = new System.Drawing.Point(230, 100);
+			this.Label_TopOffset.Name = "Label_TopOffset";
+			this.Label_TopOffset.Size = new System.Drawing.Size(62, 15);
+			this.Label_TopOffset.TabIndex = 28;
+			this.Label_TopOffset.Text = "Top Offset";
+			this.toolTip1.SetToolTip(this.Label_TopOffset, "Useful to hide the title bar if it can\'t be removed");
 			// 
 			// tabPage4
 			// 
@@ -1488,6 +1785,7 @@
 			// 
 			// tabPage5
 			// 
+			this.tabPage5.Controls.Add(this.webLinkLabel1);
 			this.tabPage5.Controls.Add(this.WebLinkJson);
 			this.tabPage5.Controls.Add(this.WebLinkIlyaki);
 			this.tabPage5.Controls.Add(this.LabelHandleSearch);
@@ -1508,10 +1806,10 @@
 			this.WebLinkJson.AutoSize = true;
 			this.WebLinkJson.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.WebLinkJson.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-			this.WebLinkJson.Location = new System.Drawing.Point(6, 139);
+			this.WebLinkJson.Location = new System.Drawing.Point(6, 150);
 			this.WebLinkJson.Name = "WebLinkJson";
 			this.WebLinkJson.Size = new System.Drawing.Size(63, 15);
-			this.WebLinkJson.TabIndex = 6;
+			this.WebLinkJson.TabIndex = 7;
 			this.WebLinkJson.TabStop = true;
 			this.WebLinkJson.Text = "Json.NET";
 			this.WebLinkJson.Url = "https://www.newtonsoft.com/json";
@@ -1535,10 +1833,10 @@
 			// 
 			this.LabelHandleSearch.AutoSize = true;
 			this.LabelHandleSearch.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.LabelHandleSearch.Location = new System.Drawing.Point(6, 115);
+			this.LabelHandleSearch.Location = new System.Drawing.Point(6, 126);
 			this.LabelHandleSearch.Name = "LabelHandleSearch";
 			this.LabelHandleSearch.Size = new System.Drawing.Size(581, 15);
-			this.LabelHandleSearch.TabIndex = 5;
+			this.LabelHandleSearch.TabIndex = 6;
 			this.LabelHandleSearch.Text = "Source engine unlocker handle search: Zoltan Csizmadia, zoltan_csizmadia@yahoo.co" +
     "m";
 			// 
@@ -1548,10 +1846,10 @@
 			this.WebLinkEasyHook.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.WebLinkEasyHook.LinkArea = new System.Windows.Forms.LinkArea(0, 8);
 			this.WebLinkEasyHook.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-			this.WebLinkEasyHook.Location = new System.Drawing.Point(6, 32);
+			this.WebLinkEasyHook.Location = new System.Drawing.Point(6, 43);
 			this.WebLinkEasyHook.Name = "WebLinkEasyHook";
 			this.WebLinkEasyHook.Size = new System.Drawing.Size(336, 20);
-			this.WebLinkEasyHook.TabIndex = 1;
+			this.WebLinkEasyHook.TabIndex = 2;
 			this.WebLinkEasyHook.TabStop = true;
 			this.WebLinkEasyHook.Text = "EasyHook: Christoph Husse and Justin Stenning";
 			this.WebLinkEasyHook.Url = "https://easyhook.github.io/";
@@ -1562,10 +1860,10 @@
 			this.WebLinkAHKInterop.AutoSize = true;
 			this.WebLinkAHKInterop.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.WebLinkAHKInterop.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-			this.WebLinkAHKInterop.Location = new System.Drawing.Point(6, 91);
+			this.WebLinkAHKInterop.Location = new System.Drawing.Point(6, 102);
 			this.WebLinkAHKInterop.Name = "WebLinkAHKInterop";
 			this.WebLinkAHKInterop.Size = new System.Drawing.Size(126, 15);
-			this.WebLinkAHKInterop.TabIndex = 4;
+			this.WebLinkAHKInterop.TabIndex = 5;
 			this.WebLinkAHKInterop.TabStop = true;
 			this.WebLinkAHKInterop.Text = "AutoHotKey.Introp";
 			this.WebLinkAHKInterop.Url = "https://github.com/amazing-andrew/AutoHotkey.Interop";
@@ -1575,10 +1873,10 @@
 			this.WebLinkAHK.AutoSize = true;
 			this.WebLinkAHK.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.WebLinkAHK.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-			this.WebLinkAHK.Location = new System.Drawing.Point(6, 61);
+			this.WebLinkAHK.Location = new System.Drawing.Point(6, 72);
 			this.WebLinkAHK.Name = "WebLinkAHK";
 			this.WebLinkAHK.Size = new System.Drawing.Size(77, 15);
-			this.WebLinkAHK.TabIndex = 2;
+			this.WebLinkAHK.TabIndex = 3;
 			this.WebLinkAHK.TabStop = true;
 			this.WebLinkAHK.Text = "AutoHotKey";
 			this.WebLinkAHK.Url = "https://github.com/Lexikos/AutoHotkey_L";
@@ -1588,10 +1886,10 @@
 			this.WebLinkAHKDll.AutoSize = true;
 			this.WebLinkAHKDll.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.WebLinkAHKDll.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-			this.WebLinkAHKDll.Location = new System.Drawing.Point(6, 76);
+			this.WebLinkAHKDll.Location = new System.Drawing.Point(6, 87);
 			this.WebLinkAHKDll.Name = "WebLinkAHKDll";
 			this.WebLinkAHKDll.Size = new System.Drawing.Size(49, 15);
-			this.WebLinkAHKDll.TabIndex = 3;
+			this.WebLinkAHKDll.TabIndex = 4;
 			this.WebLinkAHKDll.TabStop = true;
 			this.WebLinkAHKDll.Text = "ahkdll";
 			this.WebLinkAHKDll.Url = "https://github.com/HotKeyIt/ahkdll";
@@ -1651,6 +1949,21 @@
 			this.FileDialog_FindWindowHook.Filter = "Executable files|*.exe";
 			this.FileDialog_FindWindowHook.Title = "Select game executable";
 			// 
+			// webLinkLabel1
+			// 
+			this.webLinkLabel1.AutoSize = true;
+			this.webLinkLabel1.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.webLinkLabel1.LinkArea = new System.Windows.Forms.LinkArea(20, 13);
+			this.webLinkLabel1.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
+			this.webLinkLabel1.Location = new System.Drawing.Point(6, 23);
+			this.webLinkLabel1.Name = "webLinkLabel1";
+			this.webLinkLabel1.Size = new System.Drawing.Size(248, 20);
+			this.webLinkLabel1.TabIndex = 1;
+			this.webLinkLabel1.TabStop = true;
+			this.webLinkLabel1.Text = "Window positioning: VirtualRakoon";
+			this.webLinkLabel1.Url = "https://github.com/VirtualRakoon";
+			this.webLinkLabel1.UseCompatibleTextRendering = true;
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1669,9 +1982,9 @@
 			this.tabPage1.PerformLayout();
 			this.activeWindowPanel.ResumeLayout(false);
 			this.activeWindowPanel.PerformLayout();
-			this.GroupBox_Utilities.ResumeLayout(false);
 			this.groupBoxHandleUnlocker.ResumeLayout(false);
 			this.groupBoxHandleUnlocker.PerformLayout();
+			this.GroupBox_Utilities.ResumeLayout(false);
 			this.GamePadGroupBox.ResumeLayout(false);
 			this.GamePadGroupBox.PerformLayout();
 			this.windowTitleBox.ResumeLayout(false);
@@ -1691,6 +2004,13 @@
 			this.panel1.PerformLayout();
 			this.hooksBox.ResumeLayout(false);
 			this.hooksBox.PerformLayout();
+			this.tabPage9.ResumeLayout(false);
+			this.GroupBox_WindowOptions.ResumeLayout(false);
+			this.groupBox_WindowPositionAndOffsets.ResumeLayout(false);
+			this.groupBox_WindowPositionAndOffsets.PerformLayout();
+			this.Panel_Splitscreen4Players.ResumeLayout(false);
+			this.Panel_Splitscreen2PlayersHorizontal.ResumeLayout(false);
+			this.Panel_Splitscreen2PlayersVertical.ResumeLayout(false);
 			this.tabPage4.ResumeLayout(false);
 			this.tabControl3.ResumeLayout(false);
 			this.tabPage7.ResumeLayout(false);
@@ -1797,10 +2117,7 @@
 		private System.Windows.Forms.Label label1;
 		private RefCheckbox RefCheckbox_Hook_UseLegacyInput;
 		private System.Windows.Forms.ToolTip toolTip1;
-		private System.Windows.Forms.Label Label_CurrentWindowTabInstructions;
 		private System.Windows.Forms.GroupBox GroupBox_Utilities;
-		private System.Windows.Forms.Button Button_EnableWindowResize;
-		private System.Windows.Forms.Button Button_ToggleWindowBorders;
 		private System.Windows.Forms.CheckBox CheckBox_Transparency;
 		private System.Windows.Forms.Button Button_CheckUpdates;
 		private System.Windows.Forms.Label Label_CurrentVersion;
@@ -1850,5 +2167,33 @@
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Panel panel9;
 		private System.Windows.Forms.ComboBox ComboBox_AppdataSwitch_Selector;
+		private RefCheckbox RefCheckbox_SystemMouseToMiddle;
+		private RefCheckbox RefCheckbox_SendFakeWindowActivateMessageOnlyAtStart;
+		private System.Windows.Forms.Label Label_CurrentWindowTabInstructions;
+		private System.Windows.Forms.TabPage tabPage9;
+		private System.Windows.Forms.Button Button_ToggleWindowBorders;
+		private System.Windows.Forms.Button Button_EnableWindowResize;
+		private RefTextbox refTextbox_BorderExtraPadding;
+		private RefTextbox refTextbox_TopOffset;
+		private RefTextbox refTextbox_LeftOffset;
+		private System.Windows.Forms.Label Label_BorderExtraPadding;
+		private System.Windows.Forms.Label Label_LeftOffset;
+		private System.Windows.Forms.Label Label_SplitscreenOptions;
+		private System.Windows.Forms.ComboBox ComboBox_SplitscreenOptions;
+		private System.Windows.Forms.GroupBox groupBox_WindowPositionAndOffsets;
+		private System.Windows.Forms.Button Button_SplitscreenLeft;
+		private System.Windows.Forms.Button Button_SplitscreenRight;
+		private System.Windows.Forms.Label Label_TopOffset;
+		private System.Windows.Forms.Panel Panel_Splitscreen2PlayersHorizontal;
+		private System.Windows.Forms.Button Button_SplitscreenBottom;
+		private System.Windows.Forms.Button Button_SplitscreenTop;
+		private System.Windows.Forms.Panel Panel_Splitscreen2PlayersVertical;
+		private System.Windows.Forms.GroupBox GroupBox_WindowOptions;
+		private System.Windows.Forms.Panel Panel_Splitscreen4Players;
+		private System.Windows.Forms.Button Button_SplitscreenBottomLeft;
+		private System.Windows.Forms.Button Button_SplitscreenTopLeft;
+		private System.Windows.Forms.Button Button_SplitscreenBottomRight;
+		private System.Windows.Forms.Button Button_SplitscreenTopRight;
+		private WebLinkLabel webLinkLabel1;
 	}
 }
