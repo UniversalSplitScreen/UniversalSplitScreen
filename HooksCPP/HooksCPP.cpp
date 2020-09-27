@@ -1384,9 +1384,9 @@ extern "C" __declspec(dllexport) void __stdcall NativeInjectionEntryPoint(REMOTE
 						HRESULT aquireResult = dinput_device->Acquire();
 
 						if (aquireResult == DI_OK)
-							std::cout << "Successfully aquired dinput device\n";
+							std::cout << "Successfully acquired dinput device\n";
 						else
-							std::cout << "Failed to aquired dinput device\n";
+							std::cout << "Failed to acquired dinput device\n";
 					}
 				}
 			}

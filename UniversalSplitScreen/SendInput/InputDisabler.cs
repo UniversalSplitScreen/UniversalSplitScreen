@@ -21,7 +21,7 @@ namespace UniversalSplitScreen.SendInput
 		[DllImport("user32.dll")]
 		static extern IntPtr SetCursor(IntPtr handle);
 
-		//TODO: move to start of program in separate thread so it doesnt cause delay when start is first clicked
+		//TODO: move to start of program in separate thread so it doesn't cause delay when start is first clicked
 
 		public static void Init()
 		{

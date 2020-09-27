@@ -148,7 +148,7 @@ Useful if the game doesn't listen to raw input unless it is in the foreground.
 Use this if a game is not responding to mouse input.</value>
   </data>
   <data name="RefCheckbox_Hook_GetKeyboardState.ToolTip" xml:space="preserve">
-    <value>Somes games will use GetKeyboardState to get keyboard input.
+    <value>Some games will use GetKeyboardState to get keyboard input.
 Windows should in theory only report input from the message queue (ie Send normal keyboard input) but sometimes using two keyboards at once will interfere with the function.
 Use this hook if the game is responding to multiple keyboards.</value>
   </data>
