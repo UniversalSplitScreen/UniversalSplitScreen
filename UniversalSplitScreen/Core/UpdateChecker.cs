@@ -13,7 +13,7 @@ namespace UniversalSplitScreen.Core
 		const string request = @"https://api.github.com/repos/UniversalSplitScreen/UniversalSplitScreen/releases/latest";
 
 		/// <summary>
-		/// Returns empty string if no update availible, and the new version tag name otherwise
+		/// Returns empty string if no update available, and the new version tag name otherwise
 		/// </summary>
 		/// <returns></returns>
 		private static async Task<string> IsThereAnUpdate()
